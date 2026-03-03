@@ -394,42 +394,82 @@
     </div>
 
     <div id="sidebar-scroll-area">
-        <ul class="sidebar-menu">
-            <li onclick="toggleSidebar()"><i class="fas fa-desktop" style="color: #3498db;"></i> Dashboard</li>
-            <li onclick="navigateTo('Sales.html')"><i class="fas fa-file-invoice" style="color: #2ecc71;"></i> Sales Entry</li>
-            <li onclick="navigateTo('Purchase.html')"><i class="fas fa-shopping-basket" style="color: #e67e22;"></i> Purchase Entry</li>
-            
-            <li onclick="toggleSubMenu('inv-sub', this)">
-                <i class="fas fa-warehouse" style="color: #9b59b6;"></i> Stock
-                <i class="fas fa-chevron-right arrow-icon" style="margin-left: auto; font-size: 0.7rem; opacity: 0.5;"></i>
-            </li>
-            <ul class="submenu" id="inv-sub">
-                <li onclick="navigateTo('Product.html')">New Product Add</li>
-                <li onclick="navigateTo('Stock.html')">Stock Report</li>
-            </ul>
+    <ul class="sidebar-menu">
+        <li onclick="toggleSidebar()"><i class="fas fa-desktop" style="color: #3498db;"></i> Dashboard</li>
 
-            <li onclick="navigateTo('Customer.html')"><i class="fas fa-address-book" style="color: #1abc9c;"></i> Customer List</li>
-            
-            <li onclick="toggleSubMenu('rep-sub', this)">
-                <i class="fas fa-chart-bar" style="color: #f1c40f;"></i> Report 
-                <i class="fas fa-chevron-right arrow-icon" style="margin-left: auto; font-size: 0.7rem; opacity: 0.5;"></i>
-            </li>
-            <ul class="submenu" id="rep-sub">
-                <li onclick="navigateTo('Reports.html')">Main Report</li>
-                <li onclick="navigateTo('Sales-Report.html')">Daily Sales Report</li>
-                <li onclick="navigateTo('Profit-Loss.html')">Profit & Loss</li>
-            </ul>
-
-            <li onclick="toggleSubMenu('data-sub', this)">
-                <i class="fas fa-edit" style="color: #e74c3c;"></i> Data Entry 
-                <i class="fas fa-chevron-right arrow-icon" style="margin-left: auto; font-size: 0.7rem; opacity: 0.5;"></i>
-            </li>
-            <ul class="submenu" id="data-sub">
-                <li onclick="navigateTo('Dataentry.html')">Manual Entry</li>
-                <li onclick="navigateTo('Dataentryauto.html')"> Auto Entry</li>
-            </ul>
+        <li onclick="toggleSubMenu('sales-sub', this)">
+            <i class="fas fa-file-invoice" style="color: #2ecc71;"></i> Sales Entry
+            <i class="fas fa-chevron-right arrow-icon" style="margin-left: auto; font-size: 0.7rem; opacity: 0.5;"></i>
+        </li>
+        <ul class="submenu" id="sales-sub">
+            <li onclick="navigateTo('Sales.html')">New Sale</li>
+            <li onclick="navigateTo('Sales-Return.html')">Sales Return</li>
+            <li onclick="navigateTo('Sales-List.html')">Invoices List</li>
+            <li onclick="navigateTo('Due-Collection.html')">Due Collection</li>
+            <li onclick="navigateTo('Sales-Draft.html')">Draft Sales</li>
         </ul>
-    </div>
+
+        <li onclick="toggleSubMenu('pur-sub', this)">
+            <i class="fas fa-shopping-basket" style="color: #e67e22;"></i> Purchase Entry
+            <i class="fas fa-chevron-right arrow-icon" style="margin-left: auto; font-size: 0.7rem; opacity: 0.5;"></i>
+        </li>
+        <ul class="submenu" id="pur-sub">
+            <li onclick="navigateTo('Purchase.html')">New Purchase</li>
+            <li onclick="navigateTo('Purchase-Return.html')">Purchase Return</li>
+            <li onclick="navigateTo('Supplier-List.html')">Supplier List</li>
+            <li onclick="navigateTo('Purchase-History.html')">Purchase History</li>
+            <li onclick="navigateTo('Purchase-Order.html')">Purchase Order</li>
+        </ul>
+        
+        <li onclick="toggleSubMenu('inv-sub', this)">
+            <i class="fas fa-warehouse" style="color: #9b59b6;"></i> Stock
+            <i class="fas fa-chevron-right arrow-icon" style="margin-left: auto; font-size: 0.7rem; opacity: 0.5;"></i>
+        </li>
+        <ul class="submenu" id="inv-sub">
+            <li onclick="navigateTo('Product.html')">New Product Add</li>
+            <li onclick="navigateTo('Stock.html')">Stock Report</li>
+            <li onclick="navigateTo('Category.html')">Product Category</li>
+            <li onclick="navigateTo('Stock-Adjustment.html')">Stock Adjustment</li>
+            <li onclick="navigateTo('Damaged-Stock.html')">Damaged Goods</li>
+        </ul>
+
+        <li onclick="toggleSubMenu('cust-sub', this)">
+            <i class="fas fa-address-book" style="color: #1abc9c;"></i> Customer
+            <i class="fas fa-chevron-right arrow-icon" style="margin-left: auto; font-size: 0.7rem; opacity: 0.5;"></i>
+        </li>
+        <ul class="submenu" id="cust-sub">
+            <li onclick="navigateTo('Customer.html')">Customer List</li>
+            <li onclick="navigateTo('Customer-Add.html')">Add New Customer</li>
+            <li onclick="navigateTo('Customer-Ledger.html')">Customer Ledger</li>
+            <li onclick="navigateTo('Customer-Due.html')">Due Analysis</li>
+            <li onclick="navigateTo('Customer-Msg.html')">Send SMS/Notice</li>
+        </ul>
+        
+        <li onclick="toggleSubMenu('rep-sub', this)">
+            <i class="fas fa-chart-bar" style="color: #f1c40f;"></i> Report 
+            <i class="fas fa-chevron-right arrow-icon" style="margin-left: auto; font-size: 0.7rem; opacity: 0.5;"></i>
+        </li>
+        <ul class="submenu" id="rep-sub">
+            <li onclick="navigateTo('Reports.html')">Main Report</li>
+            <li onclick="navigateTo('Sales-Report.html')">Daily Sales Report</li>
+            <li onclick="navigateTo('Profit-Loss.html')">Profit & Loss</li>
+            <li onclick="navigateTo('Expense-Report.html')">Expense Report</li>
+            <li onclick="navigateTo('Tax-Report.html')">VAT/Tax Report</li>
+        </ul>
+
+        <li onclick="toggleSubMenu('data-sub', this)">
+            <i class="fas fa-edit" style="color: #e74c3c;"></i> Data Entry 
+            <i class="fas fa-chevron-right arrow-icon" style="margin-left: auto; font-size: 0.7rem; opacity: 0.5;"></i>
+        </li>
+        <ul class="submenu" id="data-sub">
+            <li onclick="navigateTo('Dataentry.html')">Manual Entry</li>
+            <li onclick="navigateTo('Dataentryauto.html')">Auto Entry</li>
+            <li onclick="navigateTo('Bulk-Upload.html')">Bulk CSV Upload</li>
+            <li onclick="navigateTo('Old-Data.html')">Old Data Import</li>
+            <li onclick="navigateTo('Settings.html')">Entry Settings</li>
+        </ul>
+    </ul>
+</div>
 
     <div class="sidebar-footer-profile">
         <div class="user-avatar" id="user-initial">U</div>
@@ -496,6 +536,7 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
+
 
 
 
