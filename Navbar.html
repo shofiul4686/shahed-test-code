@@ -1,0 +1,96 @@
+<!-- গুগল ফন্ট এবং আইকন লোড করা হচ্ছে -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<nav id="main-nav" class="navbar navbar-expand-lg navbar-dark bg-dark mb-4 shadow-sm">
+  <div class="container-fluid">
+    <!-- হোম বাটন (DEALER ERP) -->
+    <a class="navbar-brand fw-bold px-3 py-1" href="javascript:void(0)" id="nav-Home" onclick="openPage('Home')">
+      <i class="fas fa-warehouse me-2"></i>IMVOICE MAANGEMENT 
+    </a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <div class="navbar-nav ms-auto">
+        <a class="nav-link px-3 mx-1" href="javascript:void(0)" id="nav-Sales" onclick="openPage('Sales')">
+          <i class="fas fa-file-invoice me-1"></i> New Invoice
+        </a>
+        <a class="nav-link px-3 mx-1" href="javascript:void(0)" id="nav-Purchase" onclick="openPage('Purchase')">
+          <i class="fas fa-shopping-bag me-1"></i> Purchase
+        </a>
+        <a class="nav-link px-3 mx-1" href="javascript:void(0)" id="nav-Product" onclick="openPage('Product')">
+          <i class="fas fa-box me-1"></i> New Product Add
+        </a>
+        <a class="nav-link px-3 mx-1" href="javascript:void(0)" id="nav-Customer" onclick="openPage('Customer')">
+          <i class="fas fa-user-friends me-1"></i> New Customer Add
+        </a>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- গ্লোবাল লোডার -->
+<div id="loader" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(255,255,255,0.8); z-index:10000; display:none; flex-direction:column; justify-content:center; align-items:center;">
+  <div class="spinner-border text-success" role="status"></div>
+</div>
+
+<style>
+  .navbar-brand, .nav-link { 
+    cursor: pointer; 
+    border-radius: 6px; 
+    transition: all 0.2s ease;
+  }
+  
+  .active-page {
+    background-color: #27ae60 !important;
+    color: white !important;
+    font-weight: 600;
+  }
+
+  .nav-link:hover:not(.active-page) {
+    background: rgba(255,255,255,0.1);
+  }
+  
+  /* যদি URL এ mode=form থাকে তবে ন্যাভবার লুকানো থাকবে */
+  body.mode-form #main-nav {
+    display: none !important;
+  }
+</style>
+
+<script>
+  function highlightCurrentPage() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const currentPage = urlParams.get('page') || 'Home'; 
+    const mode = urlParams.get('mode');
+
+    // যদি মোড 'form' হয়, তবে বডিতে একটি ক্লাস যোগ হবে যা মেনু হাইড করবে
+    if (mode === 'form') {
+      document.body.classList.add('mode-form');
+    }
+    
+    document.querySelectorAll('.nav-link, .navbar-brand').forEach(el => {
+      el.classList.remove('active-page');
+    });
+
+    const activeEl = document.getElementById('nav-' + currentPage);
+    if (activeEl) {
+      activeEl.classList.add('active-page');
+    }
+  }
+
+  window.addEventListener('DOMContentLoaded', highlightCurrentPage);
+
+  function openPage(pageName) {
+    google.script.run.withSuccessHandler(function(url) {
+      // Home পেজ ছাড়া বাকি সবগুলোতে mode=form প্যারামিটার যোগ করছি
+      let finalUrl = url + "?page=" + pageName;
+      
+      if (pageName === 'Home') {
+        window.top.location.href = finalUrl;
+      } else {
+        // নতুন ট্যাবে ওপেন করার সময় mode=form পাঠিয়ে দিচ্ছি
+        window.open(finalUrl + "&mode=form", '_blank');
+      }
+    }).getScriptURL();
+  }
+</script>

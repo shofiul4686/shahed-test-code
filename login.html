@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Page</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            height: 100vh;
+            display: flex; align-items: center; justify-content: center;
+            font-family: 'Segoe UI', sans-serif; margin: 0;
+        }
+        .login-card {
+            background: white; padding: 40px; border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+            width: 100%; max-width: 400px; text-align: center;
+        }
+        .logo-icon { font-size: 50px; color: #1e3c72; margin-bottom: 20px; }
+        .form-control { border-radius: 10px; padding: 12px; margin-bottom: 15px; }
+        .btn-login {
+            background: #1e3c72; color: white; border: none;
+            padding: 12px; border-radius: 10px; font-weight: bold;
+            width: 100%; transition: 0.3s;
+        }
+        .btn-login:hover { background: #2a5298; transform: translateY(-2px); }
+        #msg { margin-top: 15px; font-size: 14px; min-height: 20px; }
+    </style>
+</head>
+<body>
+
+    <div class="login-card">
+        <div class="logo-icon"><i class="fas fa-university"></i></div>
+        <h3 class="mb-4">Login Interface</h3>
+        
+        <input type="text" id="userid" class="form-control" placeholder="User ID">
+        <input type="password" id="password" class="form-control" placeholder="Password">
+        
+        <button class="btn-login" id="loginBtn" onclick="handleLogin()">Login</button>
+        
+        <div id="msg"></div>
+    </div>
+
+    <script>
+        // আপনার সঠিক Deployed Web App URL
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzkDCX5zax-NuoSKRSxJIjL9Rx4MbtVxvm5QlrOEIxrTR-s3sVuRHJy_ISNIm3ehDYs/exec"; 
+
+        async function handleLogin() {
+            const id = document.getElementById('userid').value.trim();
+            const pass = document.getElementById('password').value.trim();
+            const msg = document.getElementById('msg');
+            const btn = document.getElementById('loginBtn');
+
+            if (!id || !pass) {
+                msg.innerHTML = '<span class="text-danger">আইডি এবং পাসওয়ার্ড দিন!</span>';
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Please Wait...';
+            msg.innerHTML = "Cheking Now...";
+
+            const finalUrl = `${SCRIPT_URL}?action=login&id=${encodeURIComponent(id)}&pass=${encodeURIComponent(pass)}`;
+
+            try {
+                // 'no-cors' মোড ব্যবহার করবেন না, ডিফল্ট fetch ব্যবহার করুন
+                const response = await fetch(finalUrl);
+                const data = await response.json();
+
+                if (data.status === "success") {
+                    msg.innerHTML = '<span class="text-success">Processing...</span>';
+                    // সফল হলে গিটহাবের ড্যাশবোর্ডে পাঠানো
+                    setTimeout(() => {
+                        window.location.href = `index.html?name=${encodeURIComponent(data.name)}&id=${encodeURIComponent(data.userId)}`;
+                    }, 1000);
+                } else {
+                    msg.innerHTML = `<span class="text-danger">${data.message || "ভুল আইডি বা পাসওয়ার্ড!"}</span>`;
+                    resetBtn();
+                }
+            } catch (error) {
+                console.error("Error Detail:", error);
+                msg.innerHTML = '<span class="text-danger">লগইন ব্যর্থ! আপনার গুগল স্ক্রিপ্টে "Anyone" অ্যাক্সেস দিয়ে নতুন করে Deploy করুন।</span>';
+                resetBtn();
+            }
+        }
+
+       function resetBtn() {
+    const btn = document.getElementById('loginBtn');
+    btn.disabled = false;
+    btn.innerHTML = 'Login'; // এখানে 'Enter' এর বদলে Login বা যা খুশি দিতে পারেন, কিন্তু কোটেশন মার্ক ঠিক থাকতে হবে।
+}
+    </script>
+</body>
+</html>

@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="purcess.png">
+    <title>Purchase</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { background-color: hsl(239, 68%, 38%); font-family: 'Segoe UI', Tahoma, sans-serif; }
+        .card { border-radius: 12px; border: none; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+        .header-title { border-left: 5px solid #0d6efd; padding-left: 15px; color: #0d6efd; font-weight: bold; }
+        .suggestion-box {
+            position: absolute; z-index: 1050; width: 100%; background: white;
+            border: 1px solid #ddd; max-height: 250px; overflow-y: auto;
+            border-radius: 8px; box-shadow: 0 8px 16px rgba(0,0,0,0.15); display: none;
+        }
+        .suggestion-item { padding: 10px 15px; cursor: pointer; border-bottom: 1px solid #f1f1f1; font-size: 14px; transition: 0.2s; }
+        .suggestion-item.active, .suggestion-item:hover { background-color: #0d6efd !important; color: white !important; }
+        .table thead { background-color: #343a40; color: white; }
+        .total-section { background: #f8f9fa; font-weight: bold; }
+        .input-row { background: #ffffff; border: 1px solid #dee2e6; border-radius: 8px; margin-bottom: 20px; }
+        .custom-modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6); display: none; align-items: center; 
+            justify-content: center; z-index: 2000; backdrop-filter: blur(4px);
+        }
+        .custom-modal {
+            background: white; padding: 30px; border-radius: 20px; max-width: 400px;
+            width: 90%; text-align: center; box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            animation: modalPop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        @keyframes modalPop { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        #customToast {
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            z-index: 3000; padding: 20px 40px; border-radius: 15px; color: white;
+            font-size: 1.1rem; font-weight: 600; box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+            display: none; text-align: center; min-width: 300px; animation: toastFadeIn 0.4s ease-out;
+        }
+        @keyframes toastFadeIn { from { transform: translate(-50%, -60%); opacity: 0; } to { transform: translate(-50%, -50%); opacity: 1; } }
+    </style>
+</head>
+<body onload="initPurchase()">
+
+    <div id="customToast"></div>
+
+    <div id="confirmModal" class="custom-modal-overlay">
+        <div class="custom-modal">
+            <div id="modalIcon" style="font-size: 60px; color: #ffc107; margin-bottom: 20px;"><i class="fas fa-exclamation-circle"></i></div>
+            <h4 id="modalTitle" class="fw-bold mb-3">Confirmation</h4>
+            <p id="confirmMessage" class="text-muted fs-5"></p>
+            <div class="d-flex justify-content-center gap-3 mt-4">
+                <button class="btn btn-outline-secondary px-4 py-2 fw-bold" onclick="closeConfirmModal(false)">No, Cancel</button>
+                <button id="btnConfirmYes" class="btn btn-primary px-4 py-2 fw-bold">Yes, Update</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="container-fluid mt-4 mb-5">
+        <div class="row justify-content-center">
+            <div class="col-md-11">
+                <div class="card p-4">
+                    <h4 class="header-title mb-4"><i class="fas fa-shopping-basket me-2"></i>Purchase Entry</h4>
+                    <div class="row g-3 mb-4 pb-3 border-bottom">
+                        <div class="col-md-2">
+                            <label class="form-label small fw-bold">Date</label>
+                            <input type="date" id="purDate" class="form-control shadow-sm" readonly>
+                        </div>
+                        <div class="col-md-4 position-relative">
+                            <label class="form-label small fw-bold">Supplier Name</label>
+                            <input type="text" id="purSupplier" class="form-control shadow-sm" placeholder="Search Supplier..." autocomplete="off" onfocus="handleSupplierSearch(event)" onkeyup="handleSupplierSearch(event)">
+                            <div id="supplierSuggestionBox" class="suggestion-box"></div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold">Note</label>
+                            <input type="text" id="purNote" class="form-control shadow-sm" placeholder="Additional info...">
+                        </div>
+                    </div>
+
+                    <div class="input-row p-3 shadow-sm">
+                        <div class="row g-2 align-items-end">
+                            <div class="col-md-2 position-relative">
+                                <label class="form-label small fw-bold">Code</label>
+                                <input type="text" id="itemCode" class="form-control" placeholder="Code" autocomplete="off" onkeyup="handleSearch(event, 'code')">
+                                <div id="codeSuggestionBox" class="suggestion-box"></div>
+                            </div>
+                            <div class="col-md-3 position-relative">
+                                <label class="form-label small fw-bold">Item Name</label>
+                                <input type="text" id="itemName" class="form-control" placeholder="Name" autocomplete="off" onkeyup="handleSearch(event, 'name')">
+                                <div id="nameSuggestionBox" class="suggestion-box"></div>
+                            </div>
+                            <div class="col-md-1"><label class="form-label small fw-bold">Pack</label><input type="text" id="itemPack" class="form-control bg-light" readonly tabindex="-1"></div>
+                            <div class="col-md-2"><label class="form-label small fw-bold">Purchase Rate</label><input type="number" id="buyRate" class="form-control" placeholder="0.00" onkeydown="if(event.key==='Enter') document.getElementById('saleRate').focus()"></div>
+                            <div class="col-md-2"><label class="form-label small fw-bold text-danger">Sales Price</label><input type="number" id="saleRate" class="form-control" placeholder="0.00" onkeydown="if(event.key==='Enter') document.getElementById('itemQty').focus()"></div>
+                            <div class="col-md-1"><label class="form-label small fw-bold">Quantity</label><input type="number" id="itemQty" class="form-control" placeholder="Qty" onkeydown="if(event.key==='Enter') addItemToCart()"></div>
+                            <div class="col-md-1"><button class="btn btn-primary w-100 fw-bold" onclick="addItemToCart()"><i class="fas fa-plus"></i></button></div>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-hover table-bordered text-center align-middle">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th style="width: 50px;">SL</th><th>Code</th><th class="text-start">Item Name</th><th>Pack</th><th>Pur. Rate</th><th>Sale Price</th><th>Qty</th><th>Total (৳)</th><th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="cartItems"></tbody>
+                            <tfoot class="total-section">
+                                <tr><td colspan="7" class="text-end">Grand Total:</td><td id="grandTotal" class="text-primary fs-5">0.00</td><td class="fw-bold">৳</td></tr>
+                            </tfoot>
+                        </table>
+                    </div>
+
+                    <div class="text-end mt-4">
+                        <button id="saveBtn" class="btn btn-success btn-lg px-5 fw-bold" onclick="savePurchaseOrder()"><i class="fas fa-save me-2"></i> Save Voucher</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    // API URL
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzkDCX5zax-NuoSKRSxJIjL9Rx4MbtVxvm5QlrOEIxrTR-s3sVuRHJy_ISNIm3ehDYs/exec";
+
+    let inventory = [];
+    let suppliers = ["PHARMA", "INM", "ISV", "OPTHALMIC"]; 
+    let purchaseCart = [];
+    let pendingItem = null;
+    let selectedSuggestionIndex = -1;
+    
+    // --- ইউজার ডাটা রাখার জন্য অবজেক্ট ---
+    let activeUser = { name: "Guest", id: "0000" };
+
+    function showToast(message, type = 'info') {
+        const toast = document.getElementById('customToast');
+        toast.innerText = message;
+        toast.style.backgroundColor = type === 'success' ? '#198754' : (type === 'danger' ? '#dc3545' : '#0d6efd');
+        toast.style.display = 'block';
+        setTimeout(() => { toast.style.display = 'none'; }, 3000);
+    }
+
+    async function initPurchase() {
+        // --- ইউআরএল (Link) থেকে ইউজার নেম ও আইডি নেওয়া ---
+        const urlParams = new URLSearchParams(window.location.search);
+        const nameParam = urlParams.get('name');
+        const idParam = urlParams.get('id');
+        if (nameParam) activeUser.name = decodeURIComponent(nameParam);
+        if (idParam) activeUser.id = idParam;
+
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const day = String(now.getDate()).padStart(2, '0');
+        const today = `${year}-${month}-${day}`;
+        
+        document.getElementById('purDate').value = today;
+
+        try {
+            const response = await fetch(WEB_APP_URL + "?action=getInventoryData");
+            inventory = await response.json();
+            console.log("Inventory Loaded:", inventory.length, "items");
+            console.log("Active User:", activeUser.name); // ডিবাগিং এর জন্য
+        } catch (err) {
+            console.error("Error loading inventory:", err);
+            showToast("Failed to load inventory!", "danger");
+        }
+    }
+
+    function handleSupplierSearch(event) {
+        const val = event.target.value;
+        const box = document.getElementById('supplierSuggestionBox');
+        if (event.key === 'ArrowDown') { navigateSuggestions(box, 1); return; }
+        if (event.key === 'ArrowUp') { navigateSuggestions(box, -1); return; }
+        if (event.key === 'Enter') { const active = box.querySelector('.suggestion-item.active'); if (active) active.click(); return; }
+        const filtered = val ? suppliers.filter(s => s.toLowerCase().includes(val.toLowerCase())) : suppliers;
+        box.innerHTML = filtered.map(s => `<div class="suggestion-item" onclick="selectSupplier('${s}')"><b>${s}</b></div>`).join('');
+        box.style.display = filtered.length ? 'block' : 'none';
+    }
+
+    function selectSupplier(name) {
+        document.getElementById('purSupplier').value = name;
+        document.getElementById('supplierSuggestionBox').style.display = 'none';
+        document.getElementById('purNote').focus();
+    }
+
+    function handleSearch(event, type) {
+        const val = event.target.value;
+        const targetBox = (type === 'code') ? document.getElementById('codeSuggestionBox') : document.getElementById('nameSuggestionBox');
+        if (event.key === 'ArrowDown') { navigateSuggestions(targetBox, 1); return; }
+        if (event.key === 'ArrowUp') { navigateSuggestions(targetBox, -1); return; }
+        if (event.key === 'Enter') { const active = targetBox.querySelector('.suggestion-item.active'); if (active) active.click(); return; }
+        
+        document.querySelectorAll('.suggestion-box').forEach(b => b.style.display = 'none');
+        if (!val || inventory.length < 2) return;
+        
+        const searchVal = val.toLowerCase();
+        const filtered = inventory.slice(1).filter(r => 
+            r[0].toString().toLowerCase().includes(searchVal) || 
+            r[1].toString().toLowerCase().includes(searchVal)
+        );
+
+        if (filtered.length) {
+            targetBox.innerHTML = filtered.map(r => `
+                <div class="suggestion-item" onclick='fillInputs(${JSON.stringify(r)})'>
+                    <b>${r[1]}</b><br><small>Code: ${r[0]} | Pack: ${r[2]}</small>
+                </div>`).join('');
+            targetBox.style.display = 'block';
+        }
+    }
+
+    function navigateSuggestions(box, dir) {
+        const items = box.querySelectorAll('.suggestion-item');
+        if (!items.length) return;
+        if (selectedSuggestionIndex >= 0 && selectedSuggestionIndex < items.length) items[selectedSuggestionIndex].classList.remove('active');
+        selectedSuggestionIndex = (selectedSuggestionIndex + dir + items.length) % items.length;
+        items[selectedSuggestionIndex].classList.add('active');
+        items[selectedSuggestionIndex].scrollIntoView({ block: 'nearest' });
+    }
+
+    function fillInputs(item) {
+        document.getElementById('itemCode').value = item[0];
+        document.getElementById('itemName').value = item[1];
+        document.getElementById('itemPack').value = item[2];
+        document.querySelectorAll('.suggestion-box').forEach(b => b.style.display = 'none');
+        selectedSuggestionIndex = -1;
+        setTimeout(() => document.getElementById('buyRate').focus(), 50);
+    }
+
+    function addItemToCart() {
+        const code = document.getElementById('itemCode').value;
+        const name = document.getElementById('itemName').value;
+        const pack = document.getElementById('itemPack').value;
+        const bRate = parseFloat(document.getElementById('buyRate').value) || 0;
+        const sRate = parseFloat(document.getElementById('saleRate').value) || 0;
+        const qty = parseFloat(document.getElementById('itemQty').value) || 0;
+
+        if (!code || qty <= 0) { showToast("Invalid item code or quantity!", "danger"); return; }
+
+        const existingIdx = purchaseCart.findIndex(i => i.code === code);
+        if (existingIdx > -1) {
+            pendingItem = { index: existingIdx, qty, bRate, sRate, name };
+            document.getElementById('modalIcon').innerHTML = '<i class="fas fa-copy" style="color: #0d6efd"></i>';
+            document.getElementById('modalTitle').innerText = "Already in List";
+            document.getElementById('confirmMessage').innerText = `'${name}' already exists. Add more?`;
+            document.getElementById('confirmModal').style.display = 'flex';
+            document.getElementById('btnConfirmYes').onclick = function() {
+                const item = purchaseCart[pendingItem.index];
+                item.qty += pendingItem.qty; item.bRate = pendingItem.bRate;
+                item.sRate = pendingItem.sRate; item.total = item.qty * item.bRate;
+                closeConfirmModal(true);
+            };
+        } else {
+            purchaseCart.push({ code, name, pack, bRate, sRate, qty, total: qty * bRate });
+            updateTable(); clearInputs(); showToast("Added!", "success");
+        }
+    }
+
+    function closeConfirmModal(isConfirmed) {
+        document.getElementById('confirmModal').style.display = 'none';
+        if (isConfirmed) { updateTable(); clearInputs(); showToast("Updated!", "success"); }
+        pendingItem = null;
+    }
+
+    function clearInputs() {
+        ['itemCode', 'itemName', 'itemPack', 'buyRate', 'saleRate', 'itemQty'].forEach(id => document.getElementById(id).value = "");
+        setTimeout(() => document.getElementById('itemCode').focus(), 10);
+    }
+
+    function updateTable() {
+        const tbody = document.getElementById('cartItems');
+        tbody.innerHTML = purchaseCart.length === 0 ? '<tr><td colspan="9" class="p-4 text-muted">No items in cart</td></tr>' : 
+            purchaseCart.map((item, idx) => `
+            <tr>
+                <td>${idx + 1}</td><td>${item.code}</td><td class="text-start">${item.name}</td><td>${item.pack}</td>
+                <td>${item.bRate.toFixed(2)}</td><td>${item.sRate.toFixed(2)}</td><td>${item.qty}</td>
+                <td class="fw-bold">${item.total.toFixed(2)}</td>
+                <td><button class="btn btn-sm text-danger" onclick="removeItem(${idx})"><i class="fas fa-trash"></i></button></td>
+            </tr>`).join('');
+        document.getElementById('grandTotal').innerText = purchaseCart.reduce((a, b) => a + b.total, 0).toFixed(2);
+    }
+
+    function removeItem(idx) { purchaseCart.splice(idx, 1); updateTable(); }
+
+    async function savePurchaseOrder() {
+        if (!purchaseCart.length) return showToast("Cart is empty!", "danger");
+        const supplier = document.getElementById('purSupplier').value;
+        if (!supplier) return showToast("Supplier required!", "danger");
+
+        const btn = document.getElementById('saveBtn');
+        btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+
+        try {
+            for (const item of purchaseCart) {
+                const payload = {
+                    action: "savePurchase",
+                    date: document.getElementById('purDate').value,
+                    supplier: supplier,
+                    note: document.getElementById('purNote').value,
+                    ...item,
+                    // --- ইউজার আইডি ও নাম পাঠানো হচ্ছে ---
+                    operatorName: activeUser.name,
+                    operatorId: activeUser.id
+                };
+                await fetch(WEB_APP_URL, { method: "POST", body: JSON.stringify(payload) });
+            }
+            showToast("Voucher Saved!", "success");
+            purchaseCart = []; updateTable(); 
+            document.getElementById('purSupplier').value = ""; document.getElementById('purNote').value = "";
+        } catch (err) {
+            showToast("Save error!", "danger");
+        } finally {
+            btn.disabled = false; btn.innerHTML = '<i class="fas fa-save me-2"></i> Save Voucher';
+        }
+    }
+
+    document.addEventListener('click', e => {
+        if (!e.target.closest('.position-relative')) document.querySelectorAll('.suggestion-box').forEach(b => b.style.display = 'none');
+    });
+
+    // ইনিশিয়ালাইজেশন কল
+    window.onload = initPurchase;
+</script>
+</body>
+
+</html>
+
+

@@ -1,0 +1,796 @@
+<!doctype html>
+<html lang="bn">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <title>Data Entry Auto</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;700;900&display=swap");
+
+      body {
+        font-family: "Noto Sans Bengali", sans-serif;
+        background-color: #f8fafc;
+        color: #1e293b;
+      }
+
+      @media print {
+        @page {
+          size: A4;
+          margin: 10mm;
+        }
+        body {
+          background-color: white;
+          padding: 0;
+        }
+        .no-print {
+          display: none !important;
+        }
+        .print-container {
+          box-shadow: none !important;
+          border: none !important;
+          width: 100% !important;
+          max-width: 100% !important;
+          padding: 0 !important;
+        }
+        .bank-table {
+          border: 2pt solid black !important;
+          width: 100% !important;
+        }
+        .bank-table th,
+        .bank-table td {
+          border: 1pt solid black !important;
+          color: black !important;
+          padding: 4px !important;
+        }
+        input {
+          border: none !important;
+          background: transparent !important;
+        }
+      }
+
+      .bank-table input {
+        width: 100%;
+        border: none;
+        background: transparent;
+        padding: 8px 4px;
+        font-size: 14px;
+        text-align: inherit;
+      }
+      .bank-table input:focus {
+        outline: none;
+        background: #f0f7ff;
+      }
+
+      .suggestions-container {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: white;
+        border: 1px solid #e2e8f0;
+        border-radius: 0 0 12px 12px;
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+        z-index: 1000;
+        max-height: 250px;
+        overflow-y: auto;
+        display: none;
+      }
+
+      .suggestion-item {
+        padding: 12px 16px;
+        cursor: pointer;
+        border-bottom: 1px solid #f1f5f9;
+        transition: all 0.2s;
+      }
+
+      .suggestion-item:hover {
+        background-color: #eff6ff;
+        padding-left: 20px;
+      }
+
+      #loadingOverlay,
+      #successOverlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        z-index: 5000;
+        align-items: center;
+        justify-content: center;
+        backdrop-filter: blur(6px);
+        background: rgba(15, 23, 42, 0.7);
+      }
+
+      .loader {
+        border: 3px solid #e2e8f0;
+        border-top: 3px solid #2563eb;
+        border-radius: 50%;
+        width: 20px;
+        height: 20px;
+        animation: spin 0.8s linear infinite;
+        display: inline-block;
+      }
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      input::-webkit-outer-spin-button,
+      input::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+      }
+    </style>
+  </head>
+  <body class="p-2 md:p-6 lg:p-10">
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay">
+      <div
+        class="bg-white p-8 rounded-2xl shadow-2xl flex flex-col items-center"
+      >
+        <div class="loader !w-12 !h-12 mb-4"></div>
+        <p class="font-bold text-slate-600">
+         Dta Loading Please Wait
+        </p>
+      </div>
+    </div>
+
+    <!-- Success Modal -->
+    <div id="successOverlay">
+      <div
+        class="bg-white p-8 rounded-3xl text-center max-w-xs w-full shadow-2xl"
+      >
+        <div
+          class="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-6 text-4xl shadow-inner"
+        >
+          ✓
+        </div>
+        <h2 class="text-2xl font-black text-slate-800 mb-2">Successfull!</h2>
+        <p class="text-gray-500 mb-8 font-medium">
+          Update Ok
+        </p>
+        <button
+          onclick="closeSuccess()"
+          class="w-full bg-slate-900 text-white py-4 rounded-2xl font-bold hover:bg-black transition-all shadow-lg active:scale-95"
+        >
+         Ok
+        </button>
+      </div>
+    </div>
+
+    <!-- Main Container -->
+    <div
+      class="max-w-5xl mx-auto bg-white p-4 md:p-10 rounded-3xl shadow-xl border border-slate-200 print-container relative"
+    >
+      <!-- App Header -->
+      <div
+        class="flex flex-col md:flex-row justify-between items-start border-b-4 border-blue-900 pb-8 mb-8 gap-4"
+      >
+        <div class="w-full">
+          <input
+            type="text"
+            id="companyName"
+            class="text-3xl md:text-5xl font-black text-blue-900 mb-2 w-full focus:outline-none bg-transparent hover:bg-blue-50 rounded px-1 transition-all"
+            value="YOUER INSTITUTION NAME "
+          />
+          <div class="flex items-center gap-2">
+            <span class="w-8 h-1 bg-blue-600"></span>
+            <p
+              class="text-slate-400 font-bold tracking-widest uppercase text-sm"
+            >
+              Customer Data Entry System
+            </p>
+          </div>
+        </div>
+        <div class="text-right flex flex-col items-end w-full md:w-auto">
+          <h2
+            class="text-xl md:text-2xl font-black text-slate-800 border-b-2 border-slate-800 mb-2 pb-1"
+          >
+            Cutomer Panel Auto
+          </h2>
+          <div class="flex items-center gap-2 no-print">
+            <span
+              class="w-2 h-2 rounded-full bg-green-500 animate-pulse"
+            ></span>
+            <span class="text-[10px] font-bold text-slate-400 uppercase"
+              >Live Database Connection</span
+            >
+          </div>
+        </div>
+      </div>
+
+      <!-- Control Panel -->
+      <div
+        class="mb-10 bg-slate-50 p-4 md:p-8 rounded-2xl border border-slate-200 no-print"
+      >
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+          <div class="relative">
+            <label
+              class="block text-xs font-black text-slate-500 uppercase mb-2 ml-1"
+              >Search Customer</label
+            >
+            <div class="relative group">
+              <input
+                type="text"
+                id="searchBox"
+                placeholder="কোড বা মোবাইল দিয়ে খুঁজুন..."
+                oninput="showSuggestions(this.value)"
+                onkeydown="
+                  if (event.key === 'Enter') executeSearch(this.value);
+                "
+                class="w-full bg-white border-2 border-slate-200 rounded-xl px-5 py-4 font-bold focus:border-blue-500 focus:ring-4 focus:ring-blue-100 outline-none text-lg transition-all shadow-sm"
+              />
+              <div id="suggestionsBox" class="suggestions-container"></div>
+              <div
+                class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-blue-500"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="h-6 w-6"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="3"
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                  />
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label
+                class="block text-xs font-black text-slate-500 uppercase mb-2 ml-1"
+                >Customer Code</label
+              >
+              <input
+                type="text"
+                id="cod"
+                readonly
+                class="w-full bg-slate-200 border-none rounded-xl px-5 py-4 font-black text-blue-900 text-center outline-none"
+              />
+            </div>
+            <div>
+              <label
+                class="block text-xs font-black text-slate-500 uppercase mb-2 ml-1"
+                >Opening Balance</label
+              >
+              <input
+                type="number"
+                id="openingBalance"
+                readonly
+                class="w-full bg-blue-100 border-none rounded-xl px-5 py-4 font-black text-blue-700 text-right outline-none text-xl"
+              />
+            </div>
+          </div>
+        </div>
+
+        <!-- কাস্টমার ডিটেইলস গ্রিড (D থেকে I কলামের জন্য ইনপুট) -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          <div
+            class="p-3 bg-white rounded-xl border border-slate-100 shadow-sm"
+          >
+            <label
+              class="text-[10px] font-black text-slate-400 block mb-1 uppercase"
+              >Customer Name </label
+            >
+            <input
+              type="text"
+              id="custName"
+              readonly
+              class="w-full font-bold text-slate-700 outline-none bg-transparent"
+            />
+          </div>
+          <div
+            class="p-3 bg-white rounded-xl border border-slate-100 shadow-sm"
+          >
+            <label
+              class="text-[10px] font-black text-slate-400 block mb-1 uppercase"
+              >Mobile No</label
+            >
+            <input
+              type="text"
+              id="mobile"
+              readonly
+              class="w-full font-bold text-slate-700 outline-none bg-transparent"
+            />
+          </div>
+          <div
+            class="p-3 bg-white rounded-xl border border-slate-100 shadow-sm"
+          >
+            <label
+              class="text-[10px] font-black text-slate-400 block mb-1 uppercase"
+              >Area Name</label
+            >
+            <input
+              type="text"
+              id="area"
+              readonly
+              class="w-full font-bold text-slate-700 outline-none bg-transparent"
+            />
+          </div>
+          <div
+            class="p-3 bg-white rounded-xl border border-slate-100 shadow-sm"
+          >
+            <label
+              class="text-[10px] font-black text-slate-400 block mb-1 uppercase"
+              >Address</label
+            >
+            <input
+              type="text"
+              id="address"
+              readonly
+              class="w-full font-bold text-slate-700 outline-none bg-transparent"
+            />
+          </div>
+          <div
+            class="p-3 bg-white rounded-xl border border-slate-100 shadow-sm"
+          >
+            <label
+              class="text-[10px] font-black text-slate-400 block mb-1 uppercase"
+              >Customer Type</label
+            >
+            <input
+              type="text"
+              id="custType"
+              readonly
+              class="w-full font-bold text-slate-700 outline-none bg-transparent"
+            />
+          </div>
+          <div
+            class="p-3 bg-white rounded-xl border border-slate-100 shadow-sm"
+          >
+            <label
+              class="text-[10px] font-black text-slate-400 block mb-1 uppercase"
+              >Payment Type </label
+            >
+            <input
+              type="text"
+              id="payType"
+              readonly
+              class="w-full font-bold text-slate-700 outline-none bg-transparent"
+            />
+          </div>
+        </div>
+
+        <div
+          class="flex items-center gap-4 bg-white p-4 rounded-xl border border-slate-100"
+        >
+          <span
+            class="text-xs font-black text-blue-600 bg-blue-50 px-2 py-1 rounded"
+            >IN WORDS</span
+          >
+          <span id="inwordText" class="text-sm font-bold text-slate-600 italic"
+            ></span
+          >
+        </div>
+      </div>
+
+      <!-- Ledger Table -->
+      <div class="overflow-x-auto rounded-xl border-2 border-slate-900">
+        <table class="w-full border-collapse bank-table text-sm">
+          <thead class="bg-slate-900 text-white">
+            <tr>
+              <th class="p-4 w-32">তারিখ</th>
+              <th class="p-4 text-left">বিবরণ </th>
+              <th class="p-4 w-28 bg-green-800">জমা</th>
+              <th class="p-4 w-28 bg-red-800">খরচ</th>
+              <th class="p-4 w-36 bg-blue-900">ব্যালেন্স</th>
+              <th class="p-2 no-print w-10"></th>
+            </tr>
+          </thead>
+          <tbody id="statementBody" class="font-medium"></tbody>
+          <tfoot class="bg-slate-100 border-t-2 border-slate-900">
+            <tr class="font-black text-slate-900">
+              <td colspan="2" class="p-4 text-right text-base">
+                GRAND TOTAL:
+              </td>
+              <td
+                id="totalDeposit"
+                class="p-4 text-right text-green-700 bg-green-50"
+              >
+              
+              </td>
+              <td
+                id="totalExpense"
+                class="p-4 text-right text-red-700 bg-red-50"
+              >
+              
+              </td>
+              <td
+                id="finalBalance"
+                class="p-4 text-right text-blue-900 text-xl bg-blue-50"
+              >
+              
+              </td>
+              <td class="no-print"></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+
+      <!-- Action Buttons -->
+      <div
+        class="mt-10 flex flex-col sm:flex-row justify-between items-center gap-4 no-print"
+      >
+        <div class="flex gap-3 w-full sm:w-auto">
+          <button
+            onclick="addRow(true)"
+            class="flex-1 sm:flex-none bg-blue-600 text-white px-8 py-3 rounded-2xl font-black text-xl hover:bg-blue-700 shadow-lg shadow-blue-200 transition-all active:scale-95"
+          >
+            +
+          </button>
+          <button
+            onclick="window.print()"
+            class="flex-1 sm:flex-none bg-slate-800 text-white px-6 py-3 rounded-2xl font-bold hover:bg-slate-950 transition-all flex items-center justify-center gap-2"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-5 w-5"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"
+              />
+            </svg>
+            Print
+          </button>
+        </div>
+        <button
+          id="saveBtn"
+          onclick="saveData()"
+          class="w-full sm:w-auto bg-green-600 text-white px-12 py-4 rounded-2xl font-black hover:bg-green-700 shadow-xl shadow-green-100 transition-all active:scale-95 flex items-center justify-center gap-3 border-b-4 border-green-800"
+        >
+          <span>SAVE</span>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-6 w-6"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="3"
+              d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"
+            />
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <script>
+      const SCRIPT_URL =
+        "https://script.google.com/macros/s/AKfycbzSiABmuyJ0iBvvkpmjs83Rl30mv6oXCuRtzogZDsu3L35FU7JAbDZY_fMKTndwvx68/exec";
+
+      let allCustomers = [];
+
+      window.onload = function () {
+        resetForm();
+        loadInitialData();
+      };
+
+      function numberToWords(num) {
+        const ones = [
+          "",
+          "One",
+          "Two",
+          "Three",
+          "Four",
+          "Five",
+          "Six",
+          "Seven",
+          "Eight",
+          "Nine",
+          "Ten",
+          "Eleven",
+          "Twelve",
+          "Thirteen",
+          "Fourteen",
+          "Fifteen",
+          "Sixteen",
+          "Seventeen",
+          "Eighteen",
+          "Nineteen",
+        ];
+        const tens = [
+          "",
+          "",
+          "Twenty",
+          "Thirty",
+          "Forty",
+          "Fifty",
+          "Sixty",
+          "Seventy",
+          "Eighty",
+          "Ninety",
+        ];
+        if (num <= 0) return "Zero Taka Only";
+        function convert(n) {
+          if (n < 20) return ones[n];
+          if (n < 100)
+            return (
+              tens[Math.floor(n / 10)] +
+              (n % 10 !== 0 ? " " + ones[n % 10] : "")
+            );
+          if (n < 1000)
+            return (
+              ones[Math.floor(n / 100)] +
+              " Hundred" +
+              (n % 100 !== 0 ? " and " + convert(n % 100) : "")
+            );
+          if (n < 100000)
+            return (
+              convert(Math.floor(n / 1000)) +
+              " Thousand" +
+              (n % 1000 !== 0 ? " " + convert(n % 1000) : "")
+            );
+          return (
+            convert(Math.floor(n / 100000)) +
+            " Lakh" +
+            (n % 100000 !== 0 ? " " + convert(n % 100000) : "")
+          );
+        }
+        return convert(Math.floor(num)) + " Taka Only";
+      }
+
+      async function loadInitialData() {
+        try {
+          const res = await fetch(`${SCRIPT_URL}?action=getSalesMasterData`);
+          const data = await res.json();
+          if (Array.isArray(data)) {
+            allCustomers = data
+              .slice(1)
+              .map((row) => ({
+                cod: row[2] ? row[2].toString() : "",
+                name: row[3] ? row[3].toString() : "",
+                mobile: row[4] ? row[4].toString() : "",
+                area: row[5] ? row[5].toString() : "",
+                address: row[6] ? row[6].toString() : "",
+                custType: row[7] ? row[7].toString() : "",
+                payType: row[8] ? row[8].toString() : "",
+                balance: row[12] ? row[12].toString() : "",
+              }))
+              .filter((c) => c.cod);
+          }
+        } catch (e) {
+          console.error("Initial Load Error:", e);
+        }
+      }
+
+      function showSuggestions(val) {
+        const box = document.getElementById("suggestionsBox");
+        if (!val || val.length < 1) {
+          box.style.display = "none";
+          return;
+        }
+
+        const sVal = val.toLowerCase();
+        const filtered = allCustomers
+          .filter(
+            (c) =>
+              c.cod.toLowerCase().includes(sVal) ||
+              c.mobile.includes(sVal) ||
+              c.name.toLowerCase().includes(sVal),
+          )
+          .slice(0, 10);
+
+        if (filtered.length === 0) {
+          box.style.display = "none";
+          return;
+        }
+
+        box.innerHTML = filtered
+          .map(
+            (c) => `
+        <div class="suggestion-item" onclick="selectSuggestion('${c.cod}')">
+            <div class="flex justify-between items-center">
+                <span class="font-black text-blue-900">${c.cod}</span>
+                <span class="text-[10px] bg-slate-100 px-2 py-0.5 rounded font-bold">${c.area}</span>
+            </div>
+            <div class="flex justify-between text-sm mt-1">
+                <span class="text-slate-600 font-bold">${c.name}</span>
+                <span class="text-blue-500 font-medium">${c.mobile}</span>
+            </div>
+        </div>
+    `,
+          )
+          .join("");
+        box.style.display = "block";
+      }
+
+      function selectSuggestion(cod) {
+        document.getElementById("searchBox").value = cod;
+        document.getElementById("suggestionsBox").style.display = "none";
+        executeSearch(cod);
+      }
+
+      async function executeSearch(query) {
+        if (!query) return;
+        document.getElementById("loadingOverlay").style.display = "flex";
+
+        try {
+          const res = await fetch(
+            `${SCRIPT_URL}?action=searchCustomer&query=${encodeURIComponent(query)}`,
+          );
+          const data = await res.json();
+          document.getElementById("loadingOverlay").style.display = "none";
+
+          if (data && data.status === "success" && data.customer) {
+            applyCustomerData(data.customer);
+          } else {
+            alert("দুঃখিত! কোনো তথ্য পাওয়া যায়নি।");
+          }
+        } catch (e) {
+          document.getElementById("loadingOverlay").style.display = "none";
+          alert("সার্ভারের সাথে যোগাযোগ করতে সমস্যা হচ্ছে।");
+        }
+      }
+
+      function applyCustomerData(customer) {
+        document.getElementById("cod").value = customer.cod;
+        document.getElementById("custName").value = customer.name;
+        document.getElementById("mobile").value = customer.mobile;
+        document.getElementById("area").value = customer.area;
+        document.getElementById("address").value = customer.address || "-";
+        document.getElementById("custType").value = customer.custType || "-";
+        document.getElementById("payType").value = customer.payType || "-";
+        document.getElementById("openingBalance").value = customer.balance || 0;
+        document.getElementById("searchBox").value = "";
+        calculateStatement();
+      }
+
+      function addRow(focus = false) {
+        const tbody = document.getElementById("statementBody");
+        const row = document.createElement("tr");
+        row.className =
+          "border-b border-slate-200 hover:bg-slate-50 transition-colors";
+        row.innerHTML = `
+      <td class="border-r border-slate-900"><input type="text" class="text-center" value="${new Date().toLocaleDateString("en-GB")}"></td>
+      <td class="border-r border-slate-900"><input type="text" placeholder="বিবরণ লিখুন..." class="text-left font-bold text-slate-700"></td>
+      <td class="border-r border-slate-900 bg-green-50"><input type="number" class="deposit-input text-right font-black text-green-700" oninput="calculateStatement()" value=""></td>
+      <td class="border-r border-slate-900 bg-red-50"><input type="number" class="expense-input text-right font-black text-red-700" oninput="calculateStatement()" value=""></td>
+      <td class="text-right px-4 py-3 font-black text-blue-900 bg-blue-50 row-balance">0.00</td>
+      <td class="no-print"><button onclick="this.closest('tr').remove(); calculateStatement();" class="text-red-400 hover:text-red-600 font-bold p-2 transition-colors">×</button></td>
+    `;
+        tbody.appendChild(row);
+        if (focus) row.querySelector(".deposit-input").focus();
+      }
+
+      function calculateStatement() {
+        const opening =
+          parseFloat(document.getElementById("openingBalance").value) || 0;
+        let running = opening;
+        let td = 0,
+          te = 0;
+
+        document.querySelectorAll("#statementBody tr").forEach((row) => {
+          const d = parseFloat(row.querySelector(".deposit-input").value) || 0;
+          const e = parseFloat(row.querySelector(".expense-input").value) || 0;
+          td += d;
+          te += e;
+          running = running + e - d;
+          const balEl = row.querySelector(".row-balance");
+          balEl.innerText = running.toFixed(2);
+          balEl.className = `text-right px-4 py-3 font-black bg-blue-50 row-balance ${running < 0 ? "text-red-600" : "text-blue-900"}`;
+        });
+
+        document.getElementById("totalDeposit").innerText = td.toFixed(2);
+        document.getElementById("totalExpense").innerText = te.toFixed(2);
+        const finalBalEl = document.getElementById("finalBalance");
+        finalBalEl.innerText = running.toFixed(2);
+        finalBalEl.className = `p-4 text-right text-xl bg-blue-50 ${running < 0 ? "text-red-600" : "text-blue-900"}`;
+        document.getElementById("inwordText").innerText = numberToWords(
+          Math.abs(running),
+        );
+      }
+
+      async function saveData() {
+        const cod = document.getElementById("cod").value;
+        const finalBalValue =
+          parseFloat(document.getElementById("finalBalance").innerText) || 0;
+        const totalDeposit =
+          parseFloat(document.getElementById("totalDeposit").innerText) || 0;
+
+        if (!cod) {
+          alert("দয়া করে একজন কাস্টমার সিলেক্ট করুন।");
+          return;
+        }
+
+        const btn = document.getElementById("saveBtn");
+        btn.disabled = true;
+        const originalContent = btn.innerHTML;
+        btn.innerHTML = '<span class="loader !w-5 !h-5"></span> UPDATING...';
+
+        // ব্যালেন্স অনুযায়ী স্ট্যাটাস লজিক (K কলামের জন্য)
+        let colKStatus = finalBalValue === 0 ? "FULL PAID" : "UNPAID";
+        // N কলামের জন্য (PAID/UNPAID)
+        let colNStatus = finalBalValue === 0 ? "PAID" : "UNPAID";
+
+        const payload = {
+          action: "saveLedger",
+          cod: cod,
+          name: document.getElementById("custName").value,
+          mobile: document.getElementById("mobile").value,
+          area: document.getElementById("area").value,
+          address: document.getElementById("address").value,
+          custType: document.getElementById("custType").value,
+          payType: document.getElementById("payType").value,
+          receivedAmount: totalDeposit,
+          finalBalance: finalBalValue.toFixed(2),
+          statusN: colNStatus, // N কলামের জন্য
+          statusK: colKStatus, // K কলামের জন্য (FULL PAID/UNPAID)
+        };
+
+        try {
+          const response = await fetch(SCRIPT_URL, {
+            method: "POST",
+            headers: { "Content-Type": "text/plain;charset=utf-8" },
+            body: JSON.stringify(payload),
+          });
+          const result = await response.json();
+          if (result.status === "success") {
+            document.getElementById("successOverlay").style.display = "flex";
+          } else {
+            alert("সার্ভার এরর: " + (result.message || "Unknown error"));
+          }
+        } catch (e) {
+          alert("সেভ করতে সমস্যা হয়েছে! ইন্টারনেট কানেকশন চেক করুন।");
+        } finally {
+          btn.disabled = false;
+          btn.innerHTML = originalContent;
+        }
+      }
+
+      function resetForm() {
+        document.getElementById("statementBody").innerHTML = "";
+        [
+          "cod",
+          "custName",
+          "mobile",
+          "area",
+          "address",
+          "custType",
+          "payType",
+          "openingBalance",
+          "searchBox",
+        ].forEach((id) => {
+          const el = document.getElementById(id);
+          if (el) el.value = "";
+        });
+        addRow();
+        calculateStatement();
+      }
+
+      function closeSuccess() {
+        document.getElementById("successOverlay").style.display = "none";
+        resetForm();
+        loadInitialData();
+      }
+
+      document.addEventListener("click", function (e) {
+        if (
+          !e.target.closest("#searchBox") &&
+          !e.target.closest("#suggestionsBox")
+        ) {
+          document.getElementById("suggestionsBox").style.display = "none";
+        }
+      });
+    </script>
+  </body>
+</html>

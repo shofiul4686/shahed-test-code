@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <base target="_top">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+     <link rel="icon" type="image/png" href="store.png">
+    <title>Stock Report</title>
+    <style>
+        :root {
+            --primary: #1a73e8;
+            --secondary: #e67e22;
+            --success: #27ae60;
+            --danger: #e74c3c;
+            --dark: #2c3e50;
+            --light: #f8f9fa;
+        }
+
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background-color: #f0f2f5; margin: 0; padding: 20px; }
+        .container { max-width: 1200px; margin: auto; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        
+        .header-section { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; flex-wrap: wrap; gap: 15px; }
+        h2 { color: var(--primary); margin: 0; border-left: 5px solid var(--primary); padding-left: 12px; }
+        
+        .action-area { display: flex; gap: 10px; flex-grow: 1; justify-content: flex-end; }
+        #searchInput { padding: 12px; border: 1px solid #ddd; border-radius: 8px; width: 100%; max-width: 300px; font-size: 15px; }
+
+        .btn-purchase { background-color: var(--secondary); color: white; padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.3s; }
+        .btn-purchase:hover { background-color: #d35400; }
+
+        /* টেবিল ডিজাইন */
+        .table-wrapper { max-height: 750px; overflow-y: auto; border: 1px solid #eee; border-radius: 8px; }
+        table { width: 100%; border-collapse: collapse; min-width: 800px; }
+        th { background-color: var(--primary); color: white; padding: 12px; text-align: left; position: sticky; top: 0; z-index: 10; font-size: 14px; }
+        td { padding: 12px; border-bottom: 1px solid #eee; font-size: 14px; }
+        tr:hover { background-color: #f1f8ff; }
+
+        /* মডাল ডিজাইন */
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(2px); }
+        .modal-content { background: white; margin: 3% auto; padding: 25px; border-radius: 12px; width: 90%; max-width: 1000px; max-height: 85vh; overflow-y: auto; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 20px; }
+        .close { font-size: 28px; cursor: pointer; color: #888; }
+        
+        .filter-bar { display: flex; gap: 10px; align-items: center; background: #f9f9f9; padding: 15px; border-radius: 8px; margin-bottom: 15px; }
+        .filter-bar input { padding: 8px; border: 1px solid #ddd; border-radius: 4px; }
+        .btn-fetch { background: var(--success); color: white; border: none; padding: 9px 20px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+
+        #pStatus { padding: 10px; border-radius: 5px; margin-bottom: 10px; font-weight: bold; text-align: center; display: none; }
+        #loader { text-align: center; padding: 50px; font-size: 18px; color: var(--primary); }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header-section">
+        <h2>Stock Report</h2>
+        <div class="action-area">
+            <input type="text" id="searchInput" onkeyup="filterInventory()" placeholder="Search ...">
+            <button class="btn-purchase" onclick="openModal()">🧾 Purchase Report</button>
+        </div>
+    </div>
+
+    <div id="loader">Loading Please Wait...</div>
+
+    <div class="table-wrapper" id="inventoryBox" style="display:none;">
+        <table id="inventoryTable">
+            <thead id="invHead"></thead>
+            <tbody id="invBody"></tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Purchase Modal -->
+<div id="purchaseModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Purcrss Report</h3>
+            <span class="close" onclick="closeModal()">&times;</span>
+        </div>
+        
+        <div class="filter-bar">
+            <label>Date:</label>
+            <input type="date" id="targetDate">
+            <button class="btn-fetch" onclick="loadPurchaseRecords()">Show</button>
+        </div>
+
+        <div id="pStatus"></div>
+
+        <div class="table-wrapper">
+            <table id="purchaseTable">
+                <thead id="pHead"></thead>
+                <tbody id="pBody"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    // আপনার Web App URL এখানে দিন
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzkDCX5zax-NuoSKRSxJIjL9Rx4MbtVxvm5QlrOEIxrTR-s3sVuRHJy_ISNIm3ehDYs/exec";
+
+    // শুরুতে ইনভেন্টরি ডাটা লোড
+    window.onload = () => {
+        document.getElementById('targetDate').value = new Date().toISOString().split('T')[0];
+        fetchInventory();
+    };
+
+    // ইনভেন্টরি ডাটা আনার নতুন ফাংশন
+    function fetchInventory() {
+        fetch(`${WEB_APP_URL}?action=getFilteredData`)
+            .then(res => res.json())
+            .then(data => showInventory(data))
+            .catch(err => console.error("Error fetching inventory:", err));
+    }
+
+    function showInventory(data) {
+        const head = document.getElementById('invHead');
+        const body = document.getElementById('invBody');
+        
+        if (data && data.length > 0) {
+            head.innerHTML = "<tr>" + data[0].map(h => `<th>${h}</th>`).join('') + "</tr>";
+            let rows = "";
+            for (let i = 1; i < data.length; i++) {
+                rows += "<tr>" + data[i].map(c => `<td>${c}</td>`).join('') + "</tr>";
+            }
+            body.innerHTML = rows;
+            document.getElementById('loader').style.display = 'none';
+            document.getElementById('inventoryBox').style.display = 'block';
+        }
+    }
+
+    function filterInventory() {
+        let val = document.getElementById("searchInput").value.toUpperCase();
+        let rows = document.getElementById("invBody").rows;
+        for (let row of rows) {
+            row.style.display = row.innerText.toUpperCase().includes(val) ? "" : "none";
+        }
+    }
+
+    function openModal() { document.getElementById('purchaseModal').style.display = 'block'; }
+    function closeModal() { document.getElementById('purchaseModal').style.display = 'none'; }
+
+    // পারচেজ রেকর্ড লোড করার আপডেট ফাংশন
+    function loadPurchaseRecords() {
+        const date = document.getElementById('targetDate').value;
+        const status = document.getElementById('pStatus');
+        const pHead = document.getElementById('pHead');
+        const pBody = document.getElementById('pBody');
+
+        status.style.display = 'block';
+        status.innerText = "সার্ভার থেকে ডাটা আনা হচ্ছে...";
+        status.style.background = "#e8f0fe";
+        status.style.color = "#1a73e8";
+        pHead.innerHTML = "";
+        pBody.innerHTML = "";
+
+        // fetch ব্যবহার করে সার্ভার থেকে ডাটা আনা
+        fetch(`${WEB_APP_URL}?action=getPurchaseDataByDate&date=${date}`)
+            .then(res => res.json())
+            .then(res => {
+                if (res.error) {
+                    status.innerText = res.error;
+                    status.style.background = "#fee8e8";
+                    status.style.color = "red";
+                } else if (res.rows && res.rows.length > 0) {
+                    pHead.innerHTML = "<tr>" + res.headers.map(h => `<th>${h}</th>`).join('') + "</tr>";
+                    pBody.innerHTML = res.rows.map(row => 
+                        "<tr>" + row.map((cell, idx) => {
+                            if (idx === 0 && cell) {
+                                let d = new Date(cell);
+                                return `<td>${!isNaN(d) ? d.toLocaleDateString('en-GB') : cell}</td>`;
+                            }
+                            return `<td>${cell}</td>`;
+                        }).join('') + "</tr>"
+                    ).join('');
+                    status.innerText = res.rows.length + " টি রেকর্ড পাওয়া গেছে।";
+                    status.style.background = "#e8fee8";
+                    status.style.color = "green";
+                } else {
+                    status.innerText = "উক্ত তারিখে কোনো রেকর্ড নেই।";
+                    status.style.background = "#fff3cd";
+                    status.style.color = "#856404";
+                }
+            })
+            .catch(err => {
+                status.innerText = "Error: " + err.message;
+                status.style.background = "#fee8e8";
+                status.style.color = "red";
+            });
+    }
+
+    window.onclick = (e) => {
+        if (e.target == document.getElementById('purchaseModal')) closeModal();
+    }
+</script>
+</body>
+
+</html>

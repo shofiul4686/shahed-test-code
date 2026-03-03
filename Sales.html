@@ -1,0 +1,971 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="sale.png">
+    <title>Sales Invoice</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* --- নতুন Wrapper স্টাইল --- */
+        .page-container {
+            max-width: 1200px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+       body { 
+        background-color: hsla(213, 93%, 11%, 0.918); /* এখানে আপনার পছন্দমতো কালার কোড দিন */
+        font-family: 'Segoe UI', Tahoma, sans-serif; 
+    }
+        
+        input:disabled, button:disabled, select:disabled {
+            background-color: #e9ecef !important;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+        .list-group-item.active-item {
+            background-color: #0d6efd !important;
+            color: white !important;
+        }
+        .customer-detail-section {
+            background: #fdfdfd; border: 1px solid #dee2e6;
+            border-radius: 8px; padding: 15px; margin-top: 15px;
+            box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);
+        }
+        .customer-detail-section label {
+            font-size: 0.7rem; text-transform: uppercase;
+            letter-spacing: 0.5px; color: #6c757d; margin-bottom: 2px;
+            font-weight: bold;
+        }
+        .pointer { cursor: pointer; }
+        .z-3 { z-index: 1050; }
+        
+        #loader-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255,255,255,0.8); display: flex;
+            flex-direction: column; justify-content: center; align-items: center; z-index: 9999;
+        }
+        
+        .header-section {
+            background: #fff; padding: 20px; border-radius: 10px;
+            border: 1px solid #eee; box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+        }
+        .success-icon { font-size: 60px; color: #28a745; margin-bottom: 15px; }
+        .inv-badge-large {
+            font-size: 1.5rem; background: #e9f7ef; color: #1e7e34;
+            padding: 10px 20px; border-radius: 50px; border: 2px dashed #28a745;
+            display: inline-block; margin-bottom: 15px;
+            position: relative;
+        }
+        .paid-stamp {
+            display: none;
+            width: 100px;
+            height: 100px;
+            border: 4px double #28a745;
+            border-radius: 50%;
+            color: #28a745;
+            font-family: 'Segoe UI', sans-serif;
+            font-weight: 900;
+            font-size: 20px;
+            line-height: 92px;
+            text-align: center;
+            text-transform: uppercase;
+            position: absolute;
+            top: -20px;
+            right: -40px;
+            transform: rotate(-25deg);
+            background-color: rgba(255, 255, 255, 0.9);
+            box-shadow: 0 0 0 4px #fff;
+            animation: stampAnim 0.3s cubic-bezier(.175, .885, .32, 1.275) forwards;
+            z-index: 10;
+        }
+        @keyframes stampAnim {
+            0% { transform: scale(3) rotate(-45deg); opacity: 0; }
+            100% { transform: scale(1) rotate(-25deg); opacity: 0.8; }
+        }
+        #customAlert {
+            position: fixed; top: 20px; right: 20px; z-index: 10000; display: none;
+            min-width: 250px;
+        }
+        #printArea { display: none; }
+        @media print {
+            body * { visibility: hidden; }
+            #printArea, #printArea * { visibility: visible; }
+            #printArea { position: absolute; left: 0; top: 0; width: 100%; display: block; background: white; padding: 20px; }
+            .print-paid-stamp {
+                display: block !important;
+                border: 4px double #28a745;
+                color: #28a745;
+                border-radius: 50%;
+                width: 80px;
+                height: 80px;
+                text-align: center;
+                line-height: 72px;
+                font-weight: bold;
+                font-size: 18px;
+                transform: rotate(-20deg);
+                position: absolute;
+                right: 50px;
+                top: 50px;
+                opacity: 0.6;
+            }
+        }
+        /* এনিমেশন সেটআপ */
+.user-footer-info {
+    display: inline-block;
+    white-space: nowrap;
+    padding-left: 100%; /* স্ক্রিনের বাইরে থেকে শুরু হবে */
+    animation: smoothScroll 20s linear infinite; /* ২০ সেকেন্ড সময় নিবে একপাশ থেকে অন্যপাশে যেতে */
+    font-size: 14px;
+    color: #333;
+}
+
+/* টেক্সট যদি আরও ধীর করতে চান, তাহলে 20s বাড়িয়ে 30s করে দিন */
+@keyframes smoothScroll {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-100%); }
+}
+         <div class="user-footer-wrapper">
+    <div class="user-footer-info">
+        <i class="fas fa-user-circle me-2"></i>
+        <span>User Name: <strong id="footerUserName">Loading...</strong> | User ID: <strong id="footerUserId">Loading...</strong></span>
+    </div>
+</div>
+        /* প্রিন্ট এর জন্য স্পেশাল CSS */
+    @media print {
+        #printArea {
+            display: flex;
+            flex-direction: column;
+            min-height: 95vh; /* পুরো পাতার উচ্চতা নিবে */
+        }
+        
+        .print-footer {
+            margin-top: auto; /* এটি সিগনেচার বক্সকে সবসময় নিচে ঠেলে দিবে */
+            padding-bottom: 20px;
+        }
+
+        .signature-wrapper {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            width: 100%;
+        }
+
+        .sig-box {
+            text-align: center;
+            width: 200px;
+        }
+
+        .sig-line {
+            border-top: 1px solid #000;
+            margin-bottom: 5px;
+            width: 100%;
+        }
+
+        .sig-box span {
+            font-size: 14px;
+            font-weight: bold;
+            color: #333;
+        }
+    }
+
+    /* সাধারণ স্ক্রিনে এটি দেখতে কেমন হবে (Optional) */
+    .signature-wrapper {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 50px;
+    }
+    .sig-box { text-align: center; width: 30%; }
+    .sig-line { border-top: 1px solid #000; margin-bottom: 5px; }
+        /* যেগুলোতে টাইপ করা যাবে (Editable Fields) */
+#cSearch, #pSearch, #pRate, #pQty, #paidAmount, #invDate {
+    background-color: #fdfdf0 !important; /* হালকা ক্রিম/হলুদ ভাব যাতে বোঝা যায় টাইপ করা যাবে */
+    border: 1px solid #ced4da;
+    transition: all 0.3s ease;
+}
+
+/* টাইপ করার সময় বা ক্লিক করলে কালার পরিবর্তন হবে */
+#cSearch:focus, #pSearch:focus, #pRate:focus, #pQty:focus, #paidAmount:focus {
+    background-color: #ffffff !important;
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+    outline: 0;
+}
+
+/* যেগুলো শুধু দেখানোর জন্য (Readonly Fields) */
+input[readonly] {
+    background-color: #f8f9fa !important; /* হালকা ধূসর */
+    border: 1px solid #e9ecef;
+    color: #495057;
+    cursor: default;
+}
+
+/* লেবেলের ফন্ট একটু বোল্ড করা যাতে ইউজার সহজেই পড়তে পারে */
+label.small.fw-bold {
+    color: #444 !important;
+    margin-bottom: 4px;
+}
+        .cart-footer-bg { background-color: #f8f9fa; }
+        .summary-input { max-width: 150px; text-align: right; font-weight: bold; }
+        .payment-method-select { max-width: 130px; display: inline-block; }
+        @media print {
+    tr {
+        page-break-inside: avoid; /* টেবিলের রো যাতে মাঝখান দিয়ে কেটে না যায় */
+    }
+    .print-footer {
+        page-break-before: auto;
+    }
+}
+/* মোবাইল ডিভাইসের জন্য অপ্টিমাইজেশন (max-width: 768px) */
+@media (max-width: 768px) {
+    /* কন্টেইনারের প্যাডিং কমানো */
+    .container-fluid {
+        padding-left: 5px;
+        padding-right: 5px;
+    }
+    
+    .card {
+        padding: 10px !important;
+    }
+
+    /* ফন্ট সাইজ ছোট করা যাতে সব ফিট হয় */
+    label.small {
+        font-size: 11px !important;
+    }
+
+    .form-control, .form-select, .btn {
+        font-size: 13px !important;
+        padding: 5px 8px !important;
+    }
+
+    /* কাস্টমার ডিটেইল সেকশনকে গ্রিড আকারে সাজানো (এক লাইনে ২-৩টি তথ্য) */
+    #custDetailContainer .row {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr); /* ৩ কলামে ভাগ করা */
+        gap: 5px;
+    }
+    
+    #custDetailContainer .col-md-1, 
+    #custDetailContainer .col-md-2 {
+        width: 100% !important;
+    }
+
+    /* প্রোডাক্ট এন্ট্রি সেকশন টাইট করা */
+    .bg-light.p-3 {
+        padding: 10px !important;
+    }
+
+    /* টেবিল রেসপনসিভনেস ফিক্স */
+    .table-responsive {
+        border: 0;
+    }
+
+    .table thead {
+        font-size: 10px;
+    }
+
+    .table tbody td {
+        font-size: 11px;
+        padding: 4px !important;
+    }
+
+    /* টোটাল এবং সেভ বাটন সেকশন */
+    .cart-footer-bg td {
+        padding: 5px !important;
+        font-size: 12px !important;
+    }
+
+    #saveBtn {
+        padding: 10px !important;
+        font-size: 14px !important;
+    }
+
+    /* মারকুই বা ইউজার ইনফো ছোট করা */
+    .user-footer-info {
+        font-size: 11px;
+    }
+
+    /* ইনপুট গ্রুপ আইকন সাইজ */
+    .input-group-text {
+        padding: 0 8px;
+    }
+}
+
+/* অতিরিক্ত ছোট স্ক্রিনের জন্য (iPhone SE বা ছোট ফোন) */
+@media (max-width: 380px) {
+    #custDetailContainer .row {
+        grid-template-columns: repeat(2, 1fr); /* খুব ছোট ফোনে ২ কলাম */
+    }
+}
+    </style>
+</head>
+<body onload="initApp()">
+<div class="page-container">
+    <div class="main-invoice-card card p-4">
+<div id="customAlert" class="alert alert-warning alert-dismissible fade show shadow" role="alert">
+  <strong id="alertTitle">Warning!</strong> <span id="alertMsg"></span>
+  <button type="button" class="btn-close" onclick="document.getElementById('customAlert').style.display='none'"></button>
+</div>
+
+<div id="loader-overlay" style="display:none;">
+    <div class="spinner-border text-primary" role="status"></div>
+    <div class="mt-2 fw-bold" id="loader-text">Loading Data...</div>
+</div>
+<div class="modal fade" id="successModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow">
+      <div class="modal-body text-center p-5 position-relative">
+        <div id="modalPaidStamp" class="paid-stamp">PAID</div>
+        
+        <div class="success-icon"><i class="fas fa-check-circle"></i></div>
+        <h4 class="fw-bold text-dark mb-2">Saved Successfully!</h4>
+        <div class="inv-badge-large fw-bold" id="displayInvNo">INV-0000</div>
+        
+        <div class="d-grid gap-2 mt-4">
+            <button type="button" class="btn btn-primary btn-lg shadow-sm" onclick="handlePrintAction()">
+                <i class="fas fa-print me-2"></i>Print Invoice
+            </button>
+            <button type="button" class="btn btn-outline-secondary" onclick="closeSuccessModal()">
+                <i class="fas fa-times me-2"></i>Close
+            </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div id="printArea" style="padding: 40px; font-family: 'Calibri', sans-serif; color: #333;">
+    <div id="printPaidStamp" class="print-paid-stamp">PAID</div>
+    
+    <table style="width: 100%; border-bottom: 2px solid #2c3e50; margin-bottom: 20px;">
+        <tr>
+            <td style="width: 50%; vertical-align: top;">
+                <h1 id="pCompName" style="margin: 0; color: #2c3e50; font-size: 28px; text-transform: uppercase;">Your Company Name</h1>
+                <p style="margin: 5px 0; font-size: 14px; line-height: 1.4;">
+                    Address: Office Address Line, City<br>
+                    Mobile: 01XXXXXXXXX | Email: info@company.com
+                </p>
+            </td>
+            <td style="width: 50%; text-align: right; vertical-align: top;">
+                <h2 style="margin: 0; color: #7f8c8d; font-size: 24px;">SALES INVOICE</h2>
+                <div style="margin-top: 10px; font-size: 14px;">
+                    <strong>Invoice No:</strong> <span id="pInvNo" style="color: #2c3e50;"></span><br>
+                    <strong>Date:</strong> <span id="pDate"></span>
+                </div>
+            </td>
+        </tr>
+    </table>
+
+    <div style="background: #f9f9f9; padding: 15px; border-radius: 5px; margin-bottom: 20px; border: 1px solid #eee;">
+        <table style="width: 100%; font-size: 14px;">
+            <tr>
+                <td style="width: 15%;"><strong>Customer:</strong></td>
+                <td style="width: 35%;" id="pCName"></td>
+                <td style="width: 15%;"><strong>Mobile:</strong></td>
+                <td style="width: 35%;" id="pCMobile"></td>
+            </tr>
+        </table>
+    </div>
+
+    <table style="width: 100%; border-collapse: collapse; margin-bottom: 30px;">
+       <thead>
+    <tr style="background: #f2f2f2;">
+        <th style="border: 1px solid #333; padding: 8px;">SL</th>
+        <th style="border: 1px solid #333; padding: 8px;">CODE</th>
+        <th style="border: 1px solid #333; padding: 8px;">PRODUCT NAME</th>
+        <th style="border: 1px solid #333; padding: 8px;">PACK SIZE</th>
+        <th style="border: 1px solid #333; padding: 8px;">RATE</th>
+        <th style="border: 1px solid #333; padding: 8px;">QTY</th>
+        <th style="border: 1px solid #333; padding: 8px;">TOTAL</th>
+    </tr>
+</thead>
+        <tbody id="pCartBody" style="font-size: 13px;">
+            </tbody>
+        <tfoot>
+            <tr>
+                <td colspan="5" style="border: none;"></td>
+                <td style="border: 1px solid #ddd; padding: 8px; text-align: right; font-weight: bold; background: #f2f2f2;">Grand Total</td>
+                <td style="border: 1px solid #ddd; padding: 8px; text-align: right; font-weight: bold; background: #f2f2f2;" id="pGrandTotal"></td>
+            </tr>
+            <tr>
+                <td colspan="5" style="border: none;"></td>
+                <td style="border: 1px solid #ddd; padding: 8px; text-align: right; font-weight: bold;">Paid Amount</td>
+                <td style="border: 1px solid #ddd; padding: 8px; text-align: right; font-weight: bold;" id="pPaidAmount"></td>
+            </tr>
+            <tr>
+                <td colspan="5" style="border: none;"></td>
+                <td style="border: 1px solid #ddd; padding: 8px; text-align: right; font-weight: bold; color: #c0392b;">Due Amount</td>
+                <td style="border: 1px solid #ddd; padding: 8px; text-align: right; font-weight: bold; color: #c0392b;" id="pDueAmount"></td>
+            </tr>
+        </tfoot>
+    </table>
+<div class="print-footer">
+    <div class="signature-wrapper">
+        <div class="sig-box">
+            <div class="sig-line"></div>
+            <span>Prepared By</span>
+        </div>
+        <div class="sig-box">
+            <div class="sig-line"></div>
+            <span>Checked By</span>
+        </div>
+        <div class="sig-box">
+            <div class="sig-line"></div>
+            <span>Authorized By</span>
+        </div>
+    </div>
+</div>
+</div>
+<div class="container-fluid mt-3">
+    <div class="card p-4 shadow-sm border-0">
+        <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
+            <h5 class="text-primary m-0"><i class="fas fa-file-invoice me-2"></i>Sales Invoice Entry</h5>
+            <button id="syncBtn" class="btn btn-sm btn-outline-secondary" onclick="refreshData(true)"><i class="fas fa-sync-alt me-1"></i> Sync Data</button>
+        </div>
+        <div class="header-section">
+            <div class="row g-2 align-items-end">
+                <div class="col-md-6 position-relative">
+                    <label class="small fw-bold text-secondary">Search Customer (Code, Name or Mobile)</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-white"><i class="fas fa-search text-primary"></i></span>
+                        <input type="text" id="cSearch" class="form-control" onkeyup="handleSearch(event, 'C')" autocomplete="off" placeholder="Type customer name or code...">
+                    </div>
+                    <div id="cRes" class="list-group position-absolute w-100 shadow z-3 mt-1" style="display:none; max-height: 250px; overflow-y: auto;"></div>
+                </div>
+                <div class="col-md-3"><label class="small fw-bold text-secondary">Invoice No</label><input type="text" id="invNo" class="form-control bg-light fw-bold" readonly placeholder="Loading..."></div>
+                <div class="col-md-3"><label class="small fw-bold text-secondary">Date</label><input type="date" id="invDate" class="form-control"></div>
+            </div>
+            <div id="custDetailContainer" class="customer-detail-section">
+                <div class="row g-2">
+                    <div class="col-md-1"><label>Code</label><input type="text" id="dispCCode" class="form-control form-control-sm" readonly></div>
+                    <div class="col-md-2"><label>Name</label><input type="text" id="dispCName" class="form-control form-control-sm" readonly></div>
+                    <div class="col-md-2"><label>Mobile No</label><input type="text" id="dispCMobile" class="form-control form-control-sm" readonly></div>
+                    <div class="col-md-1"><label>Area</label><input type="text" id="dispCArea" class="form-control form-control-sm" readonly></div>
+                    <div class="col-md-2"><label>Address</label><input type="text" id="dispCAddress" class="form-control form-control-sm" readonly></div>
+                    <div class="col-md-2"><label>Type</label><input type="text" id="dispCType" class="form-control form-control-sm" readonly></div>
+                    <div class="col-md-2">
+                        <label>Payment Type</label>
+                        <input type="text" id="dispCPayment" class="form-control form-control-sm bg-light fw-bold" readonly>
+                    </div>
+                </div>
+            </div>
+            <input type="hidden" id="fCCode"><input type="hidden" id="fCName">
+        </div>
+        <div class="bg-light rounded p-3 mt-3 border">
+            <div class="row g-2 align-items-end">
+                <div class="col-md-5 position-relative">
+                    <label class="small fw-bold">Search Product (Code or Name)</label>
+                    <input type="text" id="pSearch" class="form-control" onkeyup="handleSearch(event, 'P')" autocomplete="off" placeholder="Type product code or name...">
+                    <div id="pRes" class="list-group position-absolute w-100 shadow z-3" style="display:none; max-height: 200px; overflow-y: auto;"></div>
+                </div>
+                <div class="col-md-2"><label class="small fw-bold">Rate</label><input type="number" id="pRate" class="form-control" readonly></div>
+                <div class="col-md-2">
+    <label class="small fw-bold">Quantity</label>
+    <input type="number" id="pQty" class="form-control" 
+       onkeydown="if(event.key==='Enter'){ event.preventDefault(); event.stopPropagation(); add(); return false; }">
+</div>
+                <div class="col-md-3"><button id="addBtn" type="button" class="btn btn-dark w-100 fw-bold" onclick="add()"><i class="fas fa-plus me-2"></i>Add to Cart</button></div>
+            </div>
+            <div id="prodDetailRow" class="row mt-2 d-none">
+                <div class="col-12">
+                    <span class="badge bg-info p-1 px-2 me-2" id="detCode"></span>
+                    <span class="badge bg-secondary p-1 px-2 me-2" id="detPack"></span>
+                    <span class="badge bg-warning text-dark p-1 px-2" id="detStock"></span>
+                </div>
+            </div>
+        </div>
+        <div class="mt-3">
+            <div class="table-responsive">
+                <table class="table table-bordered text-center align-middle mb-0">
+                    <thead class="table-secondary small">
+                        <tr><th>SL</th><th>Code</th><th class="text-start">Product Description</th><th>Qty</th><th>Rate</th><th>Total</th><th>Action</th></tr>
+                    </thead>
+                    <tbody id="cartTable" class="small"></tbody>
+                    <tfoot class="cart-footer-bg">
+                        <tr>
+                            <td colspan="5" class="text-end fw-bold py-2">Total Amount:</td>
+                            <td class="fw-bold text-dark fs-6 py-2" id="gTotal"></td>
+                            <td rowspan="3" class="align-middle">
+                                <button id="saveBtn" class="btn btn-primary h-100 w-100 py-3 shadow fw-bold" onclick="save()">
+                                    <i class="fas fa-save me-2"></i>SAVE (Alt+S)
+                                </button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="5" class="text-end fw-bold py-2 align-middle">
+                                Paid Status:
+                                <select id="paymentMode" class="form-select form-select-sm payment-method-select ms-2" onchange="handlePaymentModeChange()">
+    <option value="Full">Full Paid</option>
+    <option value="Part">Part Paid</option>
+    <option value="Due" selected>Due</option> 
+</select>
+                            </td>
+                            <td class="py-1">
+                                <div id="paidInputWrapper">
+                                    <input type="number" id="paidAmount" class="form-control form-control-sm summary-input mx-auto" oninput="calculateBalance()" placeholder="0.00">
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="5" class="text-end fw-bold py-2">
+                                Due Amount: 
+                                <span id="payStatus" class="badge bg-secondary ms-2" style="font-size: 0.65rem;">Pending</span>
+                            </td>
+                            <td class="fw-bold text-danger py-2" id="dueAmount"></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+    <br>
+        <!-- মেইন পেজ এর একদম নিচে ইউজারের নাম ও আইডি -->
+        <marquee behavior="alternate" direction="left">
+    <div class="user-footer-info">
+        <i class="fas fa-user-circle me-2"></i>
+        <span>User Name: <strong id="footerUserName">Loading...</strong> User ID: <strong id="footerUserId">Loading...</strong></span>
+    </div>
+</marquee>
+    </div>
+</div>
+</div>
+    </div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzkDCX5zax-NuoSKRSxJIjL9Rx4MbtVxvm5QlrOEIxrTR-s3sVuRHJy_ISNIm3ehDYs/exec"; 
+    let db = { products: [], customers: [] };
+    let cart = [];
+    let activeUser = { name: "Guest", id: "0000" };
+    let focusedIdx = -1;
+    let lastSavedData = null;
+    const successModal = new bootstrap.Modal(document.getElementById('successModal'));
+    function showAlert(msg) {
+        const alrt = document.getElementById('customAlert');
+        document.getElementById('alertMsg').innerText = msg;
+        alrt.style.display = 'block';
+        setTimeout(() => { alrt.style.display = 'none'; }, 4000);
+    }
+    function toggleInputs(isDisabled) {
+        const ids = ['cSearch', 'invDate', 'pSearch', 'pRate', 'pQty', 'paidAmount', 'addBtn', 'saveBtn', 'syncBtn', 'paymentMode'];
+        ids.forEach(id => {
+            const el = document.getElementById(id);
+            if(el) el.disabled = isDisabled;
+        });
+    }
+    function handlePaymentModeChange() {
+        const mode = document.getElementById('paymentMode').value;
+        const paidInput = document.getElementById('paidAmount');
+        const total = parseFloat(document.getElementById('gTotal').innerText) || 0;
+
+        if (mode === "Full") {
+            paidInput.value = total.toFixed(2);
+            paidInput.readOnly = true;
+            paidInput.classList.add('bg-light');
+        } else if (mode === "Due") {
+            paidInput.value = (0).toFixed(2);
+            paidInput.readOnly = true;
+            paidInput.classList.add('bg-light');
+            
+        } else {
+            paidInput.value = "";
+            paidInput.readOnly = false;
+            paidInput.classList.remove('bg-light');
+            paidInput.focus();
+        }
+        calculateBalance();
+    }
+    // --- মোডাল বন্ধ এবং ফরম রিসেট ফাংশন ---
+    function closeSuccessModal() {
+        successModal.hide(); // মোডাল বন্ধ করবে
+        resetForm();        // ফরমের সব ডাটা মুছবে
+        cart = [];          // কার্ট খালি করবে
+        render();           // টেবিল আপডেট করবে
+        // পেমেন্ট ডিফল্ট অবস্থায় ফেরানো
+        document.getElementById('paymentMode').value = "Due";
+        handlePaymentModeChange();
+        // কাস্টমার বক্সে ফোকাস
+        setTimeout(() => document.getElementById('cSearch').focus(), 300);
+    }
+    function refreshData(force = false) {
+        if(force) toggleLoader(true, "Syncing Data...");
+        fetch(WEB_APP_URL + "?action=getInitialData")
+            .then(res => res.json())
+            .then(response => {
+                db.products = response.inventory || [];
+                db.customers = response.customers || []; 
+                localStorage.setItem('erp_products', JSON.stringify(db.products));
+                localStorage.setItem('erp_customers', JSON.stringify(db.customers));
+                
+                let lastInv = response.lastInvoice || "";
+                document.getElementById('invNo').value = generateNextInvoiceNumber(lastInv);
+                
+                toggleLoader(false);
+                toggleInputs(false);
+            })
+            .catch(err => {
+                console.error("Sync error:", err);
+                toggleLoader(false);
+                toggleInputs(false);
+            });
+    }
+    function handleSearch(e, type) {
+        const resDiv = type === 'C' ? document.getElementById('cRes') : document.getElementById('pRes');
+        const items = resDiv.querySelectorAll('.list-group-item');
+        if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            focusedIdx = Math.min(focusedIdx + 1, items.length - 1);
+            updateFocus(items);
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            focusedIdx = Math.max(focusedIdx - 1, 0);
+            updateFocus(items);
+        } else if (e.key === 'Enter') {
+            e.preventDefault();
+            if (focusedIdx > -1 && items[focusedIdx]) {
+                items[focusedIdx].click();
+                focusedIdx = -1;
+            } else if (type === 'C') {
+                let val = e.target.value.trim().toUpperCase();
+                let cust = db.customers.find(c => (c.id || c.code || '').toString().toUpperCase() === val);
+                if (cust) {
+                    selectC(cust.id || cust.code, cust.name, cust.mobile, cust.area, cust.address, cust.type, cust.payment);
+                } else if (items.length > 0) {
+                    items[0].click();
+                } else {
+                    document.getElementById('pSearch').focus();
+                }
+            } else if (type === 'P') {
+                document.getElementById('pQty').focus();
+            }
+        } else if (e.key === 'Escape') {
+            resDiv.style.display = 'none';
+            focusedIdx = -1;
+        } else {
+            focusedIdx = -1; 
+            if (type === 'C') searchC(); else searchP();
+        }
+    }
+    function searchC() {
+        let v = document.getElementById('cSearch').value.toLowerCase().trim();
+        let div = document.getElementById('cRes');
+        if(v.length < 1) { div.style.display='none'; return; }
+
+        let filtered = db.customers.filter(r => {
+            let code = (r.id || r.code || '').toString().toLowerCase();
+            let name = (r.name || '').toString().toLowerCase();
+            return code.includes(v) || name.includes(v);
+        });
+
+        if (filtered.length) {
+            div.innerHTML = filtered.map(r => `
+                <button type="button" class="list-group-item list-group-item-action py-2" 
+                    onclick="selectC('${r.id || r.code}','${r.name}','${r.mobile || ''}','${r.area || ''}','${r.address || ''}','${r.type || ''}','${r.payment || ''}')">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div><b>${r.name}</b><br><small class="text-muted">${r.mobile || ''}</small></div>
+                        <span class="badge bg-primary">${r.id || r.code}</span>
+                    </div>
+                </button>`).join('');
+            div.style.display = 'block';
+        } else div.style.display = 'none';
+    }
+    function selectC(code, name, mobile, area, address, type, payment) {
+        document.getElementById('fCCode').value = code; 
+        document.getElementById('fCName').value = name;
+        document.getElementById('cSearch').value = name; 
+        document.getElementById('cRes').style.display = 'none';
+        document.getElementById('dispCCode').value = code;
+        document.getElementById('dispCName').value = name;
+        document.getElementById('dispCMobile').value = mobile;
+        document.getElementById('dispCArea').value = area || '';
+        document.getElementById('dispCAddress').value = address || '';
+        document.getElementById('dispCType').value = type || '';
+        document.getElementById('dispCPayment').value = (payment && payment.toString().trim()) ? payment : "Cash";
+        setTimeout(() => document.getElementById('pSearch').focus(), 50);
+    }
+
+    function searchP() {
+        let v = document.getElementById('pSearch').value.toLowerCase().trim();
+        let div = document.getElementById('pRes');
+        if(v.length < 1) { div.style.display='none'; return; }
+        let filtered = db.products.slice(1).filter(r => {
+            return (r[0]||'').toString().toLowerCase().includes(v) || (r[1]||'').toString().toLowerCase().includes(v);
+        });
+        if (filtered.length) {
+            div.innerHTML = filtered.map(r=>`
+                <button type="button" class="list-group-item list-group-item-action py-2" onclick="selectP('${r[0]}','${r[1]}',${r[5]||0},'${r[2]||''}',${r[7]||0})">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div><b>${r[1]}</b><br><small class="text-muted">Code: ${r[0]} | Stock: ${r[7]||0}</small></div>
+                    </div>
+                </button>`).join('');
+            div.style.display = 'block';
+        } else div.style.display = 'none';
+    }
+    function selectP(code, name, rate, pack, stock) {
+        window.temp = {code, name, pack, stock}; 
+        document.getElementById('pSearch').value = name; 
+        document.getElementById('pRate').value = rate; 
+        document.getElementById('pRes').style.display = 'none';
+        document.getElementById('prodDetailRow').classList.remove('d-none');
+        document.getElementById('detCode').innerText = "Code: " + code;
+        document.getElementById('detPack').innerText = "Pack: " + pack;
+        document.getElementById('detStock').innerText = "Stock: " + stock;
+        setTimeout(() => document.getElementById('pQty').focus(), 50);
+    }
+    function save() {
+        const custCode = document.getElementById('fCCode').value;
+        const currentInvNo = document.getElementById('invNo').value;
+        const total = cart.reduce((s,i)=>s+i.subtotal, 0);
+        const paid = parseFloat(document.getElementById('paidAmount').value) || 0;
+        if(!cart.length || !custCode) { alert("Please ensure customer and products are in cart"); return; }
+        toggleLoader(true, "Saving Invoice..."); 
+        toggleInputs(true);
+        let status = (paid >= total) ? "Paid" : (paid > 0 ? "Partial" : "Unpaid");
+       let master = { 
+        action: "saveInvoice", 
+        invNo: currentInvNo, 
+        date: document.getElementById('invDate').value, 
+        custCode: custCode, 
+        custName: document.getElementById('fCName').value,
+        mobile: document.getElementById('dispCMobile').value,
+        area: document.getElementById('dispCArea').value,
+        address: document.getElementById('dispCAddress').value,
+        type: document.getElementById('dispCType').value,
+        paymentType: document.getElementById('dispCPayment').value,
+        total: total, 
+        paid: paid, 
+        status: status, 
+        cart: cart,
+        // --- এই দুটি লাইন ইউজার আইডি ও নাম সিটে পাঠানোর জন্য ---
+        operatorName: activeUser.name,
+        operatorId: activeUser.id
+    };
+
+        fetch(WEB_APP_URL, {
+            method: "POST",
+            mode: "no-cors",
+            body: JSON.stringify(master)
+        })
+        .then(() => { handleSaveSuccess(currentInvNo, master); })
+        .catch(err => {
+            alert("Error: " + err);
+            toggleLoader(false); toggleInputs(false);
+        });
+    }
+    function updateFocus(items) {
+        items.forEach((item, idx) => {
+            if (idx === focusedIdx) {
+                item.classList.add('active-item');
+                item.scrollIntoView({ block: 'nearest' });
+            } else item.classList.remove('active-item');
+        });
+    }
+    function add() {
+        if(!window.temp) return;
+        let qty = parseFloat(document.getElementById('pQty').value) || 0;
+        let rate = parseFloat(document.getElementById('pRate').value) || 0;
+        let stock = parseFloat(window.temp.stock) || 0;
+        if (stock <= 0) { showAlert("Out of Stock!"); return; }
+        if (qty <= 0) return;
+        let finalQty = Math.min(qty, stock);
+        let existing = cart.find(i => i.code === window.temp.code);
+        if(existing) {
+            existing.qty = Math.min(existing.qty + finalQty, stock);
+            existing.subtotal = existing.qty * existing.rate;
+        } else {
+            cart.push({code: window.temp.code, name: window.temp.name, qty: finalQty, rate: rate, subtotal: finalQty * rate});
+        }
+        render(); clearProductInputs();
+    }
+
+    function clearProductInputs() {
+        document.getElementById('pSearch').value = ''; 
+        document.getElementById('pRate').value = '';
+        document.getElementById('pQty').value = ''; 
+        document.getElementById('prodDetailRow').classList.add('d-none');
+        window.temp = null;
+        setTimeout(() => document.getElementById('pSearch').focus(), 100);
+    }
+
+    function render() {
+        document.getElementById('cartTable').innerHTML = cart.map((i,x)=>`
+            <tr>
+                <td>${x + 1}</td>
+                <td>${i.code}</td>
+                <td class="text-start">${i.name}</td>
+                <td>${i.qty}</td>
+                <td>${i.rate.toFixed(2)}</td>
+                <td>${i.subtotal.toFixed(2)}</td>
+                <td><i class="fas fa-trash text-danger pointer" onclick="cart.splice(${x},1);render()"></i></td>
+            </tr>`).join('');
+        const total = cart.reduce((s,i)=>s+i.subtotal, 0);
+        document.getElementById('gTotal').innerText = total.toFixed(2);
+        if (document.getElementById('paymentMode').value === "Full") {
+            document.getElementById('paidAmount').value = total.toFixed(2);
+        }
+        calculateBalance();
+    }
+
+    function calculateBalance() {
+        let total = parseFloat(document.getElementById('gTotal').innerText) || 0;
+        let paid = parseFloat(document.getElementById('paidAmount').value) || 0;
+        let due = total - paid;
+        document.getElementById('dueAmount').innerText = due.toFixed(2);
+        const statusEl = document.getElementById('payStatus');
+        if (total === 0) { statusEl.innerText = "Pending"; statusEl.className = "badge bg-secondary ms-2"; }
+        else if (paid >= total) { statusEl.innerText = "Paid"; statusEl.className = "badge bg-success ms-2"; }
+        else if (paid > 0) { statusEl.innerText = "Partial"; statusEl.className = "badge bg-warning text-dark ms-2"; }
+        else { statusEl.innerText = "Unpaid"; statusEl.className = "badge bg-danger ms-2"; }
+    }
+
+    function handleSaveSuccess(actualInvNo, master) {
+        lastSavedData = { ...master, invNo: actualInvNo, cart: [...cart] };
+        document.getElementById('displayInvNo').innerText = actualInvNo;
+        const stamp = document.getElementById('modalPaidStamp');
+        stamp.style.display = master.status === "Paid" ? 'block' : 'none';
+        
+        // সব রিসেট এবং মোডাল ওপেন
+        toggleLoader(false);
+        toggleInputs(false);
+        successModal.show();
+        refreshData(); 
+    }
+
+    function resetForm() {
+        document.getElementById('cSearch').value = "";
+        document.getElementById('pSearch').value = "";
+        document.getElementById('fCCode').value = "";
+        document.getElementById('fCName').value = "";
+        // সব ইনপুট ফিল্ড ক্লিয়ার করা
+        document.querySelectorAll('.customer-detail-section input').forEach(el => el.value = "");
+        document.getElementById('prodDetailRow').classList.add('d-none');
+    }
+
+    function handlePrintAction() {
+    successModal.hide();
+    
+    // ডাটা বসানো
+    document.getElementById('pInvNo').innerText = lastSavedData.invNo;
+    document.getElementById('pDate').innerText = lastSavedData.date;
+    document.getElementById('pCName').innerText = lastSavedData.custName;
+    document.getElementById('pCMobile').innerText = lastSavedData.mobile || '';
+    
+    // পেইড স্ট্যাম্প
+    const stamp = document.getElementById('printPaidStamp');
+    if(stamp) stamp.style.display = lastSavedData.status === "Paid" ? 'block' : 'none';
+
+    // টেবিল বডি (SL, CODE, NAME, PACK, RATE, QTY, TOTAL)
+    document.getElementById('pCartBody').innerHTML = lastSavedData.cart.map((i, idx) => `
+        <tr style="text-align: center;">
+            <td style="border:1px solid #333; padding:8px;">${idx+1}</td>
+            <td style="border:1px solid #333; padding:8px;">${i.code || '-'}</td>
+            <td style="border:1px solid #333; padding:8px; text-align:left;">${i.name}</td>
+            <td style="border:1px solid #333; padding:8px;">${i.pack || '-'}</td>
+            <td style="border:1px solid #333; padding:8px;">${i.rate.toFixed(2)}</td>
+            <td style="border:1px solid #333; padding:8px;">${i.qty}</td>
+            <td style="border:1px solid #333; padding:8px; text-align:right;">${i.subtotal.toFixed(2)}</td>
+        </tr>`).join('');
+
+    // হিসাব সেট করা
+    document.getElementById('pGrandTotal').innerText = lastSavedData.total.toFixed(2);
+    document.getElementById('pPaidAmount').innerText = lastSavedData.paid.toFixed(2);
+    document.getElementById('pDueAmount').innerText = (lastSavedData.total - lastSavedData.paid).toFixed(2);
+    
+    // প্রিন্ট কমান্ড
+    setTimeout(() => { 
+        window.print(); 
+        
+        // প্রিন্ট শেষে অটোমেটিক নতুন ইনভয়েসের জন্য ক্লিনিং
+        if(typeof resetForm === "function") resetForm();
+        cart = [];
+        if(typeof render === "function") render();
+        
+        // কাস্টমার ডিটেইলস ফিল্ডগুলো ক্লিয়ার করা
+        const fields = ['dispCCode', 'dispCName', 'dispCMobile', 'dispCArea', 'dispCPayment'];
+        fields.forEach(id => {
+            const el = document.getElementById(id);
+            if(el) {
+                if(el.tagName === 'INPUT') el.value = '';
+                else el.innerText = '-';
+            }
+        });
+    }, 500);
+}
+
+    function toggleLoader(show, text) {
+        const loader = document.getElementById('loader-overlay');
+        if (loader) {
+            document.getElementById('loader-text').innerText = text;
+            loader.style.display = show ? 'flex' : 'none';
+        }
+    }
+
+    function generateNextInvoiceNumber(lastInv) {
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = (now.getMonth() + 1).toString().padStart(2, '0');
+        const currentPrefix = `NEP-${year}-${month}-`;
+        if (!lastInv || !lastInv.toString().startsWith(currentPrefix)) return currentPrefix + "0001";
+        const parts = lastInv.toString().split("-");
+        const lastSerial = parseInt(parts[parts.length - 1], 10);
+        return currentPrefix + (lastSerial + 1).toString().padStart(4, '0');
+    }
+function initApp() {
+    // ১. লোকাল স্টোরেজ থেকে ক্যাশ লোড করা
+    loadFromCache();
+
+    // ২. ইউআরএল থেকে ডাটা নেওয়ার লজিক
+    const urlParams = new URLSearchParams(window.location.search);
+    const nameParam = urlParams.get('name');
+    const idParam = urlParams.get('id');
+
+    if (nameParam) activeUser.name = decodeURIComponent(nameParam);
+    if (idParam) activeUser.id = idParam;
+
+    // ফুটার আপডেট
+    const fName = document.getElementById('footerUserName');
+    const fId = document.getElementById('footerUserId');
+    if(fName) fName.innerText = activeUser.name;
+    if(fId) fId.innerText = activeUser.id;
+    
+    // প্রিন্ট কপির জন্য অপারেটর সেট
+    const pName = document.getElementById('pOperatorName');
+    const pId = document.getElementById('pOperatorId');
+    if(pName) pName.innerText = activeUser.name;
+    if(pId) pId.innerText = activeUser.id;
+
+    // তারিখ সেট এবং ডাটা রিফ্রেশ
+    const invDateEl = document.getElementById('invDate');
+    if(invDateEl) invDateEl.valueAsDate = new Date();
+    
+    // পেমেন্ট মোড ডিফল্ট (Due) অনুযায়ী ইনপুট বক্স সেট করা
+    handlePaymentModeChange();
+    
+    toggleLoader(true, "Loading Please Wait...");
+    refreshData();
+}
+
+    function loadFromCache() {
+        try {
+            const cp = localStorage.getItem('erp_products');
+            const cc = localStorage.getItem('erp_customers');
+            if (cp) db.products = JSON.parse(cp);
+            if (cc) db.customers = JSON.parse(cc);
+        } catch(e) {}
+    }
+
+    window.onload = initApp;
+</script>
+</body>
+
+</html>
+
+
+
+
+
+
+
+
+
+

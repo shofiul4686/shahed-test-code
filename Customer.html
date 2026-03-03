@@ -1,0 +1,289 @@
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="icon" type="image/png" href="coustomer.png">
+  <title>Customer Management System</title>
+  
+  <style>
+    body { background-color: hsla(213, 93%, 11%, 0.918); font-family: 'Segoe UI', sans-serif; margin: 0; padding: 0; }
+    .hidden-section { display: none !important; }
+    .btn-main { height: 80px; font-size: 1.2rem; font-weight: bold; border-radius: 15px; }
+    .new-entry-card { border-top: 8px solid #198754 !important; }
+    .update-card { border-top: 8px solid #ffc107 !important; }
+    .card { border-radius: 15px; background: #fdfdfd; }
+    
+    #cName, #cMob, #cArea, #cAddr, #cSearch, #cType, #cPay { background-color: #fdfdf0 !important; border: 1px solid #ced4da; }
+
+    /* Custom Alert */
+    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(4px); display: none; align-items: center; justify-content: center; z-index: 9999; }
+    .alert-card { background: white; padding: 30px; border-radius: 20px; text-align: center; max-width: 350px; width: 90%; animation: zoomIn 0.3s ease; }
+    @keyframes zoomIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    #alertIcon i { font-size: 55px; margin-bottom: 15px; }
+    .icon-success { color: #28a745; }
+    .icon-error { color: #dc3545; }
+    .icon-warning { color: #ffc107; }
+
+    /* Custom Suggestion Box */
+    #suggestionBox {
+        position: absolute;
+        width: 100%;
+        background: white;
+        border: 1px solid #ddd;
+        border-radius: 0 0 10px 10px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        z-index: 1050;
+        max-height: 250px;
+        overflow-y: auto;
+        left: 0;
+    }
+    .suggestion-item {
+        padding: 12px 15px;
+        cursor: pointer;
+        border-bottom: 1px solid #f1f1f1;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        transition: background 0.2s;
+    }
+    .suggestion-item:hover { background-color: #fff9e6; }
+    .suggestion-item .info { display: flex; flex-direction: column; }
+    .suggestion-item .name { font-weight: bold; color: #333; }
+    .suggestion-item .meta { font-size: 0.8rem; color: #666; }
+    .suggestion-item .badge { font-size: 0.75rem; }
+
+    /* Footer Animation */
+    .user-footer-wrapper { width: 100%; overflow: hidden; background: #f1f1f1; border-top: 1px solid #ddd; padding: 10px 0; position: fixed; bottom: 0; left: 0; z-index: 1000; }
+    .user-footer-info { display: inline-block; white-space: nowrap; padding-left: 100%; animation: smoothScroll 25s linear infinite; font-size: 14px; color: #333; }
+    @keyframes smoothScroll { 0% { transform: translateX(0); } 100% { transform: translateX(-100%); } }
+
+    @media (max-width: 768px) { .btn-main { height: 65px; font-size: 1rem; } .col-md-3, .col-md-4, .col-md-5, .col-md-6, .col-md-8 { width: 100% !important; } }
+  </style>
+</head>
+<body>
+
+  <div class="container py-4">
+    <h3 class="mb-4 fw-bold text-white text-center text-uppercase">Customer Management System</h3>
+    
+    <div class="row justify-content-center g-3">
+      <div class="col-6 col-md-5"><button class="btn btn-success w-100 btn-main shadow" onclick="toggleForm('NEW')"><i class="fas fa-plus-circle"></i> ADD NEW CUSTOMER</button></div>
+      <div class="col-6 col-md-5"><button class="btn btn-warning w-100 btn-main shadow text-dark" onclick="toggleForm('UPDATE')"><i class="fas fa-user-edit"></i> UPDATE CUSTOMER</button></div>
+    </div>
+
+    <div id="formSection" class="form-container hidden-section mt-4">
+      <div id="cardTheme" class="card shadow-lg p-4">
+        <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-2">
+          <h4 id="formTitle" class="mb-0 fw-bold">FORM</h4>
+          <button type="button" class="btn-close" onclick="closeForm()"></button>
+        </div>
+        <div class="row g-3">
+          <!-- Custom Search Container with Suggestion Box -->
+          <div id="searchContainer" class="col-md-12 bg-warning bg-opacity-10 p-3 rounded mb-3 hidden-section border border-warning position-relative">
+            <label class="fw-bold text-dark small"><i class="fas fa-search" ></i> SEARCH CUSTOMER</label>
+            <input type="text" id="cSearch" class="form-control form-control-lg" onkeyup="filterSuggestions(this.value)" placeholder="Type ID, Name or Mobile Number..." autocomplete="off">
+            <div id="suggestionBox" class="hidden-section"></div>
+          </div>
+
+          <div class="col-md-3"><label class="fw-bold small">CUSTOMER ID</label><input type="text" id="cCode" class="form-control fw-bold" placeholder="Auto ID" readonly></div>
+          <div class="col-md-5"><label class="fw-bold small">CUSTOMER NAME</label><input type="text" id="cName" class="form-control" placeholder="Full Name"></div>
+          <div class="col-md-4"><label class="fw-bold small">MOBILE NO</label><input type="tel" id="cMob" class="form-control" placeholder="01XXXXXXXXX" maxlength="11"></div>
+          <div class="col-md-4"><label class="fw-bold small">AREA NAME</label><input type="text" id="cArea" class="form-control"></div>
+          <div class="col-md-8"><label class="fw-bold small">ADDRESS</label><input type="text" id="cAddr" class="form-control"></div>
+          <div class="col-md-6">
+            <label class="fw-bold small">TYPE</label>
+            <select id="cType" class="form-select">
+                <option value="Select" selected disabled>Select Type</option>
+                <option value="Retail">Retail</option>
+                <option value="Wholesale">Wholesale</option>
+            </select>
+          </div>
+          <div class="col-md-6">
+            <label class="fw-bold small">PAYMENT</label>
+            <select id="cPay" class="form-select">
+                <option value="Select" selected disabled>Select Payment</option>
+                <option value="Cash">Cash</option>
+                <option value="Credit">Credit</option>
+            </select>
+          </div>
+          <div class="col-md-12 text-end mt-4 pt-3 border-top">
+            <button class="btn btn-secondary px-4 me-2" onclick="closeForm()">CANCEL</button>
+            <button id="submitBtn" class="btn btn-lg px-5 shadow text-white fw-bold"></button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="user-footer-wrapper">
+    <div class="user-footer-info"><i class="fas fa-database"></i> Status: Ready | Total Customer: <span id="totalCount">0</span> | Admin</div>
+  </div>
+
+  <div id="customAlert" class="modal-overlay">
+    <div class="alert-card shadow-lg">
+      <div id="alertIcon"></div>
+      <h5 id="alertTitle" class="fw-bold mb-2"></h5>
+      <p id="alertMsg" class="text-muted small mb-4"></p>
+      <button class="btn btn-primary px-5 py-2 rounded-pill shadow-sm fw-bold" onclick="closeAlert()">OK</button>
+    </div>
+  </div>
+
+<script>
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzkDCX5zax-NuoSKRSxJIjL9Rx4MbtVxvm5QlrOEIxrTR-s3sVuRHJy_ISNIm3ehDYs/exec"; 
+    let allCustomers = [];
+    let currentMode = "";
+
+    window.onload = function() { loadCustomerList(); };
+
+    // --- Custom Suggestion Logic ---
+    function filterSuggestions(query) {
+        const box = document.getElementById('suggestionBox');
+        query = query.toLowerCase().trim();
+
+        if (query.length < 1) {
+            box.classList.add('hidden-section');
+            return;
+        }
+
+        const filtered = allCustomers.filter(c => 
+            String(c.id).toLowerCase().includes(query) || 
+            String(c.name).toLowerCase().includes(query) || 
+            String(c.mobile).includes(query)
+        ).slice(0, 10); // সর্বোচ্চ ১০টি সাজেশন দেখাবে
+
+        if (filtered.length > 0) {
+            box.innerHTML = filtered.map(c => `
+                <div class="suggestion-item" onclick="selectSuggestion('${c.id}')">
+                    <div class="info">
+                        <span class="name">${c.name}</span>
+                        <span class="meta"><i class="fas fa-phone-alt"></i> ${String(c.mobile).replace(/^'/, "")}</span>
+                    </div>
+                    <span class="badge bg-warning text-dark">ID: ${c.id}</span>
+                </div>
+            `).join('');
+            box.classList.remove('hidden-section');
+        } else {
+            box.innerHTML = '<div class="p-3 text-center text-muted small">No customer found!</div>';
+            box.classList.remove('hidden-section');
+        }
+    }
+
+    function selectSuggestion(id) {
+        const c = allCustomers.find(i => i.id == id);
+        if(c) {
+            document.getElementById('cCode').value = c.id;
+            document.getElementById('cName').value = c.name;
+            document.getElementById('cMob').value = String(c.mobile).replace(/^'/, "");
+            document.getElementById('cArea').value = c.area;
+            document.getElementById('cAddr').value = c.address;
+            document.getElementById('cType').value = c.type || "Select";
+            document.getElementById('cPay').value = c.payment || "Select";
+            
+            document.getElementById('cSearch').value = c.name;
+            document.getElementById('suggestionBox').classList.add('hidden-section');
+        }
+    }
+
+    // সাজেশন বক্সের বাইরে ক্লিক করলে তা বন্ধ হবে
+    document.addEventListener('click', function(e) {
+        if (!document.getElementById('searchContainer').contains(e.target)) {
+            document.getElementById('suggestionBox').classList.add('hidden-section');
+        }
+    });
+
+    // --- System Logic ---
+    function showMsg(title, msg, type) {
+        if(!title || !msg) return; 
+        const modal = document.getElementById('customAlert');
+        document.getElementById('alertIcon').innerHTML = type === 'success' ? '<i class="fas fa-check-circle icon-success"></i>' : (type === 'error' ? '<i class="fas fa-times-circle icon-error"></i>' : '<i class="fas fa-exclamation-triangle icon-warning"></i>');
+        document.getElementById('alertTitle').innerText = title;
+        document.getElementById('alertMsg').innerText = msg;
+        modal.style.display = "flex";
+    }
+
+    function closeAlert() { document.getElementById('customAlert').style.display = "none"; }
+
+    async function loadCustomerList() {
+      try {
+          const res = await fetch(`${WEB_APP_URL}?action=getAllCustomers`);
+          allCustomers = await res.json();
+          document.getElementById('totalCount').innerText = allCustomers.length;
+      } catch(e) { console.log("Silent Load Error"); }
+    }
+
+    async function toggleForm(mode) {
+      currentMode = mode;
+      clearInputs();
+      document.getElementById('formSection').classList.remove('hidden-section');
+      const btn = document.getElementById('submitBtn');
+      if(mode === 'NEW') {
+        document.getElementById('formTitle').innerText = "NEW CUSTOMER ENTRY";
+        document.getElementById('cardTheme').className = "card shadow-lg p-4 new-entry-card";
+        btn.className = "btn btn-success btn-lg px-5 shadow text-white fw-bold";
+        btn.innerText = "SAVE NEW";
+        document.getElementById('searchContainer').classList.add('hidden-section');
+        try {
+            const res = await fetch(`${WEB_APP_URL}?action=getNextId`);
+            document.getElementById('cCode').value = await res.json();
+        } catch(e) { document.getElementById('cCode').value = "ERR"; }
+      } else {
+        document.getElementById('formTitle').innerText = "UPDATE CUSTOMER DATA";
+        document.getElementById('cardTheme').className = "card shadow-lg p-4 update-card";
+        btn.className = "btn btn-warning btn-lg px-5 shadow text-dark fw-bold";
+        btn.innerText = "UPDATE DATA";
+        document.getElementById('searchContainer').classList.remove('hidden-section');
+        document.getElementById('cSearch').focus();
+      }
+    }
+
+    function clearInputs() { 
+        ['cCode', 'cName', 'cMob', 'cArea', 'cAddr', 'cSearch'].forEach(id => document.getElementById(id).value = ""); 
+        document.getElementById('cType').value = "Select"; 
+        document.getElementById('cPay').value = "Select"; 
+        document.getElementById('suggestionBox').classList.add('hidden-section');
+    }
+
+    function closeForm() { document.getElementById('formSection').classList.add('hidden-section'); }
+
+    document.getElementById('submitBtn').onclick = async function() {
+      const btn = this;
+      const rawMob = document.getElementById('cMob').value.trim();
+      
+      if(!document.getElementById('cName').value || !rawMob) {
+          return showMsg("Error", "Customer Name and Mobile No are mandatory!", "error");
+      }
+
+      const mobPattern = /^01[3-9]\d{8}$/;
+      if(!mobPattern.test(rawMob)) {
+          showMsg("Validation", "Enter a valid 11-digit mobile number!", "error");
+          return;
+      }
+
+      const data = {
+        action: "saveCustomer", mode: currentMode, code: document.getElementById('cCode').value,
+        name: document.getElementById('cName').value.trim(), mobile: "'" + rawMob,
+        area: document.getElementById('cArea').value.trim(), address: document.getElementById('cAddr').value.trim(),
+        type: document.getElementById('cType').value, payment: document.getElementById('cPay').value
+      };
+
+      if (currentMode === 'NEW' && allCustomers.some(c => String(c.mobile).replace(/^'/, "") === rawMob)) {
+          return showMsg("Duplicate", "This Mobile No is already registered!", "warning");
+      }
+
+      btn.disabled = true; btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Processing...';
+      try {
+        await fetch(WEB_APP_URL, { method: "POST", mode: "no-cors", body: JSON.stringify(data) });
+        showMsg("Success", "Customer data has been saved successfully!", "success");
+        clearInputs(); closeForm(); loadCustomerList();
+      } catch (err) { showMsg("Network Error", "Please check connection and try again.", "error"); }
+      finally { btn.disabled = false; btn.innerText = (currentMode === 'NEW') ? "SAVE NEW" : "UPDATE DATA"; }
+    };
+</script>
+</body>
+</html>
+

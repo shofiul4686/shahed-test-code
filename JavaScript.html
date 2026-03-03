@@ -1,0 +1,166 @@
+<script>
+    /**
+     * ডাটাবেস অবজেক্ট - ব্রাউজার মেমোরিতে ডাটা সেভ রাখবে
+     * এখানে products এর মধ্যে স্টক ইনফরমেশন থাকে যা Inventory ট্যাব থেকে আসে
+     */
+    let db = { 
+        products: [], 
+        customers: [] 
+    };
+    let cart = [];
+
+    // অ্যাপ লোড হওয়ার সাথে সাথে মেমোরি থেকে ডাটা রিকভার করার চেষ্টা
+    try {
+        const cachedP = localStorage.getItem('cachedProducts');
+        const cachedC = localStorage.getItem('cachedCustomers');
+        db.products = cachedP ? JSON.parse(cachedP) : [];
+        db.customers = cachedC ? JSON.parse(cachedC) : [];
+    } catch (e) {
+        db = { products: [], customers: [] };
+    }
+
+    window.onload = function() {
+        const dateInput = document.getElementById('invDate');
+        if(dateInput) dateInput.valueAsDate = new Date();
+        refreshDatabase();
+    };
+
+    /**
+     * গুগল শিট (Inventory/Products Tab) থেকে ডাটা সিঙ্ক করা
+     */
+    function refreshDatabase() {
+        google.script.run.withSuccessHandler(data => {
+            if (!data) return;
+            db = data;
+            
+            try {
+                localStorage.setItem('cachedProducts', JSON.stringify(data.products));
+                localStorage.setItem('cachedCustomers', JSON.stringify(data.customers));
+                console.log("ইনভেন্টরি ডাটা আপডেট হয়েছে।");
+            } catch(e) {
+                console.warn("লোকাল স্টোরেজ পূর্ণ।");
+            }
+
+            const invInput = document.getElementById('invNo');
+            if(invInput && !invInput.value) {
+                invInput.value = "INV-" + Date.now().toString().slice(-6);
+            }
+        }).getInitialData();
+    }
+
+    /**
+     * প্রোডাক্ট সার্চ করার সময় ইনভেন্টরি ট্যাব থেকে স্টক চেক করা
+     */
+    function searchProduct() {
+        let input = document.getElementById('prodSearch').value.toLowerCase().trim();
+        let div = document.getElementById('prodResults');
+        if (!input) { div.style.display = 'none'; return; }
+        
+        let results = [];
+        let limit = 15;
+        
+        for (let i = 1; i < db.products.length; i++) {
+            let p = db.products[i];
+            // p[0]=Code, p[1]=Name, p[5]=Sales Rate, p[7]=Current Stock (Inventory Tab থেকে)
+            if (p[1].toString().toLowerCase().includes(input) || p[0].toString().toLowerCase().includes(input)) {
+                results.push(p);
+                if (results.length >= limit) break;
+            }
+        }
+        
+        div.innerHTML = results.map(p => `
+            <div class="search-item d-flex justify-content-between align-items-center" onclick="selectP('${p[0]}','${p[1]}',${p[5]}, ${p[7]})">
+                <span><i class="fas fa-tag me-2 text-muted"></i>${p[1]}</span>
+                <span class="badge ${p[7] > 0 ? 'bg-success' : 'bg-danger'}">Stock: ${p[7] || 0}</span>
+            </div>
+        `).join('');
+        div.style.display = results.length > 0 ? 'block' : 'none';
+    }
+
+    function selectP(code, name, rate, stock) {
+        window.selectedProductStock = stock; // বর্তমান স্টক মেমোরিতে রাখা হলো
+        document.getElementById('selectedProdCode').value = code;
+        document.getElementById('selectedProdName').value = name;
+        document.getElementById('prodSearch').value = name;
+        document.getElementById('prodRate').value = rate;
+        document.getElementById('prodResults').style.display = 'none';
+        
+        // স্টক ওয়ার্নিং দেখানো (ঐচ্ছিক)
+        if(stock <= 0) {
+            alert("এই প্রোডাক্টটি স্টকে নেই!");
+        }
+        
+        document.getElementById('prodQty').focus();
+    }
+
+    function addToCart() {
+        let code = document.getElementById('selectedProdCode').value;
+        let name = document.getElementById('selectedProdName').value;
+        let rate = parseFloat(document.getElementById('prodRate').value);
+        let qty = parseInt(document.getElementById('prodQty').value);
+        let availableStock = window.selectedProductStock;
+        
+        if (!code || isNaN(qty) || qty <= 0) return alert("সঠিক পণ্য এবং পরিমাণ দিন!");
+        
+        // স্টক চেক লজিক - ইনভেন্টরি থেকে যা এসেছে তার বেশি বিক্রি করা যাবে না
+        if (qty > availableStock) {
+            alert("দুঃখিত! স্টকে মাত্র " + availableStock + " টি পণ্য আছে।");
+            return;
+        }
+        
+        cart.push({ code, name, rate, qty, subtotal: rate * qty });
+        updateTable();
+        
+        // ইনপুট ক্লিয়ার
+        document.getElementById('prodSearch').value = '';
+        document.getElementById('prodRate').value = '';
+        document.getElementById('prodQty').value = 1;
+        document.getElementById('prodSearch').focus();
+    }
+
+    function updateTable() {
+        let total = 0;
+        const cartTbody = document.getElementById('cartItems');
+        if(!cartTbody) return;
+
+        cartTbody.innerHTML = cart.map((item, idx) => {
+            total += item.subtotal;
+            return `
+                <tr>
+                    <td>${item.name}</td>
+                    <td>${item.qty}</td>
+                    <td>${item.rate.toFixed(2)}</td>
+                    <td>${item.subtotal.toFixed(2)}</td>
+                    <td>
+                        <button class="btn btn-sm btn-danger" onclick="cart.splice(${idx},1);updateTable()">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </td>
+                </tr>`;
+        }).join('');
+        
+        const gTotal = document.getElementById('grandTotal');
+        if(gTotal) gTotal.innerText = total.toFixed(2);
+    }
+
+    function submitInvoice() {
+        if (!cart.length) return alert("কার্ট খালি!");
+        const loader = document.getElementById('loading-overlay');
+        if(loader) loader.style.display = 'flex';
+        
+        let master = {
+            invNo: document.getElementById('invNo').value,
+            date: document.getElementById('invDate').value,
+            custCode: document.getElementById('selectedCustCode').value,
+            custName: document.getElementById('selectedCustName').value,
+            total: document.getElementById('grandTotal').innerText
+        };
+
+        // এই কলটি সফল হলে Code.gs অটোমেটিক Inventory ট্যাব আপডেট করবে
+        google.script.run.withSuccessHandler(res => {
+            if(loader) loader.style.display = 'none';
+            alert(res);
+            location.reload();
+        }).saveInvoice(master, cart);
+    }
+</script>
