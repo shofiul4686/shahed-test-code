@@ -329,32 +329,22 @@
     const oldText = btn.innerHTML;
     btn.innerHTML = '<span class="loader"></span> Saving...';
 
-    // ১. সঠিক ক্লাস নেম দিয়ে ডাটা সংগ্রহ করুন (আপনার HTML অনুযায়ী)
    const rows = Array.from(document.querySelectorAll("#statementBody tr")).map(tr => {
+    // তারিখ: টেক্সট না থাকলে ইনপুট বক্স থেকে নিবে
+    let rowDate = tr.querySelector(".date-text")?.innerText || tr.querySelector(".date-input")?.value || "";
+    
+    // বিবরণ: ইনপুট বক্স না থাকলে টেক্সট থেকে নিবে (সংখ্যা বা টেক্সট যাই হোক)
+    let rowDesc = tr.querySelector(".desc-input")?.value || tr.querySelector(".desc-text")?.innerText || "";
+
     return {
-        date: tr.querySelector(".date-text")?.innerText || tr.querySelector(".date-input")?.value || "", 
-        description: tr.querySelector(".desc-input")?.value || tr.querySelector(".desc-text")?.innerText || "",
+        date: String(rowDate).trim(),         // Force as String
+        description: String(rowDesc).trim(),  // Force as String
         voucher: tr.querySelector(".voucher-input")?.value || "",
         deposit: parseFloat(tr.querySelector(".deposit-input")?.value) || 0,
         expense: parseFloat(tr.querySelector(".expense-input")?.value) || 0,
         balance: tr.querySelector(".row-balance")?.innerText || "0.00"
     };
 });
-
-    const payload = {
-      action: "saveLedger",
-      cod: document.getElementById("cod").value,
-      name: document.getElementById("custName").value,
-      mobile: document.getElementById("mobile").value,
-      area: document.getElementById("area").value,
-      address: document.getElementById("address").value,
-      custType: document.getElementById("custType").value,
-      payType: document.getElementById("payType").value,
-      openingBalance: document.getElementById("openingBalance").value || 0,
-      receivedAmount: document.getElementById("totalDeposit").innerText, // এখানে receivedAmount ব্যবহার করুন
-      finalBalance: document.getElementById("finalBalance").innerText,
-      rows: rows // এখানে 'items' এর বদলে 'rows' দিন যা Apps Script খুঁজছে
-    };
 
     try {
         const response = await fetch(SCRIPT_URL, { 
