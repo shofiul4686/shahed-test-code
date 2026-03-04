@@ -338,7 +338,8 @@
 
     return {
         date: String(rowDate).trim(),         // Force as String
-        description: String(rowDesc).trim(),  // Force as String
+        
+      description: descriptionValue.toString().trim(),
         voucher: tr.querySelector(".voucher-input")?.value || "",
         deposit: parseFloat(tr.querySelector(".deposit-input")?.value) || 0,
         expense: parseFloat(tr.querySelector(".expense-input")?.value) || 0,
