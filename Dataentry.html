@@ -330,14 +330,16 @@
     btn.innerHTML = '<span class="loader"></span> Saving...';
 
     // ১. সঠিক ক্লাস নেম দিয়ে ডাটা সংগ্রহ করুন (আপনার HTML অনুযায়ী)
-    const rows = Array.from(document.querySelectorAll("#statementBody tr")).map(tr => ({
-        date: tr.querySelector(".date-text")?.innerText || "", // date-cell এর ভেতরের টেক্সট
-        description: tr.querySelector(".desc-input")?.value || "",
+   const rows = Array.from(document.querySelectorAll("#statementBody tr")).map(tr => {
+    return {
+        date: tr.querySelector(".date-text")?.innerText || tr.querySelector(".date-input")?.value || "", 
+        description: tr.querySelector(".desc-input")?.value || tr.querySelector(".desc-text")?.innerText || "",
         voucher: tr.querySelector(".voucher-input")?.value || "",
-        deposit: tr.querySelector(".deposit-input")?.value || 0,
-        expense: tr.querySelector(".expense-input")?.value || 0,
+        deposit: parseFloat(tr.querySelector(".deposit-input")?.value) || 0,
+        expense: parseFloat(tr.querySelector(".expense-input")?.value) || 0,
         balance: tr.querySelector(".row-balance")?.innerText || "0.00"
-    }));
+    };
+});
 
     const payload = {
       action: "saveLedger",
