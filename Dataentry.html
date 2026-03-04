@@ -323,29 +323,43 @@
     if(val) saveData();
   }
 
- async function saveData() {
+async function saveData() {
     const btn = document.getElementById("saveBtn");
     btn.disabled = true;
     const oldText = btn.innerHTML;
     btn.innerHTML = '<span class="loader"></span> Saving...';
 
-   const rows = Array.from(document.querySelectorAll("#statementBody tr")).map(tr => {
-    // তারিখ: টেক্সট না থাকলে ইনপুট বক্স থেকে নিবে
-    let rowDate = tr.querySelector(".date-text")?.innerText || tr.querySelector(".date-input")?.value || "";
-    
-    // বিবরণ: ইনপুট বক্স না থাকলে টেক্সট থেকে নিবে (সংখ্যা বা টেক্সট যাই হোক)
-    let rowDesc = tr.querySelector(".desc-input")?.value || tr.querySelector(".desc-text")?.innerText || "";
-
-    return {
-        date: String(rowDate).trim(),         // Force as String
+    // ১. সঠিক ক্লাস নেম দিয়ে ডাটা সংগ্রহ (Particulars এর জন্য .particular-input ব্যবহার করা হয়েছে)
+    const rows = Array.from(document.querySelectorAll("#statementBody tr")).map(tr => {
+        // তারিখ সংগ্রহ
+        const rowDate = tr.querySelector(".date-input")?.value || "";
         
-      description: descriptionValue.toString().trim(),
-        voucher: tr.querySelector(".voucher-input")?.value || "",
-        deposit: parseFloat(tr.querySelector(".deposit-input")?.value) || 0,
-        expense: parseFloat(tr.querySelector(".expense-input")?.value) || 0,
-        balance: tr.querySelector(".row-balance")?.innerText || "0.00"
+        // বিবরণ (Particulars) সংগ্রহ - আপনার HTML এ class="particular-input" ব্যবহার করা হয়েছে
+        const rowDesc = tr.querySelector(".particular-input")?.value || "";
+
+        return {
+            date: String(rowDate).trim(),
+            description: String(rowDesc).trim(), // এখন এটি সঠিকভাবে ডাটা নিবে
+            voucher: tr.querySelector(".voucher-input")?.value || "",
+            deposit: parseFloat(tr.querySelector(".deposit-input")?.value) || 0,
+            expense: parseFloat(tr.querySelector(".expense-input")?.value) || 0,
+            balance: tr.querySelector(".row-balance")?.innerText.replace(/,/g, '') || "0.00"
+        };
+    });
+
+    const payload = {
+        action: "saveLedger",
+        cod: document.getElementById("cod").value,
+        name: document.getElementById("custName").value,
+        mobile: document.getElementById("mobile").value,
+        area: document.getElementById("area").value,
+        address: document.getElementById("address").value,
+        custType: document.getElementById("custType").value,
+        payType: document.getElementById("payType").value,
+        openingBalance: document.getElementById("openingBalance").value || 0,
+        finalBalance: document.getElementById("finalBalance").innerText,
+        rows: rows
     };
-});
 
     try {
         const response = await fetch(SCRIPT_URL, { 
@@ -356,12 +370,11 @@
         
         if (result.status === "success") {
             document.getElementById("successOverlay").style.display = "flex";
-            resetForm(); // সেভ হওয়ার পর ফর্ম ক্লিয়ার করুন
         } else {
             alert("Error: " + result.message);
         }
     } catch (e) { 
-        alert("সংরক্ষণে সমস্যা হয়েছে। ইন্টারনেট সংযোগ চেক করুন।"); 
+        alert("সংরক্ষণে সমস্যা হয়েছে। ইন্টারনেট সংযোগ চেক করুন।"); 
     } finally { 
         btn.disabled = false; 
         btn.innerHTML = oldText; 
