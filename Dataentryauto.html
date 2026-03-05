@@ -461,23 +461,23 @@
             return convert(Math.floor(num)) + " Taka Only";
         }
 
-        async function saveData() {
+       async function saveData() {
     const btn = document.getElementById("saveBtn");
     btn.disabled = true;
     const oldText = btn.innerHTML;
     btn.innerHTML = '<span class="loader"></span> Saving...';
 
-    // ১. সঠিক ক্লাস নেম দিয়ে ডাটা সংগ্রহ (Particulars এর জন্য .particular-input ব্যবহার করা হয়েছে)
+    // ১. সঠিক ক্লাস নেম ব্যবহার করে ডাটা সংগ্রহ
     const rows = Array.from(document.querySelectorAll("#statementBody tr")).map(tr => {
-        // তারিখ সংগ্রহ
-        const rowDate = tr.querySelector(".date-input")?.value || "";
+        // তারিখ সংগ্রহ: .date-text ক্লাস থেকে টেক্সট নিতে হবে
+        const rowDate = tr.querySelector(".date-text")?.innerText || "";
         
-        // বিবরণ (Particulars) সংগ্রহ - আপনার HTML এ class="particular-input" ব্যবহার করা হয়েছে
-        const rowDesc = tr.querySelector(".particular-input")?.value || "";
+        // বিবরণ সংগ্রহ: আপনার HTML এ ক্লাস হলো .desc-input
+        const rowDesc = tr.querySelector(".desc-input")?.value || "";
 
         return {
             date: String(rowDate).trim(),
-            description: String(rowDesc).trim(), // এখন এটি সঠিকভাবে ডাটা নিবে
+            description: String(rowDesc).trim(),
             voucher: tr.querySelector(".voucher-input")?.value || "",
             deposit: parseFloat(tr.querySelector(".deposit-input")?.value) || 0,
             expense: parseFloat(tr.querySelector(".expense-input")?.value) || 0,
