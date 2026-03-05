@@ -80,6 +80,13 @@
         .input-label { font-size: 0.9rem; font-weight: 900; color: #1e3a8a; text-transform: uppercase; margin-left: 2px; }
         .customer-input { width: 100%; font-weight: 500; color: #000000; outline: none; background-color: #ffffff; border: 2px solid #cbd5e1; border-radius: 8px; padding: 8px 12px; font-size: 1rem; transition: all 0.2s; }
         .customer-input[readonly] { background-color: #ffffff; border-color: #e2e8f0; color: #000000; cursor: default; }
+        /* আজকের তারিখ হাইলাইট স্টাইল */
+      .datepicker-day.today-highlight { 
+        background: #1e40af !important; 
+        color: white !important; 
+        font-weight: bold;
+        border-radius: 50%;
+      }
     </style>
 </head>
 <body class="p-2 md:p-6" onclick="closeAllPickers(event)" onscroll="closeAllPickers(event)">
@@ -87,8 +94,8 @@
     <!-- ইনিশিয়াল ফুল স্ক্রিন লোডার -->
     <div id="pageLoader">
         <div class="main-loader mb-4"></div>
-        <h2 class="text-xl font-black text-blue-900 mb-1">মেসার্স নূর এন্টারপ্রাইজ</h2>
-        <p class="text-slate-500 font-bold animate-pulse">গুগল শিট থেকে ডাটা লোড হচ্ছে, দয়া করে অপেক্ষা করুন...</p>
+        <h2 class="text-xl font-black text-blue-900 mb-1">আসলামু আলাইকুম ওয়ারাহমাতুল্লাহ্</h2><BR
+        <p class="text-slate-500 font-bold animate-pulse">PLEASE WAIT, LOADING DATA...</p>
     </div>
 
     <!-- সেভিং এবং রি-লোডিং ওভারলে -->
@@ -113,10 +120,7 @@
         
         <div class="text-center mb-8 border-b-2 border-slate-900 pb-6 relative">
             <p class="text-sm font-bold text-slate-700 italic mb-1">বিসমিল্লাহির রাহমানির রাহিম</p>
-            <div class="md:absolute md:left-0 md:top-1/2 md:-translate-y-1/2 no-print my-4 md:my-0">
-            <button onclick="window.location.href='Dataentry.html'" class="bg-indigo-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-indigo-700 shadow-md flex items-center gap-2 no-print">
-   Manul Entry
-        </div>
+            
             <h1 class="text-4xl md:text-6xl font-black text-blue-900 tracking-tight mb-2">মেসার্স নূর এন্টারপ্রাইজ</h1>
             
             <div class="inline-block bg-blue-700 text-white px-8 py-1.5 rounded-full font-bold text-lg mb-3 shadow-md">প্রোঃ এম. এম. নূর-ই-মোহাম্মদ</div>
@@ -131,25 +135,64 @@
         </div>
 
         <div class="mb-6 space-y-5 no-print">
-            <div class="flex flex-col md:flex-row items-center gap-4 bg-blue-50 p-4 rounded-xl border border-blue-100">
-                <label class="text-blue-900 font-black text-lg whitespace-nowrap">কাস্টমার সার্চ:</label>
-                <div class="relative w-full">
-                    <input type="text" id="searchBox" placeholder="আইডি, নাম বা মোবাইল দিয়ে খুঁজুন..." oninput="showSuggestions(this.value)" autocomplete="off" class="w-full bg-white border-2 border-blue-200 rounded-lg px-4 py-3 font-bold focus:border-blue-500 outline-none transition-all shadow-sm text-lg" />
-                    <div id="suggestionsBox" class="suggestions-container"></div>
-                </div>
-            </div>
+            <div class="mb-6 no-print flex flex-col md:flex-row justify-between items-center gap-4">
+  <!-- বাম পাশের অংশ: কাস্টমার সার্চ বক্স (আলাদা কন্টেইনার) -->
+  <div class="flex items-center gap-2 bg-blue-50 p-2 rounded-lg border border-blue-100 max-w-md w-full">
+    <label class="text-blue-900 font-bold text-sm whitespace-nowrap px-1">কাস্টমার সার্চ:</label>
+    <div class="relative flex-grow">
+      <input type="text" id="searchBox" placeholder="খুঁজুন..." oninput="showSuggestions(this.value)" autocomplete="off" class="w-full bg-white border border-blue-200 rounded-md px-3 py-1.5 font-bold focus:border-blue-500 outline-none transition-all shadow-sm text-sm" />
+      <div id="suggestionsBox" class="suggestions-container" style="position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid #ddd; border-radius: 0 0 8px 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); z-index: 1000; display: none;"></div>
+    </div>
+  </div>
 
-            <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                <div class="input-group"><label class="input-label">কোড</label><input type="text" id="cod" readonly class="customer-input" /></div>
-                <div class="input-group md:col-span-2"><label class="input-label">কাস্টমার নাম</label><input type="text" id="custName" readonly class="customer-input" /></div>
-                <div class="input-group"><label class="input-label">মোবাইল</label><input type="text" id="mobile" readonly class="customer-input" /></div>
-                <div class="input-group md:col-span-2"><label class="input-label">ঠিকানা </label><input type="text" id="address" readonly class="customer-input" /></div>
-                <div class="input-group"><label class="input-label">টাইপ </label><input type="text" id="custType" readonly class="customer-input" /></div>
-                <div class="input-group"><label class="input-label">পেমেন্ট </label><input type="text" id="payType" readonly class="customer-input" /></div>
-                <div class="input-group"><label class="input-label">এলাকা </label><input type="text" id="area" readonly class="customer-input" /></div>
-                <div class="input-group"><label class="input-label">ওপেনিং ব্যালেন্স</label><input type="number" id="openingBalance" value="0.00" readonly class="customer-input bg-yellow-50 font-bold text-right text-black border-yellow-200" /></div>
-            </div>
+  <!-- ডান পাশের অংশ: ম্যানুয়াল এন্ট্রি বাটন (আলাদা কন্টেইনার) -->
+  <div class="flex-shrink-0">
+    <button onclick="window.location.href='Dataentry.html'" class="bg-indigo-600 text-white px-5 py-2.5 rounded-lg font-bold hover:bg-indigo-700 shadow-md flex items-center gap-2 whitespace-nowrap text-sm transition-all active:scale-95">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+        <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/>
+        <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5v11z"/>
+      </svg>
+      Manual Entry
+    </button>
+  </div>
+</div>
+
+           <div class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm mb-6 print-container">
+    <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+        <div class="input-group">
+            <label class="input-label">কোড</label>
+            <input type="text" id="cod" readonly class="customer-input" />
         </div>
+        <div class="input-group md:col-span-2">
+            <label class="input-label">কাস্টমার নাম</label>
+            <input type="text" id="custName" readonly class="customer-input" />
+        </div>
+        <div class="input-group">
+            <label class="input-label">মোবাইল</label>
+            <input type="text" id="mobile" readonly class="customer-input" />
+        </div>
+        <div class="input-group md:col-span-2">
+            <label class="input-label">ঠিকানা</label>
+            <input type="text" id="address" readonly class="customer-input" />
+        </div>
+        <div class="input-group">
+            <label class="input-label">টাইপ</label>
+            <input type="text" id="custType" readonly class="customer-input" />
+        </div>
+        <div class="input-group">
+            <label class="input-label">পেমেন্ট</label>
+            <input type="text" id="payType" readonly class="customer-input" />
+        </div>
+        <div class="input-group">
+            <label class="input-label">এলাকা</label>
+            <input type="text" id="area" readonly class="customer-input" />
+        </div>
+        <div class="input-group">
+            <label class="input-label">ওপেনিং ব্যালেন্স</label>
+            <input type="number" id="openingBalance" value="0.00" readonly class="customer-input bg-yellow-50 font-bold text-right text-black border-yellow-200" />
+        </div>
+    </div>
+</div>
 
         <div class="table-wrapper rounded-xl border-2 border-slate-900 mb-4 shadow-sm">
             <table class="w-full border-collapse bank-table text-sm">
@@ -182,10 +225,8 @@
                 <span class="text-blue-600">In Words:</span> <span id="inwordText" class="italic">Zero Taka Only</span>
             </div>
             <div class="flex gap-2">
-                <button onclick="addRow(true)" class="bg-blue-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-blue-700 shadow-md">রৌ যুক্ত করুন</button>
-                <button id="saveBtn" onclick="saveData()" class="bg-green-600 text-white px-8 py-2 rounded-lg font-black hover:bg-green-700 shadow-md transition-all uppercase tracking-wider">সংরক্ষণ করুন</button>
-            </div>
-        </div>
+                <button onclick="addRow(true)" class="bg-blue-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-blue-700 shadow-md">ADD ROW</button>
+                <button id="saveBtn" onclick="saveData()" class="bg-green-600 text-white px-8 py-2 rounded-lg font-black hover:bg-green-700 shadow-md transition-all uppercase tracking-wider">SAVE</button>         </div>        </div>
     </div>
 
     <!-- ডেট পিকার মডাল -->
@@ -233,22 +274,43 @@
         }
 
         function renderCalendar() {
-            const modal = document.getElementById('globalDatePicker');
-            const header = modal.querySelector('.datepicker-header');
-            const grid = modal.querySelector('.datepicker-grid');
-            grid.innerHTML = '';
-            const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-            header.innerHTML = `<button onclick="event.stopPropagation(); changeMonth(-1)">❮</button><span>${monthNames[currentMonth]} ${currentYear}</span><button onclick="event.stopPropagation(); changeMonth(1)">❯</button>`;
-            const dayNames = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
-            dayNames.forEach(d => grid.innerHTML += `<div class="datepicker-day-name">${d}</div>`);
-            const firstDay = new Date(currentYear, currentMonth, 1).getDay();
-            const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
-            for (let i = 0; i < firstDay; i++) grid.innerHTML += '<div></div>';
-            for (let d = 1; d <= daysInMonth; d++) {
-                const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
-                grid.innerHTML += `<div class="datepicker-day" onclick="selectDate('${dateStr}')">${d}</div>`;
-            }
-        }
+    const modal = document.getElementById('globalDatePicker');
+    const header = modal.querySelector('.datepicker-header');
+    const grid = modal.querySelector('.datepicker-grid');
+    grid.innerHTML = '';
+    
+    const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+    header.innerHTML = `
+        <button onclick="event.stopPropagation(); changeMonth(-1)">❮</button>
+        <span>${monthNames[currentMonth]} ${currentYear}</span>
+        <button onclick="event.stopPropagation(); changeMonth(1)">❯</button>
+    `;
+
+    const dayNames = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
+    dayNames.forEach(d => grid.innerHTML += `<div class="datepicker-day-name">${d}</div>`);
+
+    const firstDay = new Date(currentYear, currentMonth, 1).getDay();
+    const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+    
+    // আজকের তারিখ বের করা
+    const now = new Date();
+    const isThisMonth = now.getMonth() === currentMonth && now.getFullYear() === currentYear;
+    const todayDate = now.getDate();
+
+    for (let i = 0; i < firstDay; i++) grid.innerHTML += '<div></div>';
+
+    for (let d = 1; d <= daysInMonth; d++) {
+        const dateStr = `${String(d).padStart(2, '0')}-${String(currentMonth + 1).padStart(2, '0')}-${currentYear}`;
+        
+        // আজকের তারিখ হলে 'today-highlight' ক্লাস যোগ হবে
+        const isToday = (isThisMonth && d === todayDate) ? 'today-highlight' : '';
+        
+        grid.innerHTML += `
+            <div class="datepicker-day ${isToday}" onclick="selectDate('${dateStr}')">
+                ${d}
+            </div>`;
+    }
+  }
 
         function changeMonth(step) {
             currentMonth += step;
@@ -464,19 +526,28 @@
             }
             return convert(Math.floor(num)) + " Taka Only";
         }
-
-       async function saveData() {
+async function saveData() {
     const btn = document.getElementById("saveBtn");
+    
+    // ১. পুরো পেজ লক করার জন্য একটি ওভারলে দেখানো (যদি HTML এ না থাকে তবে তৈরি হবে)
+    let loaderOverlay = document.getElementById("loadingOverlay");
+    if (!loaderOverlay) {
+        loaderOverlay = document.createElement("div");
+        loaderOverlay.id = "loadingOverlay";
+        loaderOverlay.style = "position:fixed; inset:0; background:rgba(255,255,255,0.7); z-index:9999; display:flex; align-items:center; justify-content:center; cursor:wait;";
+        loaderOverlay.innerHTML = '<div class="text-center"><div class="loader"></div><p class="font-bold text-blue-900 mt-2">Saving Data... Please Wait</p></div>';
+        document.body.appendChild(loaderOverlay);
+    }
+    
+    // পেজ এবং বাটন লক করা
+    loaderOverlay.style.display = "flex";
     btn.disabled = true;
     const oldText = btn.innerHTML;
-    btn.innerHTML = '<span class="loader"></span> Saving...';
+    btn.innerHTML = 'Saving...';
 
-    // ১. সঠিক ক্লাস নেম ব্যবহার করে ডাটা সংগ্রহ
+    // ডাটা সংগ্রহ
     const rows = Array.from(document.querySelectorAll("#statementBody tr")).map(tr => {
-        // তারিখ সংগ্রহ: .date-text ক্লাস থেকে টেক্সট নিতে হবে
         const rowDate = tr.querySelector(".date-text")?.innerText || "";
-        
-        // বিবরণ সংগ্রহ: আপনার HTML এ ক্লাস হলো .desc-input
         const rowDesc = tr.querySelector(".desc-input")?.value || "";
 
         return {
@@ -511,15 +582,21 @@
         const result = await response.json();
         
         if (result.status === "success") {
+            // সেভ সফল হলে ওভারলে লুকানো এবং সাকসেস মেসেজ দেখানো
+            loaderOverlay.style.display = "none";
             document.getElementById("successOverlay").style.display = "flex";
         } else {
+            loaderOverlay.style.display = "none";
             alert("Error: " + result.message);
         }
     } catch (e) { 
+        loaderOverlay.style.display = "none";
         alert("সংরক্ষণে সমস্যা হয়েছে। ইন্টারনেট সংযোগ চেক করুন।"); 
     } finally { 
         btn.disabled = false; 
         btn.innerHTML = oldText; 
+        // নিশ্চিত করা যে কোনো কারণে এরর হলেও যেন পেজ লক হয়ে না থাকে
+        if (loaderOverlay) loaderOverlay.style.display = "none";
     }
 }
 
