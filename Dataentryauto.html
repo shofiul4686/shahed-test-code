@@ -350,38 +350,40 @@
         }
 
         function executeSearch(query) {
-            if (!query) return;
-            const cod = query.trim();
-            const customerEntries = allCustomers.filter(c => c.cod === cod);
-            
-            if (customerEntries.length > 0) {
-                const baseInfo = customerEntries[0];
-                document.getElementById("cod").value = baseInfo.cod;
-                document.getElementById("custName").value = baseInfo.name;
-                document.getElementById("mobile").value = baseInfo.mobile;
-                document.getElementById("address").value = baseInfo.address || "";
-                document.getElementById("custType").value = baseInfo.custType || "";
-                document.getElementById("payType").value = baseInfo.payType || "";
-                document.getElementById("area").value = baseInfo.area || "";
-                
-                let totalUnpaidBalance = 0;
-                customerEntries.forEach(entry => {
-                    if (entry.statusN === "UNPAID") {
-                        totalUnpaidBalance += entry.balance;
-                    }
-                });
+    if (!query) return;
+    const cod = query.trim();
+    // ওই কাস্টমারের সব এন্ট্রি ফিল্টার করা হচ্ছে
+    const customerEntries = allCustomers.filter(c => c.cod === cod);
+    
+    if (customerEntries.length > 0) {
+        // ১. বেসিক তথ্য নেওয়ার জন্য প্রথম এন্ট্রি (Index 0)
+        const baseInfo = customerEntries[0];
+        
+        document.getElementById("cod").value = baseInfo.cod;
+        document.getElementById("custName").value = baseInfo.name;
+        document.getElementById("mobile").value = baseInfo.mobile;
+        document.getElementById("address").value = baseInfo.address || "";
+        document.getElementById("custType").value = baseInfo.custType || "";
+        document.getElementById("payType").value = baseInfo.payType || "";
+        document.getElementById("area").value = baseInfo.area || "";
+        
+        // ২. ওপেনিং ব্যালেন্সের জন্য সর্বশেষ এন্ট্রি (Last Index)
+        // এটি সরাসরি N কলামের (Total Due) সর্বশেষ ভ্যালু নেবে
+        const lastEntry = customerEntries[customerEntries.length - 1];
+        const lastDueBalance = parseFloat(lastEntry.balance) || 0;
 
-                document.getElementById("openingBalance").value = totalUnpaidBalance.toFixed(2);
-                document.getElementById("searchBox").value = "";
-                calculateStatement();
-                
-                setTimeout(() => { 
-                    const firstDesc = document.querySelector(".desc-input"); 
-                    if(firstDesc) firstDesc.focus(); 
-                }, 100);
-            }
-        }
-
+        document.getElementById("openingBalance").value = lastDueBalance.toFixed(2);
+        
+        // ফর্ম ক্লিয়ার এবং ক্যালকুলেশন
+        document.getElementById("searchBox").value = "";
+        calculateStatement();
+        
+        setTimeout(() => { 
+            const firstDesc = document.querySelector(".desc-input"); 
+            if(firstDesc) firstDesc.focus(); 
+        }, 100);
+    }
+}
         function addRow(focus = false) {
             const tbody = document.getElementById("statementBody");
             const row = document.createElement("tr");
