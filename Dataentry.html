@@ -18,24 +18,51 @@
         .no-print { display: none !important; }
         .print-container { box-shadow: none !important; border: none !important; width: 100% !important; padding: 0 !important; }
         input, select { border: none !important; outline: none !important; appearance: none; background: transparent !important; }
+        .bank-table { border-collapse: collapse !important; width: 100% !important; }
+        .bank-table th, .bank-table td { border: 1px solid black !important; }
       }
 
       .bank-table input { width: 100%; border: none; background: transparent; padding: 6px 4px; outline: none; }
       .focus-ring:focus { border-color: #1e3a8a !important; box-shadow: 0 0 0 2px rgba(30, 58, 138, 0.2); }
       .field-label { color: #1e3a8a; font-weight: 900; text-transform: uppercase; font-size: 14px; }
       
-      /* Modals */
-      #alertOverlay, #confirmOverlay, #successOverlay { display: none; position: fixed; inset: 0; z-index: 5000; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
+      /* Modals & Overlays */
+      #alertOverlay, #confirmOverlay, #successOverlay, #loadingOverlay { 
+        display: none; 
+        position: fixed; 
+        inset: 0; 
+        z-index: 5000; 
+        align-items: center; 
+        justify-content: center; 
+        backdrop-filter: blur(4px); 
+      }
       #alertOverlay { background: rgba(0,0,0,0.5); }
       #confirmOverlay { background: rgba(0,0,0,0.7); }
       #successOverlay { background: rgba(0,0,0,0.6); }
+      #loadingOverlay { background: rgba(0,0,0,0.85); flex-direction: column; color: white; }
+      
       .modal-box { background: white; padding: 25px; border-radius: 15px; max-width: 400px; width: 90%; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
       
-      .loader { border: 3px solid #f3f3f3; border-top: 3px solid #3498db; border-radius: 50%; width: 18px; height: 18px; animation: spin 1s linear infinite; display: inline-block; vertical-align: middle; }
+      .loader { 
+        border: 4px solid #f3f3f3; 
+        border-top: 4px solid #3498db; 
+        border-radius: 50%; 
+        width: 40px; 
+        height: 40px; 
+        animation: spin 1s linear infinite; 
+        display: inline-block; 
+      }
       @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+      .error-border { border-color: #ef4444 !important; background-color: #fef2f2 !important; }
     </style>
   </head>
   <body class="p-4 md:p-8">
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="no-print">
+      <div class="loader mb-4"></div>
+      <p id="loadingMessage" class="font-bold text-lg text-white text-center px-4">PLEASE WAIT SAVE DATA
+    </div>
 
     <!-- Alert Modal -->
     <div id="alertOverlay" class="no-print">
@@ -45,7 +72,7 @@
       </div>
     </div>
 
-    <!-- Confirm Modal -->
+    <!-- Confirm Modal (Not used for validation now, replaced by direct alert) -->
     <div id="confirmOverlay" class="no-print">
       <div class="modal-box">
         <h3 class="text-lg font-bold text-gray-800 mb-2">তথ্য অসম্পূর্ণ!</h3>
@@ -65,36 +92,34 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
           </svg>
         </div>
-        <h2 class="text-2xl font-bold text-gray-800 mb-6">সেভ সফল হয়েছে</h2>
-        <button onclick="closeSuccess()" class="w-full bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700">নতুন এন্ট্রি</button>
+        <h2 class="text-2xl font-bold text-gray-800 mb-6">SAVE SUCCESSFUL!</h2>
+        <button onclick="closeSuccess()" class="w-full bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700">NEW ENTRY</button>
       </div>
     </div>
 
     <div class="max-w-6xl mx-auto bg-white p-6 md:p-10 rounded-xl shadow-2xl border border-gray-200 print-container">
       <!-- Header -->
-     <div class="flex flex-col items-center border-b-4 border-blue-900 pb-6 mb-8 text-center relative">
-    <p class="text-sm font-bold text-gray-600 mb-1 italic">বিসমিল্লাহির রাহমানির রাহিম</p>
-    
-    <h1 class="text-4xl md:text-5xl font-black text-blue-900 mb-2">মেসার্স নূর এন্টারপ্রাইজ</h1>
-    
-    <div class="mb-3">
-        <span class="bg-blue-800 text-white px-6 py-1 rounded-full text-lg font-bold inline-block shadow-md">প্রোঃ এম. এম. নূর-ই-মোহাম্মদ</span>
-    </div>
+      <div class="flex flex-col items-center border-b-4 border-blue-900 pb-6 mb-8 text-center relative">
+        <p class="text-sm font-bold text-gray-600 mb-1 italic">বিসমিল্লাহির রাহমানির রাহিম</p>
+        <h1 class="text-4xl md:text-5xl font-black text-blue-900 mb-2">মেসার্স নূর এন্টারপ্রাইজ</h1>
+        <div class="mb-3">
+            <span class="bg-blue-800 text-white px-6 py-1 rounded-full text-lg font-bold inline-block shadow-md">প্রোঃ এম. এম. নূর-ই-মোহাম্মদ</span>
+        </div>
 
-    <div class="md:absolute md:left-0 md:top-1/2 md:-translate-y-1/2 no-print my-4 md:my-0">
-        <button onclick="window.location.href='Dataentryauto.html'" style="background-color: #1e293b; color: white; padding: 10px 20px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 8px; font-family: sans-serif; font-size: 14px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-            ⬅ Auto Entry
-        </button>
-    </div>
+        <!-- Auto Entry Button -->
+        <div class="md:absolute md:left-0 md:top-1/2 md:-translate-y-1/2 no-print my-4 md:my-0">
+            <button onclick="window.location.href='Dataentryauto.html'" style="background-color: #1e293b; color: white; padding: 10px 20px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 8px; font-family: sans-serif; font-size: 14px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                ⬅ Auto Entry
+            </button>
+        </div>
 
-    <p class="text-sm md:text-lg font-bold text-gray-700">বি,সি,আই,সি অনুমোদিত ডিলার, রাসায়নিক সার, কীটনাশক ও সিমেন্ট বিক্রেতা</p>
-    <p class="text-xs md:text-sm font-bold text-gray-600 mt-1">আমবাড়ী বাজার, পার্বতীপুর, দিনাজপুর। </p>
-    <p class="text-xs md:text-sm font-bold text-gray-800">মোবাঃ ০১৭৭২-৯৫৭৫১৫, ০১৭২০-৩৩৭৮১২, ০১৭১৭-৫২৭২৯২, ০১৭৩১-৭৩৩৩৪০</p>
-</div>
+        <p class="text-sm md:text-lg font-bold text-gray-700">বি,সি,আই,সি অনুমোদিত ডিলার, রাসায়নিক সার, কীটনাশক ও সিমেন্ট বিক্রেতা</p>
+        <p class="text-xs md:text-sm font-bold text-gray-600 mt-1">আমবাড়ী বাজার, পার্বতীপুর, দিনাজপুর। </p>
+        <p class="text-xs md:text-sm font-bold text-gray-800">মোবাঃ ০১৭৭২-৯৫৭৫১৫, ০১৭২০-৩৩৭৮১২, ০১৭১৭-৫২৭২৯২, ০১৭৩১-৭৩৩৩৪০</p>
+      </div>
 
       <!-- Form Body -->
       <div class="mb-8 bg-slate-50 p-6 rounded-xl border border-gray-200 print:bg-transparent print:p-0 print:border-none">
-        <!-- Cod and Connection Status in same row -->
         <div class="mb-6 flex flex-wrap items-center justify-between gap-4">
           <div class="flex items-center gap-4">
             <label class="field-label">Cod:</label>
@@ -150,7 +175,6 @@
                 <label class="field-label">Opening Balance:</label>
                 <input type="number" id="openingBalance" onkeydown="handleOpeningBalanceNav(event)" oninput="calculateStatement()" class="w-40 border border-blue-400 rounded px-3 py-2 text-right font-black text-blue-900 text-lg focus-ring" placeholder="0.00">
             </div>
-            <div id="inwordText" class="text-xs font-bold text-gray-500 italic"></div>
         </div>
       </div>
 
@@ -201,7 +225,6 @@
     const today = new Date().toLocaleDateString('en-GB');
     const statusEl = document.getElementById("connectionStatus");
     if(statusEl) statusEl.innerText = "Today: " + today;
-    
     resetFormUI();
   };
 
@@ -298,17 +321,54 @@
     }
   }
 
+  function showAlert(msg, targetId = null) {
+    const alertOverlay = document.getElementById("alertOverlay");
+    document.getElementById("alertMsg").innerText = msg;
+    alertOverlay.style.display = "flex";
+    
+    // Store target focus for closing
+    alertOverlay.dataset.targetId = targetId || "";
+  }
+
+  function closeAlert() {
+    const alertOverlay = document.getElementById("alertOverlay");
+    alertOverlay.style.display = "none";
+    const targetId = alertOverlay.dataset.targetId;
+    if(targetId) {
+      const el = document.getElementById(targetId);
+      if(el) el.focus();
+    }
+  }
+
   function handleTableNav(e, fieldType) {
     if(e.key === "Enter") {
         e.preventDefault();
         const row = e.target.closest("tr");
+        
+        // Validation: Particular, Deposit, Expense must not be empty/zero to move forward
+        const depVal = parseFloat(row.querySelector(".deposit-input").value) || 0;
+        const expVal = parseFloat(row.querySelector(".expense-input").value) || 0;
+        const partVal = row.querySelector(".particular-input").value.trim();
+
         if(fieldType === 'nextRow') {
+            if(depVal === 0 && expVal === 0) {
+              showAlert("জমা অথবা খরচ এর ঘরে সঠিক সংখ্যা লিখুন।", null);
+              row.querySelector(".deposit-input").focus();
+              return;
+            }
             addRow(true);
         } else {
             let nextSelector = "";
             switch(fieldType) {
                 case 'particulars': nextSelector = ".particular-input"; break;
-                case 'voucher': nextSelector = ".voucher-input"; break;
+                case 'voucher': 
+                  if(!partVal) {
+                    showAlert("বিবরণ (Particulars) এর ঘরটি পূরণ করুন।");
+                    row.querySelector(".particular-input").focus();
+                    return;
+                  }
+                  nextSelector = ".voucher-input"; 
+                  break;
                 case 'deposit': nextSelector = ".deposit-input"; break;
                 case 'expense': nextSelector = ".expense-input"; break;
             }
@@ -319,37 +379,52 @@
   }
 
   function initiateSave() {
-    const name = document.getElementById("custName").value.trim();
-    if(!name) { 
-        document.getElementById("emptyFieldNames").innerText = "Customer Name";
-        document.getElementById("confirmOverlay").style.display = "flex"; 
-    } else { 
-        saveData(); 
+    // Required IDs and Labels for user focus
+    const required = [
+      { id: "custName", label: "Customer Name" },
+      { id: "mobile", label: "Mobile" },
+      { id: "area", label: "Area" },
+      { id: "address", label: "Address" },
+      { id: "custType", label: "Type" },
+      { id: "payType", label: "Payment Method" }
+    ];
+
+    for (let field of required) {
+      const el = document.getElementById(field.id);
+      if (!el.value.trim()) {
+        showAlert(`${field.label} এর ঘরটি খালি। অনুগ্রহ করে পূরণ করুন।`, field.id);
+        return; // Stop execution
+      }
     }
+
+    // If all passed, check if there's at least one transaction row with values
+    const rows = document.querySelectorAll("#statementBody tr");
+    let hasTransaction = false;
+    rows.forEach(r => {
+      const d = parseFloat(r.querySelector(".deposit-input").value) || 0;
+      const e = parseFloat(r.querySelector(".expense-input").value) || 0;
+      if (d > 0 || e > 0) hasTransaction = true;
+    });
+
+    if(!hasTransaction) {
+      showAlert("অন্তত একটি জমা বা খরচের এন্ট্রি থাকতে হবে।");
+      return;
+    }
+
+    saveData(); 
   }
 
-  function confirmSave(val) {
-    document.getElementById("confirmOverlay").style.display = "none";
-    if(val) saveData();
-  }
-
-async function saveData() {
+  async function saveData() {
     const btn = document.getElementById("saveBtn");
+    const overlay = document.getElementById("loadingOverlay");
+    
+    overlay.style.display = "flex"; 
     btn.disabled = true;
-    const oldText = btn.innerHTML;
-    btn.innerHTML = '<span class="loader"></span> Saving...';
 
-    // ১. সঠিক ক্লাস নেম দিয়ে ডাটা সংগ্রহ (Particulars এর জন্য .particular-input ব্যবহার করা হয়েছে)
     const rows = Array.from(document.querySelectorAll("#statementBody tr")).map(tr => {
-        // তারিখ সংগ্রহ
-        const rowDate = tr.querySelector(".date-input")?.value || "";
-        
-        // বিবরণ (Particulars) সংগ্রহ - আপনার HTML এ class="particular-input" ব্যবহার করা হয়েছে
-        const rowDesc = tr.querySelector(".particular-input")?.value || "";
-
         return {
-            date: String(rowDate).trim(),
-            description: String(rowDesc).trim(), // এখন এটি সঠিকভাবে ডাটা নিবে
+            date: tr.querySelector(".date-input")?.value || "",
+            description: tr.querySelector(".particular-input")?.value || "",
             voucher: tr.querySelector(".voucher-input")?.value || "",
             deposit: parseFloat(tr.querySelector(".deposit-input")?.value) || 0,
             expense: parseFloat(tr.querySelector(".expense-input")?.value) || 0,
@@ -378,20 +453,22 @@ async function saveData() {
         });
         const result = await response.json();
         
+        overlay.style.display = "none";
+        btn.disabled = false;
+
         if (result.status === "success") {
             document.getElementById("successOverlay").style.display = "flex";
         } else {
             alert("Error: " + result.message);
         }
     } catch (e) { 
+        console.error(e);
+        overlay.style.display = "none";
+        btn.disabled = false;
         alert("সংরক্ষণে সমস্যা হয়েছে। ইন্টারনেট সংযোগ চেক করুন।"); 
-    } finally { 
-        btn.disabled = false; 
-        btn.innerHTML = oldText; 
     }
-}
-  function closeAlert() { document.getElementById("alertOverlay").style.display = "none"; }
-  
+  }
+
   function closeSuccess() {
     document.getElementById("successOverlay").style.display = "none";
     resetFormUI();
