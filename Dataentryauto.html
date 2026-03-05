@@ -260,47 +260,51 @@
             document.getElementById('suggestionsBox').style.display = 'none';
         }
 
-        async function loadInitialData(isSilent = false) {
+       async function loadInitialData(isSilent = false) {
+    if(!isSilent) {
+        const loader = document.getElementById("pageLoader");
+        loader.style.display = "flex";
+        loader.style.opacity = "1";
+        document.body.style.overflow = "hidden";
+    }
+
+    try {
+        const res = await fetch(`${SCRIPT_URL}?action=getSalesMasterData`);
+        const data = await res.json();
+        if (Array.isArray(data)) {
+            allCustomers = data.slice(1).map(row => ({
+                cod: String(row[2] || "").trim(),
+                name: String(row[3] || ""),
+                mobile: String(row[4] || ""),
+                area: String(row[5] || ""),
+                address: String(row[6] || ""),
+                custType: String(row[7] || ""),
+                payType: String(row[8] || ""),
+                
+                // N কলাম (Index 13) থেকে ব্যালেন্স নেওয়ার জন্য:
+                balance: parseFloat(row[13]) || 0, 
+                
+                // O কলাম (Index 14) থেকে স্ট্যাটাস চেক করার জন্য:
+                statusN: String(row[14] || "").trim().toUpperCase() 
+            }));
+            
             if(!isSilent) {
                 const loader = document.getElementById("pageLoader");
-                loader.style.display = "flex";
-                loader.style.opacity = "1";
-                document.body.style.overflow = "hidden";
+                loader.style.opacity = "0";
+                setTimeout(() => {
+                    loader.style.display = "none";
+                    document.body.style.overflow = "auto";
+                    document.getElementById("searchBox").focus();
+                }, 500);
             }
-
-            try {
-                const res = await fetch(`${SCRIPT_URL}?action=getSalesMasterData`);
-                const data = await res.json();
-                if (Array.isArray(data)) {
-                    allCustomers = data.slice(1).map(row => ({
-                        cod: String(row[2] || "").trim(),
-                        name: String(row[3] || ""),
-                        mobile: String(row[4] || ""),
-                        area: String(row[5] || ""),
-                        address: String(row[6] || ""),
-                        custType: String(row[7] || ""),
-                        payType: String(row[8] || ""),
-                        balance: parseFloat(row[12]) || 0,
-                        statusN: String(row[13] || "").trim().toUpperCase()
-                    }));
-                    
-                    if(!isSilent) {
-                        const loader = document.getElementById("pageLoader");
-                        loader.style.opacity = "0";
-                        setTimeout(() => {
-                            loader.style.display = "none";
-                            document.body.style.overflow = "auto";
-                            document.getElementById("searchBox").focus();
-                        }, 500);
-                    }
-                    return true;
-                }
-            } catch (e) { 
-                console.error("Data Load Failed", e);
-                if(!isSilent) alert("ডাটা লোড করতে সমস্যা হচ্ছে, দয়া করে পেজটি রিফ্রেশ দিন।");
-                return false;
-            }
+            return true;
         }
+    } catch (e) { 
+        console.error("Data Load Failed", e);
+        if(!isSilent) alert("ডাটা লোড করতে সমস্যা হচ্ছে, দয়া করে পেজটি রিফ্রেশ দিন।");
+        return false;
+    }
+}
 
         function showSuggestions(val) {
             const box = document.getElementById("suggestionsBox");
