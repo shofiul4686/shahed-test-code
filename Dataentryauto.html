@@ -455,57 +455,62 @@
         }
 
         async function saveData() {
-            const cod = document.getElementById("cod").value;
-            if (!cod) return alert("কাস্টমার সিলেক্ট করুন!");
-            const finalBal = parseFloat(document.getElementById("finalBalance").innerText) || 0;
-            let totalDep = 0;
-            document.querySelectorAll(".deposit-input").forEach(i => totalDep += (parseFloat(i.value) || 0));
-            
-            const payload = {
-                action: "saveLedger",
-                cod: cod,
-                name: document.getElementById("custName").value,
-                mobile: document.getElementById("mobile").value,
-                address: document.getElementById("address").value,
-                custType: document.getElementById("custType").value,
-                payType: document.getElementById("payType").value,
-                area: document.getElementById("area").value,
-                receivedAmount: totalDep.toFixed(2),
-                finalBalance: finalBal.toFixed(2),
-                statusN: finalBal === 0 ? "PAID" : "UNPAID"
-            };
+    const btn = document.getElementById("saveBtn");
+    btn.disabled = true;
+    const oldText = btn.innerHTML;
+    btn.innerHTML = '<span class="loader"></span> Saving...';
 
-            const btn = document.getElementById("saveBtn");
-            const loadingMsg = document.getElementById("loadingMessage");
-            btn.disabled = true; 
-            btn.innerText = 'Data Save...';
-            
-            loadingMsg.innerText = "Uplodiang...";
-            document.getElementById("loadingOverlay").style.display = "flex";
+    // ১. সঠিক ক্লাস নেম দিয়ে ডাটা সংগ্রহ (Particulars এর জন্য .particular-input ব্যবহার করা হয়েছে)
+    const rows = Array.from(document.querySelectorAll("#statementBody tr")).map(tr => {
+        // তারিখ সংগ্রহ
+        const rowDate = tr.querySelector(".date-input")?.value || "";
+        
+        // বিবরণ (Particulars) সংগ্রহ - আপনার HTML এ class="particular-input" ব্যবহার করা হয়েছে
+        const rowDesc = tr.querySelector(".particular-input")?.value || "";
 
-            try {
-                const res = await fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify(payload) });
-                const result = await res.json();
-                
-                if (result.status === "success") {
-                    loadingMsg.innerText = "সফলভাবে সেভ হয়েছে! নতুন ডাটা লোড হচ্ছে...";
-                    const loadStatus = await loadInitialData(true);
-                    
-                    if(loadStatus) {
-                        document.getElementById("loadingOverlay").style.display = "none";
-                        document.getElementById("successOverlay").style.display = "flex";
-                    } else {
-                        throw new Error("Reload failed");
-                    }
-                }
-            } catch (e) { 
-                alert("তথ্য সংরক্ষণে বা আপডেট করতে সমস্যা হয়েছে। দয়া করে আবার চেষ্টা করুন।"); 
-                document.getElementById("loadingOverlay").style.display = "none";
-            } finally { 
-                btn.disabled = false; 
-                btn.innerText = "Save"; 
-            }
+        return {
+            date: String(rowDate).trim(),
+            description: String(rowDesc).trim(), // এখন এটি সঠিকভাবে ডাটা নিবে
+            voucher: tr.querySelector(".voucher-input")?.value || "",
+            deposit: parseFloat(tr.querySelector(".deposit-input")?.value) || 0,
+            expense: parseFloat(tr.querySelector(".expense-input")?.value) || 0,
+            balance: tr.querySelector(".row-balance")?.innerText.replace(/,/g, '') || "0.00"
+        };
+    });
+
+    const payload = {
+        action: "saveLedger",
+        cod: document.getElementById("cod").value,
+        name: document.getElementById("custName").value,
+        mobile: document.getElementById("mobile").value,
+        area: document.getElementById("area").value,
+        address: document.getElementById("address").value,
+        custType: document.getElementById("custType").value,
+        payType: document.getElementById("payType").value,
+        openingBalance: document.getElementById("openingBalance").value || 0,
+        finalBalance: document.getElementById("finalBalance").innerText,
+        rows: rows
+    };
+
+    try {
+        const response = await fetch(SCRIPT_URL, { 
+            method: "POST", 
+            body: JSON.stringify(payload) 
+        });
+        const result = await response.json();
+        
+        if (result.status === "success") {
+            document.getElementById("successOverlay").style.display = "flex";
+        } else {
+            alert("Error: " + result.message);
         }
+    } catch (e) { 
+        alert("সংরক্ষণে সমস্যা হয়েছে। ইন্টারনেট সংযোগ চেক করুন।"); 
+    } finally { 
+        btn.disabled = false; 
+        btn.innerHTML = oldText; 
+    }
+}
 
         function resetForm() {
             ["cod", "custName", "mobile", "address", "custType", "payType", "area", "openingBalance", "searchBox"].forEach(id => { 
