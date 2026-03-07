@@ -13,6 +13,7 @@
     
     <style>
         :root{--report-blue:#3498db;--header-bg:#2c3e50;--history-bg:#ffffff}
+        
         body{background-color:#082901f6;font-family:'Segoe UI',Tahoma,sans-serif}
         .sticky-top-container{position:sticky;top:0;z-index:1050;background-color:#f4f7f6;padding:10px 0}
         .table-container,.history-container{background:#fff;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.05);position:relative;overflow:hidden;margin-bottom:20px}
@@ -31,16 +32,24 @@
         .card-stat { transition: transform 0.2s; border: none !important; }
         .table td { font-size: 0.75rem; white-space: nowrap; }
 
+        /* ডেট ইনপুট বক্সের ভেতরে ক্লিনার লুকের জন্য */
+input[type="date"]::-webkit-calendar-picker-indicator {
+    cursor: pointer;
+    padding: 2px;
+}
+
+input[type="date"] {
+    color: #666; /* শুরুতে টেক্সট কালার হালকা থাকবে */
+}
+
+input[type="date"]:focus {
+    color: #000; /* সিলেক্ট করলে গাঢ় হবে */
+}
+
+
         /* Receipt Modal Styles */
         #receiptModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 3000; justify-content: center; align-items: center; }
-        .receipt-content {
-    background: white;
-    width: 95%; /* ফিক্সড ৪০০ পিক্সেল থেকে পরিবর্তন */
-    max-width: 600px; /* স্ক্রিনে দেখার জন্য একটি সুন্দর সাইজ */
-    padding: 30px;
-    border-radius: 8px;
-    margin: auto;
-}
+        .receipt-content { background: white; width: 95%; max-width: 600px; padding: 30px; border-radius: 8px; margin: auto; }
         .receipt-header { text-align: center; border-bottom: 1px dashed #ccc; padding-bottom: 10px; margin-bottom: 10px; }
         .receipt-row { display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 5px; }
         .receipt-total { border-top: 1px solid #000; padding-top: 5px; margin-top: 10px; font-weight: bold; }
@@ -48,37 +57,98 @@
 
         /* Bulk Pay Styles */
         #bulkPayContainer { display: none; margin-bottom: 10px; padding: 10px; background: #e8f4fd; border-radius: 8px; border: 1px solid #3498db; }
-
-       @media print {
-    /* পুরো পেজ সেটআপ */
-    @page {
-        size: A4;
-        margin: 20mm;
-    }
-    
-    body * { visibility: hidden; }
-    
-    /* রিসিটটি পুরো পেজ জুড়ে দেখাবে */
-    #receiptModal, #receiptModal * { visibility: visible; }
-    
-    #receiptModal {
-        position: absolute;
-        left: 0;
-        top: 0;
-        width: 100%;
-        background: white;
-        display: block !important;
-    }
-
-    .receipt-content {
-        width: 100% !important; /* A4 এর পুরো প্রস্থ নিবে */
-        box-shadow: none !important;
-        padding: 0 !important;
-        border: none !important;
-    }
-
-    .no-print { display: none !important; }
+/* স্ক্রিনে লুকানো থাকবে */
+.print-grand-total {
+    display: none;
 }
+        /* BLACK AND WHITE PRINT STYLES */
+         @media print {
+            @page { size: landscape; margin: 10mm; }
+            body { background-color: white !important; color: black !important; padding: 0 !important; margin: 0 !important; }
+            
+           /* Hide UI Elements & Cards (Cards like Today Sale, Total Sale etc.) */
+.no-print, .sticky-top-container, .toast-msg, .action-select, .paid-input, 
+#bulkPayContainer, #historyBtn, .spinner-border, #mainSummary, 
+.row.g-1.mb-2, #pTotalSale, #pTotalColl, #pTotalDue { 
+    display: none !important; 
+}
+
+/* প্রিন্ট করার সময় টেবিলের অংশ হিসেবে দেখাবে */
+    .print-grand-total {
+        display: table-row !important;
+        background-color: #f2f2f2 !important; /* হালকা ধূসর রঙ */
+        -webkit-print-color-adjust: exact;
+    }
+
+    .print-grand-total td {
+        border: 1px solid black !important;
+        font-size: 11px !important; /* কিছুটা বড় করা হয়েছে স্পষ্টতার জন্য */
+        padding: 6px 4px !important;
+        font-weight: bold !important; /* পুরো রো-টি বোল্ড হবে */
+        color: black !important;
+        text-transform: uppercase; /* লেখাগুলো বড় হাতের হবে */
+    }
+            .table-container { 
+                box-shadow: none !important; 
+                border: none !important; 
+                border-radius: 0 !important; 
+                overflow: visible !important; 
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+            .table-responsive { overflow: visible !important; max-height: none !important; }
+            
+            .table { 
+    width: 100% !important; 
+    /* বর্ডারগুলো একে অপরের সাথে মিশে যাবে (ডাবল দেখাবে না) */
+    border-collapse: collapse !important; 
+    color: black !important;
+    /* পুরো টেবিলের বাইরের বর্ডার */
+    border: 1px solid black !important; 
+}
+
+            .table thead th { 
+    background-color: #f2f2f2 !important; 
+    color: black !important; 
+    /* বর্ডার ১ পিক্সেল করলে প্রিন্টে আরও স্পষ্ট আসবে */
+    border: 1px solid black !important; 
+    font-size: 10px !important;
+    text-align: center !important;
+    font-weight: bold !important; 
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+}
+
+            .table td { 
+    border: 1px solid black !important; 
+    color: black !important;
+    font-size: 10px !important;
+    background: white !important;
+    font-weight: normal !important; 
+    padding: 4px !important; /* লেখা যেন বর্ডারের সাথে লেগে না যায় */
+}
+
+            /* Remove bold classes during print */
+            .table td.fw-bold, .table td .fw-bold, .text-primary, .text-success, .text-danger, .fw-bold { 
+                font-weight: normal !important; 
+                color: black !important; 
+            }
+
+            .status-badge { 
+                border: 0.5px solid rgb(245, 240, 240) !important; 
+                color: black !important; 
+                background: white !important; 
+                padding: 1px 3px !important;
+                font-weight: normal !important;
+            }
+
+            #printHeader { 
+                display: block !important; 
+                border-bottom: none;
+                margin-bottom: 10px;
+                padding-bottom: 5px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -97,11 +167,8 @@
         <div class="receipt-row"><span>Customer:</span> <span id="rCust"></span></div>
         <hr class="my-2 border-dashed">
         
-        <!-- Individual Items or Bulk List -->
         <div id="receiptItems">
-            <div class="receipt-row"><span>Invoice:</span> <span id="rInv" class="fw-bold"></span></div>
-            <div class="receipt-row"><span>Paid Amount:</span> <span id="rAmt" class="fw-bold text-success"></span></div>
-            <div class="receipt-row"><span>Remaining Due:</span> <span id="rDue" class="text-danger"></span></div>
+            <!-- Items injected by JS -->
         </div>
 
         <div class="receipt-total receipt-row">
@@ -124,15 +191,30 @@
     </div>
 </div>
 
+<!-- Main Print Header (Visible only in Print - B&W) -->
+<div id="printHeader" style="display:none;">
+    <h1 style="text-align: center; margin-bottom: 2px; font-weight: bold;">SALES MASTER REPORT</h1>
+    
+    <h3 id="dynamicFilterName" style="text-align: center; margin-top: 0; margin-bottom: 10px; font-weight: bold; text-transform: uppercase;"></h3>
+    
+    <div style="text-align: center; font-size: 12px; margin-bottom: 10px;">
+        Generated on: <span id="printDateTime"></span> | Operator: <span id="printOperator"></span>
+    </div>
+    <hr style="border: 0.5px solid black;">
+</div>
+
 <div class="container-fluid px-3">
     <!-- Header & Main Summary -->
-    <div class="sticky-top-container">
+    <div class="sticky-top-container no-print">
         <div class="d-flex justify-content-between align-items-center mb-2">
             <div>
-                <h4 class="fw-bold m-0 text-dark">REPORT MANAGEMENT SYSTEM</h4>
+                <h4 class="fw-bold m-0 text-dark">REPORT MANAGEMENT </h4>
                 <p class="text-muted small mb-0">SALES & PAYMENT MONITORING</p>
             </div>
             <div class="d-flex gap-2">
+                <button class="btn btn-outline-dark btn-sm rounded-pill px-3" onclick="printMainTable()">
+                    <i class="fas fa-print me-1"></i> Print Report (B&W)
+                </button>
                 <button id="historyBtn" class="btn btn-primary btn-sm rounded-pill px-3" onclick="toggleHistorySection()">
                     <i class="fas fa-history me-1"></i> Payment History
                 </button>
@@ -142,7 +224,88 @@
             </div>
         </div>
 
-        <div class="row g-1 mb-2 text-center" id="mainSummary">
+      
+
+       <div id="mainFilterContainer">
+    <div id="filterSection" class="filter-section mb-3 p-2 bg-white rounded shadow-sm">
+        <div class="row g-2 align-items-center">
+            <div class="col-md-4">
+                <div class="input-group input-group-sm">
+                    <span class="input-group-text bg-white border-end-0"><i class="fas fa-search text-muted"></i></span>
+                    <input type="text" id="globalSearch" class="form-control border-start-0" placeholder="Search Sales..." onkeyup="applyMainFilters()">
+                </div>
+            </div>
+
+            <div class="col-md-2">
+                <select id="statusFilter" class="form-select form-select-sm" onchange="applyMainFilters()">
+                    <option value="">All Status</option>
+                    <option value="UNPAID">Unpaid</option>
+                    <option value="PART PAID">Part Paid</option>
+                    <option value="FULL PAID">Full Paid</option>
+                </select>
+            </div>
+
+            <div class="col-md-4">
+                <div class="input-group input-group-sm">
+                    <span class="input-group-text bg-light fw-bold" style="font-size: 0.65rem;">FROM</span>
+                    <input type="date" id="startDate" class="form-control" style="font-size: 0.75rem; cursor: pointer;" onchange="applyMainFilters()" onclick="this.showPicker()">
+                    
+                    <span class="input-group-text bg-light fw-bold" style="font-size: 0.65rem;">TO</span>
+                    <input type="date" id="endDate" class="form-control" style="font-size: 0.75rem; cursor: pointer;" onchange="applyMainFilters()" onclick="this.showPicker()">
+                </div>
+            </div>
+
+            <div class="col-md-2">
+                <button class="btn btn-sm btn-outline-danger w-100 fw-bold" onclick="resetMainFilters()" style="font-size: 0.75rem;">
+                    <i class="fas fa-undo-alt me-1"></i> RESET
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+        
+
+        <!-- Bulk Payment Alert Box -->
+        <div id="bulkPayContainer" class="justify-content-between align-items-center">
+            <div>
+                <i class="fas fa-info-circle text-primary me-2"></i>
+                <span id="bulkPayMsg" class="fw-bold text-dark small"></span>
+            </div>
+            <button class="btn btn-sm btn-success px-3" onclick="processBulkPay()">
+                <i class="fas fa-money-bill-wave me-1"></i> Pay All Dues Now
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Table -->
+    <div id="mainTableContainer" class="table-container border">
+        <div id="tableLoader" class="no-print"><div class="spinner-border text-primary"></div></div>
+        <div class="table-responsive" id="printableMainTable" style="max-height: 65vh;">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="sticky-top">
+                    <tr>
+                        <th>SL</th>
+                        <th>Date</th>
+                        <th>Inv No</th>
+                        <th>Cust. Code</th>
+                        <th>Customer Name</th>
+                        <th>Mobile No</th>
+                        <th>Area</th>
+                        <th>Address</th>
+                        <th class="text-end">Total</th>
+                        <th class="text-end">Paid</th>
+                        <th class="text-end">Due</th>
+                        <th class="text-center">Status</th>
+                        <th class="text-center no-print">Action</th>
+                    </tr>
+                </thead>
+                <tbody id="reportTableBody">
+                    <tr><td colspan="13" class="text-center py-5">Loading Data...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="row g-1 mb-2 text-center" id="mainSummary">
             <div class="col-md-2">
                 <div class="card p-2 shadow-sm card-stat bg-primary-subtle border-primary">
                     <h6 class="text-muted small mb-1" style="font-size: 0.6rem;">TODAY SALE</h6>
@@ -175,80 +338,9 @@
             </div>
         </div>
 
-        <div id="mainFilterContainer">
-            <div id="filterSection" class="filter-section mb-3">
-                <div class="row g-2">
-                    <div class="col-md-6">
-                        <div class="input-group input-group-sm">
-                            <span class="input-group-text bg-white"><i class="fas fa-search text-muted"></i></span>
-                            <input type="text" id="globalSearch" class="form-control" placeholder="Search Sales by Name, Invoice, Mobile..." onkeyup="applyMainFilters()">
-                        </div>
-                    </div>
-                    <div class="col-md-2">
-                        <select id="statusFilter" class="form-select form-select-sm" onchange="applyMainFilters()">
-                            <option value="">All Status</option>
-                            <option value="UNPAID">Unpaid</option>
-                            <option value="PART PAID">Part Paid</option>
-                            <option value="FULL PAID">Full Paid</option>
-                        </select>
-                    </div>
-                    <div class="col-md-2">
-                        <div class="input-group input-group-sm">
-                            <span class="input-group-text bg-white small" style="font-size: 0.65rem;">Filter Date</span>
-                            <input type="date" id="startDate" class="form-control form-control-sm" onchange="applyMainFilters()">
-                        </div>
-                    </div>
-                    <div class="col-md-2">
-                        <button class="btn btn-sm btn-outline-danger w-100" onclick="resetMainFilters()">Reset All</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Bulk Payment Alert Box -->
-        <div id="bulkPayContainer" class="justify-content-between align-items-center">
-            <div>
-                <i class="fas fa-info-circle text-primary me-2"></i>
-                <span id="bulkPayMsg" class="fw-bold text-dark small"></span>
-            </div>
-            <button class="btn btn-sm btn-success px-3" onclick="processBulkPay()">
-                <i class="fas fa-money-bill-wave me-1"></i> Pay All Dues Now
-            </button>
-        </div>
-    </div>
-
-    <!-- Main Table -->
-    <div id="mainTableContainer" class="table-container border">
-        <div id="tableLoader"><div class="spinner-border text-primary"></div></div>
-        <div class="table-responsive" style="max-height: 65vh;">
-            <table class="table table-hover align-middle mb-0">
-                <thead class="sticky-top">
-                    <tr>
-                        <th>SL</th>
-                        <th>Date</th>
-                        <th>Inv No</th>
-                        <th>Cust. Code</th>
-                        <th>Customer Name</th>
-                        <th>Mobile No</th>
-                        <th>Area</th>
-                        <th>Address</th>
-                        <th class="text-end">Total</th>
-                        <th class="text-end">Paid</th>
-                        <th class="text-end">Due</th>
-                        <th class="text-center">Status</th>
-                        <th class="text-center">Action</th>
-                    </tr>
-                </thead>
-                <tbody id="reportTableBody">
-                    <tr><td colspan="13" class="text-center py-5">Loading Data...</td></tr>
-                </tbody>
-            </table>
-        </div>
-    </div>
-
     <!-- History Section -->
     <div id="historySection" class="history-container">
-        <div class="bg-dark text-white p-2 d-flex justify-content-between align-items-center">
+        <div class="bg-dark text-white p-2 d-flex justify-content-between align-items-center no-print">
             <div class="d-flex align-items-center">
                 <span class="small ms-2 fw-bold"><i class="fas fa-history me-2"></i>Payment History Details</span>
             </div>
@@ -259,7 +351,7 @@
             </div>
         </div>
 
-        <div class="p-2 border-bottom bg-light">
+        <div class="p-2 border-bottom bg-light no-print">
             <div class="row g-2">
                 <div class="col-md-4">
                     <div class="input-group input-group-sm">
@@ -287,19 +379,24 @@
         </div>
 
         <div class="table-responsive" style="max-height: 400px; min-height: 100px;">
-            <div id="historyLoader"><div class="spinner-border text-primary"></div></div>
+            <div id="historyLoader" class="no-print"><div class="spinner-border text-primary"></div></div>
             <table class="table table-sm table-hover mb-0" id="historyTable" style="min-width: 1200px;">
                 <thead class="sticky-top">
                     <tr>
                         <th>SL</th>
                         <th>Payment Date</th>
                         <th>MR No</th>
-                        <th>Invoice No</th>
                         <th>Invoice Date</th>
+                        <th>Invoice NO </th>
+                        <th>Customer Code</th>
                         <th>Customer Name</th>
-                        <th class="text-end">Paid Amount</th>
-                        <th class="text-center">Status</th>
-                        <th>Operator</th>
+                       
+                          <th>Address</th>
+                          <th>MOBILE No</th>
+                          <th>Area</th>
+                        <th>Paid Amount</th>
+                        <th class="text-end">Status</th>
+                        
                     </tr>
                 </thead>
                 <tbody id="historyTableBody"></tbody>
@@ -307,7 +404,7 @@
         </div>
 
         <!-- SUMMARY FOOTER -->
-        <div id="historySummaryFooter" class="history-summary-footer border-top">
+        <div id="historySummaryFooter" class="history-summary-footer border-top no-print">
             <div class="row text-center g-2 align-items-center">
                 <div class="col-md-3 border-end border-secondary">
                     <div class="summary-label">Total Collection</div>
@@ -367,20 +464,13 @@
         if (!dateVal || dateVal === "-" || dateVal === "undefined") return "";
         let dStr = String(dateVal).trim();
         if (/^\d{4}-\d{2}-\d{2}$/.test(dStr)) return dStr;
-        const separator = dStr.includes('.') ? '.' : (dStr.includes('-') ? '-' : null);
-        if (separator) {
-            const parts = dStr.split(separator);
-            if (parts.length === 3) {
-                let d, m, y;
-                if (parts[2].length === 4) { d = parts[0].padStart(2,'0'); m = parts[1].padStart(2,'0'); y = parts[2]; }
-                else if (parts[0].length === 4) { y = parts[0]; m = parts[1].padStart(2,'0'); d = parts[2].padStart(2,'0'); }
-                if (y) return `${y}-${m}-${d}`;
-            }
+        const parts = dStr.split(/[.\-\/]/);
+        if (parts.length === 3) {
+            let d, m, y;
+            if (parts[2].length === 4) { d = parts[0]; m = parts[1]; y = parts[2]; }
+            else if (parts[0].length === 4) { y = parts[0]; m = parts[1]; d = parts[2]; }
+            if (y) return `${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
         }
-        try {
-            const d = new Date(dateVal);
-            if (!isNaN(d.getTime())) return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-        } catch(e) {}
         return "";
     }
 
@@ -396,85 +486,120 @@
     }
 
     function applyMainFilters() {
-        const search = document.getElementById('globalSearch').value.toLowerCase();
-        const status = document.getElementById('statusFilter').value;
-        const dateFilter = document.getElementById('startDate').value; 
+    const search = document.getElementById('globalSearch').value.toLowerCase();
+    const status = document.getElementById('statusFilter').value;
+    const dateFilter = document.getElementById('startDate').value; 
+    
+    currentFilteredData = rawSalesData.filter(row => {
+        const rowDate = normalizeToISO(row[1]); 
+        const rowStatus = String(row[10] || "").trim().toUpperCase(); // K কলামের স্ট্যাটাস
         
-        currentFilteredData = rawSalesData.filter(row => {
-            const rowDate = normalizeToISO(row[1]); 
-            const matchesSearch = row.some(c => String(c).toLowerCase().includes(search));
-            const matchesStatus = (!status || row[10] === status);
-            const matchesDate = (!dateFilter || rowDate === dateFilter);
-            return matchesSearch && matchesStatus && matchesDate;
-        });
+        const matchesSearch = row.some(c => String(c).toLowerCase().includes(search));
+        const matchesDate = (!dateFilter || rowDate === dateFilter);
 
-        const bulkContainer = document.getElementById('bulkPayContainer');
-        const duesOnly = currentFilteredData.filter(r => Number(r[12] || 0) > 0);
-        
-        if (search.length >= 4 && duesOnly.length > 1) {
-            const totalDue = duesOnly.reduce((acc, r) => acc + Number(r[12] || 0), 0);
-            document.getElementById('bulkPayMsg').innerText = `${duesOnly.length}টি পেন্ডিং ইনভয়েস পাওয়া গেছে। মোট ডিউ: ${totalDue.toLocaleString()} টাকা।`;
-            bulkContainer.style.display = 'flex';
+        // নতুন লজিক: UNPAID সিলেক্ট করলে PART PAID এবং UNPAID দুইটাই দেখাবে
+        let matchesStatus = false;
+        if (!status) {
+            matchesStatus = true; // All Status এর জন্য সব দেখাবে
+        } else if (status === "UNPAID") {
+            matchesStatus = (rowStatus === "UNPAID" || rowStatus === "PART PAID");
         } else {
-            bulkContainer.style.display = 'none';
+            matchesStatus = (rowStatus === status);
         }
 
-        renderSalesTable(currentFilteredData);
+        return matchesSearch && matchesStatus && matchesDate;
+    });
+
+    // বাল্ক পে কন্টেইনার আপডেট লজিক
+    const bulkContainer = document.getElementById('bulkPayContainer');
+    const duesOnly = currentFilteredData.filter(r => Number(r[13] || 0) > 0); // Index 13 এ Due থাকে
+    
+    if (search.length >= 4 && duesOnly.length > 1) {
+        const totalDue = duesOnly.reduce((acc, r) => acc + Number(r[13] || 0), 0);
+        document.getElementById('bulkPayMsg').innerText = `${duesOnly.length}টি পেন্ডিং ইনভয়েস পাওয়া গেছে। মোট ডিউ: ${totalDue.toLocaleString()} টাকা।`;
+        bulkContainer.style.display = 'flex';
+    } else {
+        bulkContainer.style.display = 'none';
     }
+
+    renderSalesTable(currentFilteredData);
+}
 
     function renderSalesTable(data) {
-        const tbody = document.getElementById('reportTableBody');
-        let html = '', tS = 0, tP = 0, tD = 0, todaySale = 0;
-        const now = new Date();
-        const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    const tbody = document.getElementById('reportTableBody');
+    let html = '', tS = 0, tP = 0, tD = 0, todaySale = 0;
+    const now = new Date();
+    const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
 
-        data.forEach((row, index) => {
-            const total = Number(row[9] || 0), paid = Number(row[11] || 0), due = Number(row[12] || 0), status = row[10];
-            tS += total; tP += paid; tD += due;
-            if(normalizeToISO(row[1]) === todayStr) todaySale += total;
-            let badge = status === 'FULL PAID' ? 'bg-success-subtle text-success' : (status.includes('PART') ? 'bg-warning-subtle text-warning' : 'bg-danger-subtle text-danger');
-            
-            let actionHtml = '';
-            if (due > 0) {
-                actionHtml = `
-                    <div id="action-wrapper-${row[0]}">
-                        <select class="action-select form-select-sm" onchange="handleAction('${row[0]}', ${due}, '${row[3]}', this)">
-                            <option value="">Action</option>
-                            <option value="FULL" class="text-success fw-bold">Full Paid</option>
-                            <option value="PART">Part Paid</option>
-                        </select>
-                        <div id="part-${row[0]}" class="d-none mt-1">
-                            <input type="number" id="in-${row[0]}" class="paid-input" placeholder="Amount">
-                            <button class="btn btn-sm btn-success p-0 px-2" onclick="processPay('${row[0]}', ${due}, '${row[3]}', false)">Pay</button>
-                        </div>
-                    </div>`;
-            } else {
-                actionHtml = '<span class="text-success fw-bold"><i class="fas fa-check-circle me-1"></i>PAID</span>';
-            }
+    data.forEach((row, index) => {
+        // ইনডেক্স সংশোধন করা হয়েছে: ৯=Total, ১১=Paid, ১৩=Due, ১০=Status
+        const total = Number(row[9] || 0), paid = Number(row[11] || 0), due = Number(row[13] || 0), status = String(row[10] || "");
+        tS += total; tP += paid; tD += due;
+        
+        if(normalizeToISO(row[1]) === todayStr) todaySale += total;
+        
+        let badge = status === 'FULL PAID' ? 'bg-success-subtle text-success' : (status.includes('PART') ? 'bg-warning-subtle text-warning' : 'bg-danger-subtle text-danger');
+        
+        let actionHtml = '';
+        if (due > 0) {
+            actionHtml = `
+                <div id="action-wrapper-${row[0]}" class="no-print">
+                    <select class="action-select form-select-sm" onchange="handleAction('${row[0]}', ${due}, '${row[3]}', this)">
+                        <option value="">Action</option>
+                        <option value="FULL" class="text-success fw-bold">Full Paid</option>
+                        <option value="PART">Part Paid</option>
+                    </select>
+                    <div id="part-${row[0]}" class="d-none mt-1">
+                        <input type="number" id="in-${row[0]}" class="paid-input" placeholder="Amount">
+                        <button class="btn btn-sm btn-success p-0 px-2" onclick="processPay('${row[0]}', ${due}, '${row[3]}', false)">Pay</button>
+                    </div>
+                </div>`;
+        } else {
+            actionHtml = '<span class="text-success fw-bold no-print"><i class="fas fa-check-circle me-1"></i>PAID</span>';
+        }
 
-            html += `<tr>
-                <td>${index+1}</td>
-                <td>${row[1]}</td>
-                <td class="fw-bold text-primary">${row[0]}</td>
-                <td>${row[2]}</td>
-                <td class="fw-bold">${row[3]}</td>
-                <td>${row[4]}</td>
-                <td>${row[5]}</td>
-                <td class="small-text">${row[6]}</td>
-                <td class="text-end fw-bold">${total.toLocaleString()}</td>
-                <td class="text-end text-success">${paid.toLocaleString()}</td>
-                <td class="text-end text-danger fw-bold">${due.toLocaleString()}</td>
-                <td class="text-center"><span class="status-badge ${badge} border">${status}</span></td>
-                <td class="text-center">${actionHtml}</td>
-            </tr>`;
-        });
-        tbody.innerHTML = html || '<tr><td colspan="13" class="text-center py-4">No matching sales record found.</td></tr>';
-        document.getElementById('summaryTotalSales').innerText = tS.toLocaleString();
-        document.getElementById('summaryTotalPaid').innerText = tP.toLocaleString();
-        document.getElementById('summaryTotalDue').innerText = tD.toLocaleString();
-        document.getElementById('summaryTodaySale').innerText = todaySale.toLocaleString();
+        html += `<tr>
+            <td>${index+1}</td>
+            <td>${row[1]}</td>
+            <td class="fw-bold text-primary">${row[0]}</td>
+            <td>${row[2]}</td>
+            <td class="fw-bold">${row[3]}</td>
+            <td>${row[4]}</td>
+            <td>${row[5]}</td>
+            <td class="small-text">${row[6]}</td>
+            <td class="text-end fw-bold">${total.toLocaleString()}</td>
+            <td class="text-end text-success">${paid.toLocaleString()}</td>
+            <td class="text-end text-danger fw-bold">${due.toLocaleString()}</td>
+            <td class="text-center"><span class="status-badge ${badge} border">${status}</span></td>
+            <td class="text-center no-print">${actionHtml}</td>
+        </tr>`;
+    });
+
+    // প্রিন্ট আউটের জন্য গ্র্যান্ড টোটাল রো (ধূসর ব্যাকগ্রাউন্ড)
+    if (data.length > 0) {
+        html += `
+            <tr class="print-grand-total">
+                <td colspan="8" style="text-align: right; font-weight: bold; background-color: #f2f2f2 !important;">GRAND TOTAL:</td>
+                <td style="text-align: right; font-weight: bold; background-color: #f2f2f2 !important;">${tS.toLocaleString()}</td>
+                <td style="text-align: right; font-weight: bold; background-color: #f2f2f2 !important;">${tP.toLocaleString()}</td>
+                <td style="text-align: right; font-weight: bold; background-color: #f2f2f2 !important;">${tD.toLocaleString()}</td>
+                <td colspan="2" style="background-color: #f2f2f2 !important;"></td>
+            </tr>
+        `;
+    }
+
+    tbody.innerHTML = html || '<tr><td colspan="13" class="text-center py-4">No matching sales record found.</td></tr>';
+    
+    // সামারি কার্ড আপডেট
+    document.getElementById('summaryTotalSales').innerText = tS.toLocaleString();
+    document.getElementById('summaryTotalPaid').innerText = tP.toLocaleString();
+    document.getElementById('summaryTotalDue').innerText = tD.toLocaleString();
+    document.getElementById('summaryTodaySale').innerText = todaySale.toLocaleString();
+    
+    if (typeof updateTodayCollectionFromHistory === "function") {
         updateTodayCollectionFromHistory(todayStr);
     }
+}
 
     async function updateTodayCollectionFromHistory(todayISO) {
         try {
@@ -491,7 +616,7 @@
     function handleAction(inv, due, cust, el) {
         const p = document.getElementById(`part-${inv}`);
         if(el.value === 'FULL') { 
-            if(confirm(`আপনি কি এই ইনভয়েসের (${inv}) পুরো ${due.toLocaleString()} টাকা পেমেন্ট হিসেবে জমা করতে চান?`)) {
+            if(confirm(`আপনি কি এই ইনভয়েসের (${inv}) পুরো ${due.toLocaleString()} টাকা পেমেন্ট হিসেবে জমা করতে চান?`)) {
                 processPay(inv, due, cust, true); 
                 el.value = ''; 
             } else {
@@ -522,7 +647,7 @@
                 amount: amt,
                 operatorName: currentUserName,
                 operatorId: currentUserId,
-                mrNo: finalMRNo // Sending MR No for Column N
+                mrNo: finalMRNo
             };
             
             await fetch(WEB_APP_URL, { 
@@ -532,13 +657,13 @@
             });
             
             if(!silent) {
-                showToast("পেমেন্ট সফলভাবে সম্পন্ন হয়েছে!");
+                showToast("পেমেন্ট সফলভাবে সম্পন্ন হয়েছে!");
                 showReceipt(inv, cust, amt, due - amt, finalMRNo);
                 fetchRecentSales(false);
             }
             return { ok: true, amt: amt, inv: inv, mr: finalMRNo };
         } catch (e) { 
-            if(!silent) showToast("পেমেন্ট করতে সমস্যা হয়েছে!", true); 
+            if(!silent) showToast("পেমেন্ট করতে সমস্যা হয়েছে!", true); 
             return { ok: false };
         } finally { 
             if(!silent) document.getElementById('tableLoader').style.display = 'none'; 
@@ -550,11 +675,11 @@
         if (duesOnly.length === 0) return;
 
         const totalDue = duesOnly.reduce((acc, r) => acc + Number(r[12] || 0), 0);
-        if (!confirm(`আপনি কি এই কাস্টমারের সব পেন্ডিং ইনভয়েস (${duesOnly.length}টি) এবং মোট ${totalDue.toLocaleString()} টাকা একসাথে পেমেন্ট করতে চান?`)) return;
+        if (!confirm(`আপনি কি এই কাস্টমারের সব পেন্ডিং ইনভয়েস (${duesOnly.length}টি) এবং মোট ${totalDue.toLocaleString()} টাকা একসাথে পেমেন্ট করতে চান?`)) return;
 
         document.getElementById('tableLoader').style.display = 'flex';
         let processedItems = [];
-        const bulkMR = generateMRNo(); // Single MR for the entire bulk operation
+        const bulkMR = generateMRNo();
 
         for (const row of duesOnly) {
             const res = await processPay(row[0], Number(row[12]), row[3], true, true, bulkMR);
@@ -564,8 +689,8 @@
         document.getElementById('tableLoader').style.display = 'none';
         
         if (processedItems.length > 0) {
-            showToast(`${processedItems.length}টি ইনভয়েস পেমেন্ট সম্পন্ন হয়েছে।`);
-            showBulkReceipt(duesOnly[0][3], processedItems, bulkMR); // Show combined receipt
+            showToast(`${processedItems.length}টি ইনভয়েস পেমেন্ট সম্পন্ন হয়েছে।`);
+            showBulkReceipt(duesOnly[0][3], processedItems, bulkMR);
             fetchRecentSales(false);
         }
     }
@@ -635,86 +760,294 @@
         const search = document.getElementById('historySearch').value.toLowerCase();
         const dateFilter = document.getElementById('historyDateFilter').value;
         const statusFilter = document.getElementById('historyStatusFilter').value;
+
+        let totalAmt = 0, partAmt = 0, fullAmt = 0, dateTotal = 0;
+        let totalCount = 0, partCount = 0, fullCount = 0;
+
         currentFilteredHistory = rawHistoryData.filter(row => {
             const payDate = normalizeToISO(row[0]);
-            return row.some(c => String(c).toLowerCase().includes(search)) && (!dateFilter || payDate === dateFilter) && (!statusFilter || String(row[10]).toUpperCase() === statusFilter);
-        });
-        renderHistoryTable(currentFilteredHistory);
-    }
+            const matchesSearch = row.some(c => String(c).toLowerCase().includes(search));
+            const matchesDate = (!dateFilter || payDate === dateFilter);
+            const matchesStatus = (!statusFilter || row[7] === statusFilter);
 
-    function renderHistoryTable(data) {
-        let html = '', totalAmt = 0, fullAmt = 0, partAmt = 0, filteredDateColl = 0;
-        let totalCount = 0, fullCount = 0, partCount = 0;
-        const filterDate = document.getElementById('historyDateFilter').value;
+            const isMatch = matchesSearch && matchesDate && matchesStatus;
 
-        data.forEach((row, i) => {
-            const amt = Number(row[8] || 0);
-            const status = String(row[10]).toUpperCase();
-            const payDateISO = normalizeToISO(row[0]);
-            const mrNo = row[13] || '-'; // Column N usually comes as index 13
-            totalAmt += amt; totalCount++;
-            if(status === 'FULL PAID') { fullAmt += amt; fullCount++; }
-            else if(status === 'PART PAID') { partAmt += amt; partCount++; }
-            if(filterDate && payDateISO === filterDate) filteredDateColl += amt;
-            html += `<tr><td>${i+1}</td><td>${row[0]}</td><td class="fw-bold text-primary">${mrNo}</td><td class="fw-bold">${row[2]}</td><td>${row[3]}</td><td>${row[5]}</td><td class="text-end fw-bold text-success">${amt.toLocaleString()}</td><td class="text-center">${row[10]}</td><td>${row[11]}</td></tr>`;
+            if (isMatch) {
+                const amt = Number(row[8] || 0);
+                totalAmt += amt;
+                totalCount++;
+                if (row[7] === 'FULL PAID') { fullAmt += amt; fullCount++; }
+                if (row[7] === 'PART PAID') { partAmt += amt; partCount++; }
+                if (dateFilter && payDate === dateFilter) dateTotal += amt;
+            }
+            return isMatch;
         });
-        
-        document.getElementById('historyTableBody').innerHTML = html || '<tr><td colspan="9" class="text-center">No History Records</td></tr>';
+
         document.getElementById('histTotalAmt').innerText = totalAmt.toLocaleString();
         document.getElementById('histTotalCount').innerText = totalCount;
         document.getElementById('histPartAmt').innerText = partAmt.toLocaleString();
         document.getElementById('histPartCount').innerText = partCount;
         document.getElementById('histFullAmt').innerText = fullAmt.toLocaleString();
         document.getElementById('histFullCount').innerText = fullCount;
-        document.getElementById('histTodayTotal').innerText = filterDate ? filteredDateColl.toLocaleString() : "Set Date";
+        document.getElementById('histTodayTotal').innerText = dateTotal.toLocaleString();
+
+        renderHistoryTable(currentFilteredHistory);
     }
 
-    function resetHistoryFilters() {
-        document.getElementById('historySearch').value = ''; document.getElementById('historyDateFilter').value = ''; document.getElementById('historyStatusFilter').value = '';
-        filterHistoryData();
-    }
+ function renderHistoryTable(data) {
+    const tbody = document.getElementById("historyTableBody");
+    let html = "";
+    
+    // সামারি ভেরিয়েবলসমূহ
+    let totalAmt = 0, totalCount = 0;
+    let fullAmt = 0, fullCount = 0;
+    let partAmt = 0, partCount = 0;
+
+    const cleanDate = (dateVal) => {
+        if (!dateVal || dateVal === "-" || dateVal === "undefined") return "-";
+        let processedVal = dateVal;
+        if (typeof dateVal === 'string' && dateVal.includes('T')) {
+            processedVal = dateVal.split('T')[0];
+        }
+        let d = new Date(processedVal);
+        if (isNaN(d.getTime())) return dateVal; 
+        return `${String(d.getDate()).padStart(2, '0')}-${String(d.getMonth() + 1).padStart(2, '0')}-${d.getFullYear()}`;
+    };
+
+    data.forEach((row, idx) => {
+        const amt = Number(row[8] || 0); // Paid Amount (I)
+        const statusValue = (row[10] || "").toString().trim().toUpperCase(); // Status (K)
+        
+        totalAmt += amt;
+        totalCount++;
+
+        let badgeClass = "bg-light text-dark"; 
+        
+        // নিখুঁতভাবে কন্ডিশন চেক করা হচ্ছে
+        if (statusValue.includes("PART") || statusValue.includes("DUE") || statusValue.includes("PARTIAL")) {
+            // যদি Status এ 'PART' বা 'DUE' থাকে
+            badgeClass = "bg-warning-subtle text-warning border-warning";
+            partAmt += amt;
+            partCount++;
+        } 
+        else if (statusValue.includes("FULL") || statusValue.includes("PAID") || statusValue === "OK") {
+            // যদি Status এ 'FULL' বা 'PAID' থাকে
+            badgeClass = "bg-success-subtle text-success border-success";
+            fullAmt += amt;
+            fullCount++;
+        }
+
+        html += `
+            <tr>
+                <td>${idx + 1}</td>
+                <td style="white-space: nowrap;">${cleanDate(row[0])}</td>
+                <td class="fw-bold text-primary">${row[12] || ""}</td>
+                <td style="white-space: nowrap;">${cleanDate(row[3])}</td>
+                <td>${row[2] || ""}</td>
+                <td>${row[4] || ""}</td>
+                <td class="fw-bold col-cust-name" style="min-width: 250px;">${row[5] || ""}</td>
+                <td class="col-address" style="min-width: 300px;">${row[6] || ""}</td>
+                <td>${row[11] || ""}</td>
+                <td>${row[7] || ""}</td>
+                <td class="fw-bold text-end">${amt.toLocaleString()}</td>
+                <td class="text-end">
+                    <span class="status-badge ${badgeClass}">${statusValue || "-"}</span>
+                </td>
+            </tr>`;
+    });
+
+    tbody.innerHTML = html || '<tr><td colspan="12" class="text-center py-3">No history records found.</td></tr>';
+
+    // ফুটার ভ্যালু সেট করা
+    document.getElementById("histTotalCount").innerText = totalCount;
+    document.getElementById("histTotalAmt").innerText = totalAmt.toLocaleString();
+    
+    document.getElementById("histPartCount").innerText = partCount;
+    document.getElementById("histPartAmt").innerText = partAmt.toLocaleString();
+    
+    document.getElementById("histFullCount").innerText = fullCount;
+    document.getElementById("histFullAmt").innerText = fullAmt.toLocaleString();
+    
+    document.getElementById("histTodayTotal").innerText = totalAmt.toLocaleString();
+}
 
     function resetMainFilters() {
-        document.getElementById('globalSearch').value = ''; document.getElementById('statusFilter').value = ''; document.getElementById('startDate').value = '';
+        document.getElementById('globalSearch').value = '';
+        document.getElementById('statusFilter').value = '';
+        document.getElementById('startDate').value = '';
         applyMainFilters();
     }
 
-    function exportHistoryCSV() {
-        if(currentFilteredHistory.length === 0) return alert("No data to export");
-        let csv = "SL,Payment Date,MR No,Invoice No,Invoice Date,Customer Name,Paid Amount,Status,Operator\n";
-        currentFilteredHistory.forEach((row, i) => {
-            csv += `${i+1},${row[0]},${row[13]||''},${row[2]},${row[3]},${row[5]},${row[8]},${row[10]},${row[11]}\n`;
-        });
-        const blob = new Blob([csv], { type: 'text/csv' });
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `Payment_History_${new Date().toLocaleDateString()}.csv`;
-        a.click();
+    function resetHistoryFilters() {
+        document.getElementById('historySearch').value = '';
+        document.getElementById('historyDateFilter').value = '';
+        document.getElementById('historyStatusFilter').value = '';
+        filterHistoryData();
     }
 
-    function exportHistoryPDF() {
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF('p', 'mm', 'a4');
-        doc.setFontSize(16);
-        doc.text("Payment History Report", 14, 15);
-        doc.setFontSize(9);
-        doc.text(`Generated by: ${currentUserName}`, 14, 21);
-        doc.text(`Date: ${new Date().toLocaleString()}`, 14, 25);
-        const tableData = currentFilteredHistory.map((row, i) => [i+1, row[0], row[13]||'-', row[2], row[3], row[5], row[8].toLocaleString()]);
-        doc.autoTable({
-            head: [['SL', 'Pay Date', 'MR No', 'Inv No', 'Inv Date', 'Customer', 'Amount']],
-            body: tableData,
-            startY: 32,
-            theme: 'grid',
-            headStyles: { fillColor: [44, 62, 80] },
-            columnStyles: { 6: { halign: 'right' } }
-        });
-        doc.save(`Payment_History_${new Date().getTime()}.pdf`);
+    /** PRINT LOGIC - BLACK & WHITE **/
+    function printMainTable() {
+    // ড্রপডাউন থেকে সিলেক্ট করা টেক্সটটি নেওয়া হচ্ছে
+    const filterDropdown = document.getElementById('statusFilter');
+    const selectedText = filterDropdown.options[filterDropdown.selectedIndex].text;
+    const dynamicHeader = document.getElementById('dynamicFilterName');
+
+    // যদি 'All Status' ছাড়া অন্য কিছু সিলেক্ট থাকে তবেই নাম দেখাবে
+    if (filterDropdown.value !== "") {
+        dynamicHeader.innerText = selectedText + " REPORT";
+        dynamicHeader.style.display = "block";
+    } else {
+        dynamicHeader.innerText = "ALL SALES REPORT"; // ডিফল্ট নাম
     }
+
+    // তারিখ এবং অপারেটর সেট করা
+    document.getElementById('printDateTime').innerText = new Date().toLocaleString();
+    document.getElementById('printOperator').innerText = currentUserName;
+    
+    window.print();
+}
+   /** EXPORT LOGIC **/
+function exportHistoryCSV() {
+    if (currentFilteredHistory.length === 0) { 
+        showToast("এক্সপোর্ট করার জন্য কোনো ডেটা নেই!", true); 
+        return; 
+    }
+
+    // তারিখ পরিষ্কার করে DD-MM-YYYY করার ফাংশন
+    const cleanDate = (dateVal) => {
+        if (!dateVal || dateVal === "-" || dateVal === "undefined") return "-";
+        let processedVal = dateVal;
+        if (typeof dateVal === 'string' && dateVal.includes('T')) {
+            processedVal = dateVal.split('T')[0];
+        }
+        let d = new Date(processedVal);
+        if (isNaN(d.getTime())) return dateVal;
+        let day = String(d.getDate()).padStart(2, '0');
+        let month = String(d.getMonth() + 1).padStart(2, '0');
+        let year = d.getFullYear();
+        return `${day}-${month}-${year}`;
+    };
+
+    // ১২টি কলামের হেডার
+    const headers = [
+        "SL", "Payment Date", "MR No", "Invoice Date", "Invoice No", 
+        "Customer Code", "Customer Name", "Address", "Mobile No", "Area", "Paid Amount", "Status"
+    ];
+
+    let csvContent = "data:text/csv;charset=utf-8,\uFEFF" + headers.join(",") + "\n"; // \uFEFF যোগ করা হয়েছে Excel এ বাংলা সাপোর্ট করার জন্য
+
+    currentFilteredHistory.forEach((row, index) => {
+        // আপনার লেটেস্ট ইনডেক্স ম্যাপিং অনুযায়ী ডাটা সাজানো:
+        const rowData = [
+            index + 1,                         // SL
+            `"${cleanDate(row[0])}"`,         // Payment Date (A)
+            `"${row[12] || ""}"`,             // MR No (M)
+            `"${cleanDate(row[3])}"`,         // Invoice Date (D)
+            `"${row[2] || ""}"`,              // Invoice No (C)
+            `"${row[4] || ""}"`,              // Customer Code (E)
+            `"${row[5] || ""}"`,              // Customer Name (F)
+            `"${row[6] || ""}"`,              // Address (G)
+            `"${row[11] || ""}"`,             // Mobile (L)
+            `"${row[7] || ""}"`,              // Area (H)
+            row[8] || 0,                      // Paid Amount (I)
+            `"${(row[10] || "").toUpperCase()}"` // Status (K)
+        ];
+        csvContent += rowData.join(",") + "\n";
+    });
+
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `Payment_History_${Date.now()}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    showToast("CSV ডাউনলোড হয়েছে।");
+}
+    function exportHistoryPDF() {
+    if (currentFilteredHistory.length === 0) { 
+        showToast("এক্সপোর্ট করার জন্য কোনো ডেটা নেই!", true); 
+        return; 
+    }
+    
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF('l', 'mm', 'a4'); // Landscape মোড যাতে ১২টি কলাম ধরে
+    
+    // তারিখ ফরম্যাট করার ইন্টারনাল ফাংশন
+    const cleanDate = (dateVal) => {
+        if (!dateVal || dateVal === "-" || dateVal === "undefined") return "-";
+        let processedVal = dateVal;
+        if (typeof dateVal === 'string' && dateVal.includes('T')) {
+            processedVal = dateVal.split('T')[0];
+        }
+        let d = new Date(processedVal);
+        if (isNaN(d.getTime())) return dateVal;
+        let day = String(d.getDate()).padStart(2, '0');
+        let month = String(d.getMonth() + 1).padStart(2, '0');
+        let year = d.getFullYear();
+        return `${day}-${month}-${year}`;
+    };
+
+    doc.setFontSize(18);
+    doc.text("Payment History Report", 14, 15);
+    doc.setFontSize(10);
+    doc.setTextColor(100);
+    doc.text(`Generated: ${new Date().toLocaleString()} | User: ${currentUserName}`, 14, 22);
+
+    // ১২টি কলামের হেডার
+    const tableColumn = [
+        "SL", "Pay Date", "MR No", "Inv Date", "Inv No", 
+        "Code", "Customer Name", "Address", "Mobile", "Area", "Amount", "Status"
+    ];
+    
+    const tableRows = [];
+    let total = 0;
+
+    currentFilteredHistory.forEach((row, index) => {
+        total += Number(row[8] || 0);
+        
+        // আপনার লেটেস্ট ইনডেক্স ম্যাপিং অনুযায়ী:
+        tableRows.push([
+            index + 1,           // SL
+            cleanDate(row[0]),   // Payment Date (A)
+            row[12] || "",       // MR No (M)
+            cleanDate(row[3]),   // Invoice Date (D)
+            row[2] || "",        // Invoice No (C)
+            row[4] || "",        // Customer Code (E)
+            row[5] || "",        // Customer Name (F)
+            row[6] || "",        // Address (G)
+            row[11] || "",       // Mobile (L)
+            row[7] || "",        // Area (H)
+            Number(row[8] || 0).toLocaleString(), // Paid Amount (I)
+            (row[10] || "").toUpperCase()         // Status (K)
+        ]);
+    });
+
+    doc.autoTable({
+        head: [tableColumn],
+        body: tableRows,
+        startY: 28,
+        theme: 'striped',
+        headStyles: { fillColor: [44, 62, 80], fontSize: 7 }, // ফন্ট সাইজ ছোট করা হয়েছে কলাম বেশি বলে
+        styles: { fontSize: 7, cellPadding: 1.5 },
+        columnStyles: {
+            6: { cellWidth: 35 }, // Customer Name কলাম বড়
+            7: { cellWidth: 40 }, // Address কলাম বড়
+            10: { halign: 'right' } // Amount ডান দিকে
+        }
+    });
+
+    const finalY = doc.lastAutoTable.finalY + 10;
+    doc.setFontSize(10); doc.setTextColor(0);
+    doc.text(`Total Records: ${currentFilteredHistory.length}`, 14, finalY);
+    doc.setFont(undefined, 'bold');
+    doc.text(`Total Collection: ${total.toLocaleString()} /-`, 14, finalY + 6);
+    
+    doc.save(`Payment_History_${Date.now()}.pdf`);
+    showToast("PDF তৈরি হয়েছে।");
+}
 
     window.onload = () => fetchRecentSales(true);
 </script>
 </body>
 </html>
-
