@@ -1,104 +1,92 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <base target="_top">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <style>
-    body { background-color: #f4f7f6; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-    .report-container { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); margin-top: 20px; }
-    .table thead { background-color: #2c3e50; color: white; }
-    .dr-amount { color: #e74c3c; font-weight: bold; }
-    .cr-amount { color: #27ae60; font-weight: bold; }
-    @media print { .no-print { display: none; } }
-  </style>
-</head>
-<body>
-
-<div class="container">
-  <div class="report-container">
-    <div class="d-flex justify-content-between align-items-center mb-4 no-print">
-      <h4>Customer Ledger Statement</h4>
-      <div class="d-flex gap-2">
-        <input type="text" id="custCode" class="form-control" placeholder="Enter COD (e.g. NEP-0001)">
-        <button class="btn btn-primary" onclick="getStatement()">Search</button>
-        <button class="btn btn-secondary" onclick="window.print()">Print</button>
-      </div>
+<div class="container mt-4">
+  <div class="card shadow border-0">
+    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+      <h5 class="mb-0">Customer Ledger Statement</h5>
+      <button class="btn btn-sm btn-light no-print" onclick="window.print()">Print Report</button>
     </div>
-
-    <div id="loader" class="text-center d-none">
-      <div class="spinner-border text-primary"></div>
-      <p>Loading transactions...</p>
-    </div>
-
-    <div id="statementContent">
-      <div class="row mb-3">
-        <div class="col-6">
-          <strong>Customer:</strong> <span id="resName">-</span><br>
-          <strong>ID:</strong> <span id="resID">-</span>
+    
+    <div class="card-body">
+      <div id="customerProfile" class="row mb-4 p-3 border rounded bg-white d-none shadow-sm">
+        <div class="col-md-6 border-end">
+          <p class="mb-1"><strong>Name:</strong> <span id="pName" class="text-primary"></span></p>
+          <p class="mb-1"><strong>ID:</strong> <span id="pID"></span></p>
+          <p class="mb-1"><strong>Mobile:</strong> <span id="pMobile"></span></p>
         </div>
-        <div class="col-6 text-end">
-          <strong>Date:</strong> <span id="printDate"></span>
+        <div class="col-md-6 ps-md-4">
+          <p class="mb-1"><strong>Area:</strong> <span id="pArea"></span></p>
+          <p class="mb-1"><strong>Address:</strong> <span id="pAddress"></span></p>
+          <p class="mb-1 text-muted small"><strong>Report Generated:</strong> <span id="pDate"></span></p>
         </div>
       </div>
 
-      <table class="table table-bordered table-striped">
-        <thead>
-          <tr>
-            <th>Date</th>
-            <th>Particulars</th>
-            <th>Voucher</th>
-            <th class="text-end">Expense (Dr)</th>
-            <th class="text-end">Deposit (Cr)</th>
-            <th class="text-end">Balance</th>
-          </tr>
-        </thead>
-        <tbody id="statementBody">
-          <tr><td colspan="6" class="text-center">Search by Customer ID to see data</td></tr>
-        </tbody>
-      </table>
+      <div class="table-responsive">
+        <table class="table table-hover table-bordered">
+          <thead class="table-dark">
+            <tr class="text-center">
+              <th>Date</th>
+              <th>Description</th>
+              <th>Voucher</th>
+              <th>Bill (Dr)</th>
+              <th>Paid (Cr)</th>
+              <th>Balance</th>
+            </tr>
+          </thead>
+          <tbody id="statementRows">
+            <tr><td colspan="6" class="text-center text-muted py-4">Search with Customer ID to view ledger.</td></tr>
+          </tbody>
+        </table>
+      </div>
     </div>
   </div>
 </div>
 
+
+
 <script>
-  // আপনার Web App URL এখানে বসান
-  const API_URL = "https://script.google.com/macros/s/AKfycbzTeOGvSd2EaxCZMouhcjZHaHuaUxJTBySk-5d2okEY3_YGyfBohszmkGHaq0pGo4B9ng/exec"; 
+  // আপনার প্রদানকৃত URL
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzTeOGvSd2EaxCZMouhcjZHaHuaUxJTBySk-5d2okEY3_YGyfBohszmkGHaq0pGo4B9ng/exec";
 
-  function getStatement() {
-    const code = document.getElementById('custCode').value.trim();
-    if(!code) return alert("Please enter Customer ID");
+  async function loadCustomerLedger(custCode) {
+    if (!custCode) return alert("Please enter ID");
+    
+    const profileDiv = document.getElementById('customerProfile');
+    const tableBody = document.getElementById('statementRows');
+    
+    try {
+      const response = await fetch(`${SCRIPT_URL}?action=getCustomerStatement&custCode=${custCode}`);
+      const res = await response.json();
 
-    document.getElementById('loader').classList.remove('d-none');
-    document.getElementById('printDate').innerText = new Date().toLocaleDateString();
+      if (res.status === "success") {
+        // প্রোফাইল আপডেট
+        profileDiv.classList.remove('d-none');
+        document.getElementById('pName').innerText = res.info.name;
+        document.getElementById('pID').innerText = res.info.code;
+        document.getElementById('pMobile').innerText = res.info.mobile;
+        document.getElementById('pArea').innerText = res.info.area;
+        document.getElementById('pAddress').innerText = res.info.address;
+        document.getElementById('pDate').innerText = new Date().toLocaleString();
 
-    fetch(`${API_URL}?action=getCustomerStatement&custCode=${code}`)
-      .then(res => res.json())
-      .then(res => {
-        document.getElementById('loader').classList.add('d-none');
-        const body = document.getElementById('statementBody');
-        body.innerHTML = '';
-
-        if(res.status === "success" && res.data.length > 0) {
-          document.getElementById('resName').innerText = res.data[0].description === "Opening Balance Record" ? "Found" : "Active Customer";
-          document.getElementById('resID').innerText = code;
-
-          res.data.forEach(item => {
-            body.innerHTML += `
-              <tr>
-                <td>${item.date}</td>
-                <td>${item.description}</td>
-                <td>${item.voucher}</td>
-                <td class="text-end dr-amount">${item.bill > 0 ? item.bill.toFixed(2) : '-'}</td>
-                <td class="text-end cr-amount">${item.paid > 0 ? item.paid.toFixed(2) : '-'}</td>
-                <td class="text-end fw-bold">${item.balance.toFixed(2)}</td>
-              </tr>
-            `;
-          });
-        } else {
-          body.innerHTML = '<tr><td colspan="6" class="text-center text-danger">No data found for this ID</td></tr>';
-        }
-      });
+        // টেবিল ডাটা আপডেট
+        let rowsHtml = "";
+        res.data.forEach(item => {
+          rowsHtml += `
+            <tr>
+              <td class="text-center">${item.date}</td>
+              <td>${item.description}</td>
+              <td class="text-center">${item.voucher || '-'}</td>
+              <td class="text-end text-danger">${item.bill > 0 ? item.bill.toFixed(2) : '-'}</td>
+              <td class="text-end text-success">${item.paid > 0 ? item.paid.toFixed(2) : '-'}</td>
+              <td class="text-end fw-bold">${item.balance.toFixed(2)}</td>
+            </tr>`;
+        });
+        tableBody.innerHTML = rowsHtml;
+      } else {
+        alert(res.message);
+        profileDiv.classList.add('d-none');
+        tableBody.innerHTML = '<tr><td colspan="6" class="text-center text-danger">Data Not Found!</td></tr>';
+      }
+    } catch (err) {
+      console.error("Error fetching data:", err);
+    }
   }
 </script>
-</body>
-</html>
