@@ -244,10 +244,18 @@
         let currentMonth = new Date().getMonth();
         let activeDateCell = null;
 
-        window.onload = () => { 
-            resetForm(); 
-            loadInitialData(); 
-        };
+       window.onload = async () => { 
+    resetForm(); 
+    await loadInitialData(); 
+
+    // সেভ হওয়ার পর রিফ্রেশ হয়েছে কি না চেক
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('saved') === 'true') {
+        document.getElementById("successOverlay").style.display = "flex";
+        // URL থেকে saved লেখাটি সরিয়ে ফেলা
+        window.history.replaceState({}, document.title, window.location.pathname);
+    }
+};
 
         function openDatePicker(element) {
             event.stopPropagation(); 
@@ -526,39 +534,39 @@
             }
             return convert(Math.floor(num)) + " Taka Only";
         }
+
+
 async function saveData() {
     const btn = document.getElementById("saveBtn");
     
-    // ১. পুরো পেজ লক করার জন্য একটি ওভারলে দেখানো (যদি HTML এ না থাকে তবে তৈরি হবে)
+    // ১. লোডার দেখানো (ইউজারকে বোঝানো যে সেভ হচ্ছে)
     let loaderOverlay = document.getElementById("loadingOverlay");
     if (!loaderOverlay) {
         loaderOverlay = document.createElement("div");
         loaderOverlay.id = "loadingOverlay";
-        loaderOverlay.style = "position:fixed; inset:0; background:rgba(255,255,255,0.7); z-index:9999; display:flex; align-items:center; justify-content:center; cursor:wait;";
-        loaderOverlay.innerHTML = '<div class="text-center"><div class="loader"></div><p class="font-bold text-blue-900 mt-2">Saving Data... Please Wait</p></div>';
+        loaderOverlay.style = "position:fixed; inset:0; background:rgba(255,255,255,0.8); z-index:9999; display:flex; align-items:center; justify-content:center; cursor:wait;";
+        loaderOverlay.innerHTML = '<div class="text-center"><div style="border: 4px solid #f3f3f3; border-top: 4px solid #3498db; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto;"></div><p class="font-bold text-blue-900 mt-3">Saving & Updating Data...</p></div>';
+        
+        // এনিমেশন স্টাইল যোগ করা (যদি আগে না থাকে)
+        const style = document.createElement('style');
+        style.innerHTML = "@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }";
+        document.head.appendChild(style);
+        
         document.body.appendChild(loaderOverlay);
     }
     
-    // পেজ এবং বাটন লক করা
     loaderOverlay.style.display = "flex";
     btn.disabled = true;
-    const oldText = btn.innerHTML;
-    btn.innerHTML = 'Saving...';
 
     // ডাটা সংগ্রহ
-    const rows = Array.from(document.querySelectorAll("#statementBody tr")).map(tr => {
-        const rowDate = tr.querySelector(".date-text")?.innerText || "";
-        const rowDesc = tr.querySelector(".desc-input")?.value || "";
-
-        return {
-            date: String(rowDate).trim(),
-            description: String(rowDesc).trim(),
-            voucher: tr.querySelector(".voucher-input")?.value || "",
-            deposit: parseFloat(tr.querySelector(".deposit-input")?.value) || 0,
-            expense: parseFloat(tr.querySelector(".expense-input")?.value) || 0,
-            balance: tr.querySelector(".row-balance")?.innerText.replace(/,/g, '') || "0.00"
-        };
-    });
+    const rows = Array.from(document.querySelectorAll("#statementBody tr")).map(tr => ({
+        date: tr.querySelector(".date-text")?.innerText || "",
+        description: tr.querySelector(".desc-input")?.value || "",
+        voucher: tr.querySelector(".voucher-input")?.value || "",
+        deposit: parseFloat(tr.querySelector(".deposit-input")?.value) || 0,
+        expense: parseFloat(tr.querySelector(".expense-input")?.value) || 0,
+        balance: tr.querySelector(".row-balance")?.innerText.replace(/,/g, '') || "0.00"
+    }));
 
     const payload = {
         action: "saveLedger",
@@ -582,7 +590,13 @@ async function saveData() {
         const result = await response.json();
         
         if (result.status === "success") {
-            // সেভ সফল হলে ওভারলে লুকানো এবং সাকসেস মেসেজ দেখানো
+            // ২. ব্যাকগ্রাউন্ডে গুগল শিট থেকে লেটেস্ট ডাটা নিয়ে আসা (রিফ্রেশ ছাড়াই)
+            await loadInitialData(true); 
+            
+            // ৩. ফর্ম রিসেট করা
+            resetForm();
+            
+            // ৪. লোডার বন্ধ করে সাকসেস মেসেজ দেখানো
             loaderOverlay.style.display = "none";
             document.getElementById("successOverlay").style.display = "flex";
         } else {
@@ -591,12 +605,9 @@ async function saveData() {
         }
     } catch (e) { 
         loaderOverlay.style.display = "none";
-        alert("সংরক্ষণে সমস্যা হয়েছে। ইন্টারনেট সংযোগ চেক করুন।"); 
-    } finally { 
-        btn.disabled = false; 
-        btn.innerHTML = oldText; 
-        // নিশ্চিত করা যে কোনো কারণে এরর হলেও যেন পেজ লক হয়ে না থাকে
-        if (loaderOverlay) loaderOverlay.style.display = "none";
+        alert("সংরক্ষণে সমস্যা হয়েছে।"); 
+    } finally {
+        btn.disabled = false;
     }
 }
 
@@ -609,12 +620,10 @@ async function saveData() {
             addRow(); 
             calculateStatement();
         }
-
-        function closeSuccess() { 
-            document.getElementById("successOverlay").style.display = "none"; 
-            resetForm(); 
-            document.getElementById("searchBox").focus();
-        }
+function closeSuccess() { 
+    document.getElementById("successOverlay").style.display = "none"; 
+    document.getElementById("searchBox").focus();
+}
     </script>
 </body>
 </html>
