@@ -138,7 +138,17 @@
     let allCustomers = [];
     let currentMode = "";
 
-    window.onload = function() { loadCustomerList(); };
+   window.onload = function() {
+    const uId = localStorage.getItem('erp_user_id');
+    const uName = localStorage.getItem('erp_user_name');
+    
+    // শুধু ফাইল বা পেজের নাম নিতে (যেমন: 'Sales Page')
+    const pageTitle = document.title || "Unknown Page"; 
+
+    if(uId && uName) {
+      google.script.run.trackUserActivity(uId, uName, "Visited: " + pageTitle);
+    }
+  };
 
     // --- Custom Suggestion Logic ---
     function filterSuggestions(query) {
@@ -286,5 +296,4 @@
 </script>
 </body>
 </html>
-
 
