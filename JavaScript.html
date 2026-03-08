@@ -1,15 +1,25 @@
 <script>
     /**
-     * ডাটাবেস অবজেক্ট - ব্রাউজার মেমোরিতে ডাটা সেভ রাখবে
-     * এখানে products এর মধ্যে স্টক ইনফরমেশন থাকে যা Inventory ট্যাব থেকে আসে
+     * সিকিউরিটি চেক: পেজ লোড হওয়ার শুরুতেই চেক করবে ইউজার লগইন করা কি না।
+     * যদি না থাকে, তবে তাকে login.html-এ পাঠিয়ে দেবে।
      */
+    (function() {
+        const storedName = localStorage.getItem('erp_user_name');
+        const storedId = localStorage.getItem('erp_user_id');
+
+        if (!storedName || !storedId) {
+            alert("অনধিকার প্রবেশ নিষেধ! দয়া করে আগে লগইন করুন।");
+            window.location.href = "login.html"; 
+        }
+    })();
+
     let db = { 
         products: [], 
         customers: [] 
     };
     let cart = [];
 
-    // অ্যাপ লোড হওয়ার সাথে সাথে মেমোরি থেকে ডাটা রিকভার করার চেষ্টা
+    // অ্যাপ লোড হওয়ার সাথে সাথে মেমোরি থেকে ডাটা রিকভার করার চেষ্টা
     try {
         const cachedP = localStorage.getItem('cachedProducts');
         const cachedC = localStorage.getItem('cachedCustomers');
@@ -22,11 +32,24 @@
     window.onload = function() {
         const dateInput = document.getElementById('invDate');
         if(dateInput) dateInput.valueAsDate = new Date();
+        
+        // হেডার বা সাইডবারে ইউজারের নাম এবং আইডি আপডেট করা (যদি এলিমেন্ট থাকে)
+        const nameDisplay = document.getElementById('display-user-name');
+        const idDisplay = document.getElementById('display-user-id');
+        const userInitial = document.getElementById('user-initial');
+        
+        const currentName = localStorage.getItem('erp_user_name');
+        const currentId = localStorage.getItem('erp_user_id');
+
+        if(nameDisplay && currentName) nameDisplay.innerText = decodeURIComponent(currentName).toUpperCase();
+        if(idDisplay && currentId) idDisplay.innerText = "ID: " + decodeURIComponent(currentId);
+        if(userInitial && currentName) userInitial.innerText = decodeURIComponent(currentName).charAt(0).toUpperCase();
+
         refreshDatabase();
     };
 
     /**
-     * গুগল শিট (Inventory/Products Tab) থেকে ডাটা সিঙ্ক করা
+     * গুগল শিট থেকে ডাটা সিঙ্ক করা
      */
     function refreshDatabase() {
         google.script.run.withSuccessHandler(data => {
@@ -36,7 +59,7 @@
             try {
                 localStorage.setItem('cachedProducts', JSON.stringify(data.products));
                 localStorage.setItem('cachedCustomers', JSON.stringify(data.customers));
-                console.log("ইনভেন্টরি ডাটা আপডেট হয়েছে।");
+                console.log("ইনভেন্টরি ডাটা আপডেট হয়েছে।");
             } catch(e) {
                 console.warn("লোকাল স্টোরেজ পূর্ণ।");
             }
@@ -49,7 +72,7 @@
     }
 
     /**
-     * প্রোডাক্ট সার্চ করার সময় ইনভেন্টরি ট্যাব থেকে স্টক চেক করা
+     * প্রোডাক্ট সার্চ লজিক
      */
     function searchProduct() {
         let input = document.getElementById('prodSearch').value.toLowerCase().trim();
@@ -61,7 +84,6 @@
         
         for (let i = 1; i < db.products.length; i++) {
             let p = db.products[i];
-            // p[0]=Code, p[1]=Name, p[5]=Sales Rate, p[7]=Current Stock (Inventory Tab থেকে)
             if (p[1].toString().toLowerCase().includes(input) || p[0].toString().toLowerCase().includes(input)) {
                 results.push(p);
                 if (results.length >= limit) break;
@@ -78,18 +100,14 @@
     }
 
     function selectP(code, name, rate, stock) {
-        window.selectedProductStock = stock; // বর্তমান স্টক মেমোরিতে রাখা হলো
+        window.selectedProductStock = stock;
         document.getElementById('selectedProdCode').value = code;
         document.getElementById('selectedProdName').value = name;
         document.getElementById('prodSearch').value = name;
         document.getElementById('prodRate').value = rate;
         document.getElementById('prodResults').style.display = 'none';
         
-        // স্টক ওয়ার্নিং দেখানো (ঐচ্ছিক)
-        if(stock <= 0) {
-            alert("এই প্রোডাক্টটি স্টকে নেই!");
-        }
-        
+        if(stock <= 0) alert("এই প্রোডাক্টটি স্টকে নেই!");
         document.getElementById('prodQty').focus();
     }
 
@@ -101,8 +119,6 @@
         let availableStock = window.selectedProductStock;
         
         if (!code || isNaN(qty) || qty <= 0) return alert("সঠিক পণ্য এবং পরিমাণ দিন!");
-        
-        // স্টক চেক লজিক - ইনভেন্টরি থেকে যা এসেছে তার বেশি বিক্রি করা যাবে না
         if (qty > availableStock) {
             alert("দুঃখিত! স্টকে মাত্র " + availableStock + " টি পণ্য আছে।");
             return;
@@ -111,7 +127,6 @@
         cart.push({ code, name, rate, qty, subtotal: rate * qty });
         updateTable();
         
-        // ইনপুট ক্লিয়ার
         document.getElementById('prodSearch').value = '';
         document.getElementById('prodRate').value = '';
         document.getElementById('prodQty').value = 1;
@@ -143,24 +158,33 @@
         if(gTotal) gTotal.innerText = total.toFixed(2);
     }
 
+    /**
+     * ইনভয়েস সাবমিট: এখানে ইউজারের আইডি এবং নাম শিটে পাঠানোর জন্য যুক্ত করা হয়েছে।
+     */
     function submitInvoice() {
         if (!cart.length) return alert("কার্ট খালি!");
         const loader = document.getElementById('loading-overlay');
         if(loader) loader.style.display = 'flex';
+        
+        // LocalStorage থেকে তথ্য সংগ্রহ
+        const currentUserId = localStorage.getItem('erp_user_id');
+        const currentUserName = localStorage.getItem('erp_user_name');
         
         let master = {
             invNo: document.getElementById('invNo').value,
             date: document.getElementById('invDate').value,
             custCode: document.getElementById('selectedCustCode').value,
             custName: document.getElementById('selectedCustName').value,
-            total: document.getElementById('grandTotal').innerText
+            total: document.getElementById('grandTotal').innerText,
+            recordedBy: currentUserId ? decodeURIComponent(currentUserId) : "Unknown",
+            userName: currentUserName ? decodeURIComponent(currentUserName) : "Unknown"
         };
 
-        // এই কলটি সফল হলে Code.gs অটোমেটিক Inventory ট্যাব আপডেট করবে
         google.script.run.withSuccessHandler(res => {
             if(loader) loader.style.display = 'none';
             alert(res);
             location.reload();
         }).saveInvoice(master, cart);
     }
+
 </script>
