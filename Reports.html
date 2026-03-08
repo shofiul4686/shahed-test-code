@@ -437,15 +437,34 @@ input[type="date"]:focus {
 </div>
 
 <script>
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzTeOGvSd2EaxCZMouhcjZHaHuaUxJTBySk-5d2okEY3_YGyfBohszmkGHaq0pGo4B9ng/exec";
-    const urlParams = new URLSearchParams(window.location.search);
-    const currentUserName = urlParams.get('name') || "ADMIN";
-    const currentUserId = urlParams.get('id') || "ADMIN";
+   const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzTeOGvSd2EaxCZMouhcjZHaHuaUxJTBySk-5d2okEY3_YGyfBohszmkGHaq0pGo4B9ng/exec";
 
-    let rawSalesData = [];
-    let currentFilteredData = [];
-    let rawHistoryData = [];
-    let currentFilteredHistory = [];
+// ১. ইউজার ইনফরমেশন সেটআপ (localStorage কে প্রায়োরিটি দিয়ে)
+const uId = localStorage.getItem('erp_user_id') || "ADMIN";
+const uName = localStorage.getItem('erp_user_name') || "ADMIN";
+
+// ২. ডাটা স্টোরেজ ভ্যারিয়েবল
+let rawSalesData = [];
+let currentFilteredData = [];
+let rawHistoryData = [];
+let currentFilteredHistory = [];
+
+// ৩. পেজ লোড ও ট্র্যাকিং ফাংশন
+window.onload = function() {
+    const pageTitle = document.title || "Unknown Page"; 
+
+    // ব্যাকএন্ডে ইউজার অ্যাক্টিভিটি পাঠানো
+    if (uId && uName) {
+        google.script.run.trackUserActivity(uId, uName, "Visited: " + pageTitle);
+    }
+    
+    // ড্যাশবোর্ডে বা হেবারে ইউজারের নাম দেখানোর জন্য (যদি এলিমেন্ট থাকে)
+    const userDisplay = document.getElementById("userNameDisplay");
+    if (userDisplay) userDisplay.innerText = uName;
+
+    // প্রাথমিক ডাটা লোড করার ফাংশন থাকলে এখানে কল করুন
+    // loadDashboardData();
+};
 
     function showToast(msg, isError = false) {
         const t = document.getElementById('toast');
@@ -1051,3 +1070,4 @@ function exportHistoryCSV() {
 </script>
 </body>
 </html>
+
