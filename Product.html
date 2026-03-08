@@ -108,8 +108,8 @@
 
 window.onload = function() {
     // ১. ইউজার ট্র্যাকিং (পেজ লোড হওয়ার সাথে সাথে চলবে)
-    const uId = localStorage.getItem('erp_user_id');
-    const uName = localStorage.getItem('erp_user_name');
+   const uId = localStorage.getItem('userId'); 
+    const uName = localStorage.getItem('userName');
     const pageTitle = document.title || "ERP Page";
 
     if (uId) {
@@ -207,3 +207,4 @@ window.onload = function() {
 </script>
 </body>
 </html>
+
