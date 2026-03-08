@@ -124,15 +124,32 @@
     // API URL
     const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzTeOGvSd2EaxCZMouhcjZHaHuaUxJTBySk-5d2okEY3_YGyfBohszmkGHaq0pGo4B9ng/exec";
 
-    let inventory = [];
-    let suppliers = ["PHARMA", "INM", "ISV", "OPTHALMIC"]; 
-    let purchaseCart = [];
-    let pendingItem = null;
-    let selectedSuggestionIndex = -1;
-    
-    // --- ইউজার ডাটা রাখার জন্য অবজেক্ট ---
-    let activeUser = { name: "Guest", id: "0000" };
+// --- গ্লোবাল ভ্যারিয়েবল ---
+let inventory = [];
+let suppliers = ["PHARMA", "INM", "ISV", "OPTHALMIC"]; 
+let purchaseCart = [];
+let pendingItem = null;
+let selectedSuggestionIndex = -1;
+let activeUser = { name: "Guest", id: "0000" }; // ডিফল্ট ভ্যালু
 
+window.onload = function() {
+    // ১. ইউজার ডাটা রিসিভ করা
+    const uId = localStorage.getItem('erp_user_id');
+    const uName = localStorage.getItem('erp_user_name');
+    const pageTitle = document.title || "ERP Page";
+
+    // ২. যদি ইউজার লগইন করা থাকে, তবে activeUser আপডেট করা
+    if (uId && uName) {
+        activeUser.id = uId;
+        activeUser.name = uName;
+        
+        // ৩. ব্যাকএন্ডে ট্র্যাকিং ডাটা পাঠানো
+        google.script.run.trackUserActivity(uId, uName, "Visited: " + pageTitle);
+    }
+
+    // ৪. ইনভেন্টরি বা অন্যান্য ডাটা লোড করার ফাংশন থাকলে এখানে কল করুন
+    // loadInitialData(); 
+};
     function showToast(message, type = 'info') {
         const toast = document.getElementById('customToast');
         toast.innerText = message;
@@ -325,6 +342,7 @@
 </body>
 
 </html>
+
 
 
 
