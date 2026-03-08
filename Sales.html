@@ -533,19 +533,46 @@ label.small.fw-bold {
     </div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzTeOGvSd2EaxCZMouhcjZHaHuaUxJTBySk-5d2okEY3_YGyfBohszmkGHaq0pGo4B9ng/exec"; 
-    let db = { products: [], customers: [] };
-    let cart = [];
-    let activeUser = { name: "Guest", id: "0000" };
-    let focusedIdx = -1;
-    let lastSavedData = null;
-    const successModal = new bootstrap.Modal(document.getElementById('successModal'));
-    function showAlert(msg) {
-        const alrt = document.getElementById('customAlert');
-        document.getElementById('alertMsg').innerText = msg;
+  const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzTeOGvSd2EaxCZMouhcjZHaHuaUxJTBySk-5d2okEY3_YGyfBohszmkGHaq0pGo4B9ng/exec"; 
+
+// --- গ্লোবাল ডাটা স্টোরেজ ---
+let db = { products: [], customers: [] };
+let cart = [];
+let activeUser = { name: "Guest", id: "0000" }; // ডিফল্ট
+let focusedIdx = -1;
+let lastSavedData = null;
+
+// --- বুটস্ট্র্যাপ এবং অ্যালার্ট হ্যান্ডলার ---
+const successModal = document.getElementById('successModal') ? new bootstrap.Modal(document.getElementById('successModal')) : null;
+
+function showAlert(msg) {
+    const alrt = document.getElementById('customAlert');
+    const msgEl = document.getElementById('alertMsg');
+    if (alrt && msgEl) {
+        msgEl.innerText = msg;
         alrt.style.display = 'block';
         setTimeout(() => { alrt.style.display = 'none'; }, 4000);
     }
+}
+
+// --- পেজ লোড ও ট্র্যাকিং লজিক ---
+window.onload = function() {
+    const uId = localStorage.getItem('erp_user_id');
+    const uName = localStorage.getItem('erp_user_name');
+    const pageTitle = document.title || "Unknown Page"; 
+
+    if (uId && uName) {
+        // ১. গ্লোবাল ইউজার অবজেক্ট আপডেট করা
+        activeUser.id = uId;
+        activeUser.name = uName;
+
+        // ২. ব্যাকএন্ডে ভিজিট ট্র্যাকিং পাঠানো
+        google.script.run.trackUserActivity(uId, uName, "Visited: " + pageTitle);
+    }
+
+    // ৩. ইনভেন্টরি বা ডাটাবেজ লোড করার ফাংশন থাকলে এখানে কল করুন
+    // loadInitialData(); 
+};
     function toggleInputs(isDisabled) {
         const ids = ['cSearch', 'invDate', 'pSearch', 'pRate', 'pQty', 'paidAmount', 'addBtn', 'saveBtn', 'syncBtn', 'paymentMode'];
         ids.forEach(id => {
@@ -959,14 +986,3 @@ function initApp() {
 </body>
 
 </html>
-
-
-
-
-
-
-
-
-
-
-
