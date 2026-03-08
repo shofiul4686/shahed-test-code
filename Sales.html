@@ -763,9 +763,9 @@ window.onload = function() {
         paid: paid, 
         status: status, 
         cart: cart,
-        // --- এই দুটি লাইন ইউজার আইডি ও নাম সিটে পাঠানোর জন্য ---
-        operatorName: activeUser.name,
-        operatorId: activeUser.id
+       // --- এখান থেকে ইউজার ডাটা নেওয়া হচ্ছে ---
+    const currentUserName = localStorage.getItem('userName') || "Unknown User";
+    const currentUserId = localStorage.getItem('userId') || "000";
     };
 
         fetch(WEB_APP_URL, {
@@ -986,4 +986,5 @@ function initApp() {
 </body>
 
 </html>
+
 
