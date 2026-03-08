@@ -186,5 +186,12 @@
             location.reload();
         }).saveInvoice(master, cart);
     }
+    function getActiveUser() {
+    return {
+        id: decodeURIComponent(localStorage.getItem('erp_user_id') || "0000"),
+        name: decodeURIComponent(localStorage.getItem('erp_user_name') || "GUEST")
+    };
+}
 
 </script>
+
