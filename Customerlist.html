@@ -47,37 +47,90 @@
     }
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
+    /* Modal Styles */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.7);
+      z-index: 1000;
+      backdrop-filter: blur(4px);
+    }
+    .modal-content {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: white;
+      padding: 0;
+      width: 90%;
+      max-width: 500px;
+      border-radius: 8px;
+      border: 2px solid #000;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    }
+
+    /* PRINT STYLES - Force Black & White */
     @media print {
-      body { background: white !important; }
-      .no-print, .search-container, .btn-preview, #loaderUI, .action-cell { display: none !important; }
-      .main-content { padding: 0 !important; }
+      * {
+        color: #000 !important;
+        text-shadow: none !important;
+        background: transparent !important;
+        box-shadow: none !important;
+        border-color: #000 !important;
+      }
+      body { background: white !important; margin: 0; padding: 0; }
+      .no-print, .search-container, .btn-preview, #loaderUI, .action-cell, .modal-overlay { display: none !important; }
+      .main-content { padding: 0 !important; max-width: 100% !important; }
+      
+      .text-blue-900 { color: #000 !important; }
+      .bg-blue-700 { background: #fff !important; color: #000 !important; border: 1px solid #000 !important; }
+      
+      .custom-table-container { border: 1px solid #000 !important; }
       table { width: 100% !important; border-collapse: collapse !important; }
-      table thead th { background-color: #eeeeee !important; color: black !important; border: 1px solid #000 !important; }
-      table tbody td { border: 1px solid #000 !important; font-size: 9pt !important; padding: 5px !important; }
+      table thead th { 
+        background-color: #eee !important; 
+        color: #000 !important; 
+        border: 1px solid #000 !important; 
+        font-size: 10pt !important;
+      }
+      table tbody td { 
+        border: 1px solid #000 !important; 
+        font-size: 9pt !important; 
+        padding: 6px 4px !important; 
+      }
+      .text-blue-800, .text-slate-800, .text-slate-600 { color: #000 !important; }
     }
   </style>
 </head>
 <body class="p-4 md:p-6">
   <div class="max-w-7xl mx-auto main-content">
     
-    <!-- Updated Header Section -->
-    <div class="text-center mb-8 border-b-2 border-slate-900 pb-6 relative">
+    <!-- Main Header Section -->
+    <div class="text-center mb-6 relative">
       <p class="text-sm font-bold text-slate-700 italic mb-1">বিসমিল্লাহির রাহমানির রাহিম</p>
-      
       <h1 class="text-4xl md:text-6xl font-black text-blue-900 tracking-tight mb-2">মেসার্স নূর এন্টারপ্রাইজ</h1>
-      
       <div class="inline-block bg-blue-700 text-white px-8 py-1.5 rounded-full font-bold text-lg mb-3 shadow-md">প্রোঃ এম. এম. নূর-ই-মোহাম্মদ</div>
-      
       <p class="text-lg md:text-xl font-bold text-slate-800 mb-1">বি,সি,আই,সি অনুমোদিত ডিলার, রাসায়নিক সার, কীটনাশক ও সিমেন্ট বিক্রেতা</p>
       <p class="text-md font-bold text-slate-600 mb-2">আমবাড়ী বাজার, পার্বতীপুর, দিনাজপুর।</p>
-      <p class="text-sm font-black text-slate-900">মোবাঃ ০১৭৭২-৯৫৭৫১৫, ০১৭২০-৩৩৭৮১২, ০১৭১৭-৫২৭২৯২, ০১৭৩১-৭৩৩৩৪০</p>
+      <p class="text-sm font-black text-slate-900 mb-4">মোবাঃ ০১৭৭২-৯৫৭৫১৫, ০১৭২০-৩৩৭৮১২, ০১৭১৭-৫২৭২৯২, ০১৭৩১-৭৩৩৩৪০</p>
+    </div>
+
+    <!-- Customer List Title (Centered, No BG, Smaller Text) -->
+    <div class="mb-6 text-center">
+      <h2 class="text-lg md:text-xl font-black tracking-[0.2em] uppercase text-black border-b-2 border-black inline-block pb-1">
+        Customer List
+      </h2>
     </div>
 
     <!-- Search & Actions Row -->
     <div class="search-container no-print flex flex-col md:flex-row items-center gap-4 mb-6">
       <!-- Total Count Box -->
       <div class="bg-black text-white px-6 py-2.5 rounded-md border-2 border-black text-center min-w-[120px] shadow-sm">
-        <p class="text-[10px] uppercase font-bold text-gray-400 leading-none mb-1">Total Customer</p>
+        <p class="text-[10px] uppercase font-bold text-gray-400 leading-none mb-1">Total Count</p>
         <span id="totalCount" class="text-xl font-bold leading-none">0</span>
       </div>
 
@@ -123,8 +176,25 @@
     </div>
   </div>
 
+  <!-- Detail Preview Modal -->
+  <div id="previewModal" class="modal-overlay" onclick="closeModal()">
+    <div class="modal-content" onclick="event.stopPropagation()">
+      <div class="bg-black text-white p-4 rounded-t flex justify-between items-center">
+        <h3 class="font-bold uppercase tracking-widest text-sm">Customer Details</h3>
+        <button onclick="closeModal()" class="text-xl hover:text-red-400">&times;</button>
+      </div>
+      <div id="modalBody" class="p-6 space-y-4">
+        <!-- কাস্টমার ডাটা এখানে লোড হবে -->
+      </div>
+      <div class="p-4 border-t flex justify-end bg-gray-50 rounded-b">
+        <button onclick="closeModal()" class="px-6 py-2 bg-black text-white font-bold text-xs uppercase rounded hover:bg-slate-800">Close</button>
+      </div>
+    </div>
+  </div>
+
   <script>
     const API_URL = "https://script.google.com/macros/s/AKfycbxwBXVROsZF5WcdlDpPUHCTDhoZYHrZka0Y-RKM6ggphitVLxFaj2W-ZxXIVTc9-7oh/exec";
+    let customerData = [];
     
     window.onload = loadCustomers;
 
@@ -140,14 +210,14 @@
 
       try {
         const res = await fetch(`${API_URL}?action=getAllCustomers`);
-        const data = await res.json();
+        customerData = await res.json();
         
-        if (Array.isArray(data)) {
-          countEl.innerText = data.length;
+        if (Array.isArray(customerData)) {
+          countEl.innerText = customerData.length;
           loader.classList.add('hidden');
           tableWrapper.classList.remove('hidden');
 
-          rows.innerHTML = data.map((c, i) => `
+          rows.innerHTML = customerData.map((c, i) => `
             <tr class="hover:bg-slate-50 text-center transition-colors">
               <td class="py-3 font-bold text-xs border-r">${i + 1}</td>
               <td class="py-3 font-mono font-bold text-xs border-r text-blue-800">${c.code || '-'}</td>
@@ -158,7 +228,7 @@
               <td class="py-3 border-r"><span class="badge-text">${c.type || '-'}</span></td>
               <td class="py-3 border-r"><span class="badge-text">${c.payMode || '-'}</span></td>
               <td class="py-3 action-cell">
-                <button onclick="goToReport('${c.code}')" class="btn-preview">Preview</button>
+                <button onclick="openPreview(${i})" class="btn-preview">Preview</button>
               </td>
             </tr>
           `).join('');
@@ -169,9 +239,40 @@
       }
     }
 
-    function goToReport(custId) {
-      localStorage.setItem('selectedCustId', custId);
-      window.location.href = 'Reports.html?id=' + custId;
+    function openPreview(index) {
+      const c = customerData[index];
+      const modal = document.getElementById('previewModal');
+      const body = document.getElementById('modalBody');
+
+      localStorage.setItem('selectedCustId', c.code);
+
+      body.innerHTML = `
+        <div class="grid grid-cols-2 gap-y-4 text-sm">
+          <div class="text-slate-400 font-bold uppercase text-[10px]">Code</div>
+          <div class="font-bold text-blue-800 font-mono">${c.code}</div>
+          
+          <div class="text-slate-400 font-bold uppercase text-[10px]">Name</div>
+          <div class="font-bold text-slate-800">${c.name}</div>
+          
+          <div class="text-slate-400 font-bold uppercase text-[10px]">Mobile</div>
+          <div class="font-bold text-slate-800">${c.mobile || '-'}</div>
+          
+          <div class="text-slate-400 font-bold uppercase text-[10px]">Area</div>
+          <div class="font-bold text-slate-800">${c.area || '-'}</div>
+          
+          <div class="text-slate-400 font-bold uppercase text-[10px]">Type</div>
+          <div><span class="badge-text">${c.type || '-'}</span></div>
+          
+          <div class="text-slate-400 font-bold uppercase text-[10px]">Address</div>
+          <div class="text-slate-600 italic col-span-2 bg-slate-50 p-2 rounded border border-slate-100">${c.address || '-'}</div>
+        </div>
+      `;
+
+      modal.style.display = 'block';
+    }
+
+    function closeModal() {
+      document.getElementById('previewModal').style.display = 'none';
     }
 
     function filterTable() {
