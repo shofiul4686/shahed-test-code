@@ -301,37 +301,52 @@ window.onload = function() {
     function removeItem(idx) { purchaseCart.splice(idx, 1); updateTable(); }
 
     async function savePurchaseOrder() {
-        if (!purchaseCart.length) return showToast("Cart is empty!", "danger");
-        const supplier = document.getElementById('purSupplier').value;
-        if (!supplier) return showToast("Supplier required!", "danger");
+    if (!purchaseCart.length) return showToast("Cart is empty!", "danger");
+    const supplier = document.getElementById('purSupplier').value;
+    if (!supplier) return showToast("Supplier required!", "danger");
 
-        const btn = document.getElementById('saveBtn');
-        btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+    // সরাসরি লোকাল স্টোরেজ থেকে নাম ও আইডি নেওয়া (সবচেয়ে নিরাপদ পদ্ধতি)
+    const currentUserName = localStorage.getItem('userName') || "Unknown User";
+    const currentUserId = localStorage.getItem('userId') || "000";
 
-        try {
-            for (const item of purchaseCart) {
-                const payload = {
-                    action: "savePurchase",
-                    date: document.getElementById('purDate').value,
-                    supplier: supplier,
-                    note: document.getElementById('purNote').value,
-                    ...item,
-                    // --- ইউজার আইডি ও নাম পাঠানো হচ্ছে ---
-                    operatorName: activeUser.name,
-                    operatorId: activeUser.id
-                };
-                await fetch(WEB_APP_URL, { method: "POST", body: JSON.stringify(payload) });
-            }
-            showToast("Voucher Saved!", "success");
-            purchaseCart = []; updateTable(); 
-            document.getElementById('purSupplier').value = ""; document.getElementById('purNote').value = "";
-        } catch (err) {
-            showToast("Save error!", "danger");
-        } finally {
-            btn.disabled = false; btn.innerHTML = '<i class="fas fa-save me-2"></i> Save Voucher';
+    const btn = document.getElementById('saveBtn');
+    btn.disabled = true; 
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+
+    try {
+        for (const item of purchaseCart) {
+            const payload = {
+                action: "savePurchase",
+                date: document.getElementById('purDate').value,
+                supplier: supplier,
+                note: document.getElementById('purNote').value,
+                ...item,
+                // এখান থেকেই মূলত শিটে নাম যাবে
+                operatorName: currentUserName, 
+                operatorId: currentUserId
+            };
+
+            // ডাটা ব্যাকএন্ডে পাঠানো
+            await fetch(WEB_APP_URL, { 
+                method: "POST", 
+                body: JSON.stringify(payload) 
+            });
         }
+        
+        showToast(`Voucher Saved by ${currentUserName}!`, "success");
+        purchaseCart = []; 
+        updateTable(); 
+        document.getElementById('purSupplier').value = ""; 
+        document.getElementById('purNote').value = "";
+        
+    } catch (err) {
+        console.error("Save Error:", err);
+        showToast("Save error! Check your connection.", "danger");
+    } finally {
+        btn.disabled = false; 
+        btn.innerHTML = '<i class="fas fa-save me-2"></i> Save Voucher';
     }
-
+}
     document.addEventListener('click', e => {
         if (!e.target.closest('.position-relative')) document.querySelectorAll('.suggestion-box').forEach(b => b.style.display = 'none');
     });
@@ -340,6 +355,7 @@ window.onload = function() {
 </body>
 
 </html>
+
 
 
 
