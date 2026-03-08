@@ -458,8 +458,11 @@ window.onload = function () {
     const uName = localStorage.getItem('userName');
     const pageTitle = document.title || "ERP Page";
 
-    if (uId) {
+    // google অবজেক্ট চেক করে ট্র্যাকিং চালানো
+    if (uId && typeof google !== 'undefined' && google.script) {
         google.script.run.trackUserActivity(uId, uName, "Visited: " + pageTitle);
+    } else {
+        console.log("Tracking skipped: Not in Google Apps Script environment.");
     }
 
     // তারিখ সেট করা
@@ -467,13 +470,11 @@ window.onload = function () {
     const statusEl = document.getElementById("connectionStatus");
     if (statusEl) statusEl.innerText = "Today: " + today;
     
-    // ফর্ম রিসেট ও ইন-ওয়ার্ড আপডেট
     if (typeof resetFormUI === 'function') resetFormUI();
 
     const opInput = document.getElementById('openingBalance');
     if(opInput) updateInWord(opInput.value);
     
-    // রিয়েল টাইম ক্যালকুলেশন
     setInterval(updateFinalBalanceInWord, 1000);
 };
       async function fetchNextCode() {
@@ -771,6 +772,9 @@ window.onload = function () {
           openingBalance: document.getElementById("openingBalance").value || 0,
           finalBalance: document.getElementById("finalBalance").innerText,
           rows: rows,
+          // --- এই দুটি কি (Key) আপনার নাম শিটে নিয়ে যাবে ---
+        userName: currentUserName,
+        recordedBy: currentUserId
         };
 
         try {
