@@ -557,8 +557,8 @@ function showAlert(msg) {
 
 // --- পেজ লোড ও ট্র্যাকিং লজিক ---
 window.onload = function() {
-    const uId = localStorage.getItem('erp_user_id');
-    const uName = localStorage.getItem('erp_user_name');
+   const uId = localStorage.getItem('userId'); 
+    const uName = localStorage.getItem('userName');
     const pageTitle = document.title || "Unknown Page"; 
 
     if (uId && uName) {
@@ -986,3 +986,4 @@ function initApp() {
 </body>
 
 </html>
+
