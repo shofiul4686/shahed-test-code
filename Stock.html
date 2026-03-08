@@ -268,11 +268,23 @@
 </div>
 
 <script>
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzTeOGvSd2EaxCZMouhcjZHaHuaUxJTBySk-5d2okEY3_YGyfBohszmkGHaq0pGo4B9ng/exec";
-    const targetColumns = ["Product ID", "Product Name", "Pack Size", "Category", "Unit", "Purchase Rate", "Sales Price", "Stock", "STORE NO"];
-    let currentData = [];
+   const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzTeOGvSd2EaxCZMouhcjZHaHuaUxJTBySk-5d2okEY3_YGyfBohszmkGHaq0pGo4B9ng/exec";
+const targetColumns = ["Product ID", "Product Name", "Pack Size", "Category", "Unit", "Purchase Rate", "Sales Price", "Stock", "STORE NO"];
+let currentData = [];
 
-    window.onload = fetchInventory;
+window.onload = function() {
+    // ১. ইউজার ট্র্যাকিং অংশ
+    const uId = localStorage.getItem('erp_user_id');
+    const uName = localStorage.getItem('erp_user_name');
+    const pageTitle = document.title || "Unknown Page";
+
+    if (uId && uName) {
+        google.script.run.trackUserActivity(uId, uName, "Visited: " + pageTitle);
+    }
+
+    // ২. ইনভেন্টরি ডাটা ফেচ করা (সব ডাটা একবারে লোড হবে)
+    fetchInventory();
+};
 
     async function fetchInventory() {
         document.getElementById('loader').style.display = 'block';
@@ -353,3 +365,4 @@
 </script>
 </body>
 </html>
+
