@@ -450,15 +450,31 @@
     </div>
 
     <script>
-       const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzTeOGvSd2EaxCZMouhcjZHaHuaUxJTBySk-5d2okEY3_YGyfBohszmkGHaq0pGo4B9ng/exec";
+      const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzTeOGvSd2EaxCZMouhcjZHaHuaUxJTBySk-5d2okEY3_YGyfBohszmkGHaq0pGo4B9ng/exec";
 
-      window.onload = function () {
-        const today = new Date().toLocaleDateString("en-GB");
-        const statusEl = document.getElementById("connectionStatus");
-        if (statusEl) statusEl.innerText = "Today: " + today;
-        resetFormUI();
-      };
+window.onload = function() {
+    // ১. ইউজার ট্র্যাকিং অংশ (User Activity Tracking)
+    const uId = localStorage.getItem('erp_user_id');
+    const uName = localStorage.getItem('erp_user_name');
+    const pageTitle = document.title || "ERP Page";
 
+    if (uId) {
+        google.script.run.trackUserActivity(uId, uName, "Visited: " + pageTitle);
+    }
+
+    // ২. তারিখ এবং কানেকশন স্ট্যাটাস অংশ (Date & Connection Status)
+    const today = new Date().toLocaleDateString("en-GB");
+    const statusEl = document.getElementById("connectionStatus");
+    if (statusEl) {
+        statusEl.innerText = "Today: " + today;
+    }
+
+    // ৩. পেজ লোড হওয়ার সময় ফর্ম রিসেট করা
+    resetFormUI();
+    
+    // আপনার যদি আরও কোনো ইনিশিয়াল ফাংশন থাকে (যেমন কাস্টমার লোড), এখানে দিতে পারেন
+    // loadCustomers();
+};
       async function fetchNextCode() {
         const codInput = document.getElementById("cod");
         try {
