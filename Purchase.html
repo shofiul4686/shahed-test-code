@@ -134,8 +134,8 @@ let activeUser = { name: "Guest", id: "0000" }; // ডিফল্ট ভ্য�
 
 window.onload = function() {
     // ১. ইউজার ডাটা রিসিভ করা
-    const uId = localStorage.getItem('erp_user_id');
-    const uName = localStorage.getItem('erp_user_name');
+   const uId = localStorage.getItem('userId'); 
+    const uName = localStorage.getItem('userName');
     const pageTitle = document.title || "ERP Page";
 
     // ২. যদি ইউজার লগইন করা থাকে, তবে activeUser আপডেট করা
@@ -336,12 +336,11 @@ window.onload = function() {
         if (!e.target.closest('.position-relative')) document.querySelectorAll('.suggestion-box').forEach(b => b.style.display = 'none');
     });
 
-    // ইনিশিয়ালাইজেশন কল
-    window.onload = initPurchase;
 </script>
 </body>
 
 </html>
+
 
 
 
