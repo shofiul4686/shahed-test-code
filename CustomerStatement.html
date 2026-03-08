@@ -1,92 +1,305 @@
-<div class="container mt-4">
-  <div class="card shadow border-0">
-    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-      <h5 class="mb-0">Customer Ledger Statement</h5>
-      <button class="btn btn-sm btn-light no-print" onclick="window.print()">Print Report</button>
-    </div>
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <style>
+    body { 
+      font-family: 'Hind Siliguri', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+      background-color: #f8fafc; 
+      margin: 0; 
+      color: #1e293b;
+    }
     
-    <div class="card-body">
-      <div id="customerProfile" class="row mb-4 p-3 border rounded bg-white d-none shadow-sm">
-        <div class="col-md-6 border-end">
-          <p class="mb-1"><strong>Name:</strong> <span id="pName" class="text-primary"></span></p>
-          <p class="mb-1"><strong>ID:</strong> <span id="pID"></span></p>
-          <p class="mb-1"><strong>Mobile:</strong> <span id="pMobile"></span></p>
-        </div>
-        <div class="col-md-6 ps-md-4">
-          <p class="mb-1"><strong>Area:</strong> <span id="pArea"></span></p>
-          <p class="mb-1"><strong>Address:</strong> <span id="pAddress"></span></p>
-          <p class="mb-1 text-muted small"><strong>Report Generated:</strong> <span id="pDate"></span></p>
-        </div>
+    .main-wrapper {
+      max-width: 1000px;
+      margin: 0 auto;
+      background-color: white;
+      min-height: 100vh;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      position: relative;
+    }
+
+    .sticky-top-section {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: white;
+      border-bottom: 3px solid #1e3a8a;
+    }
+
+    #reportTable thead th {
+      position: sticky;
+      z-index: 90;
+      background-color: #1e3a8a !important;
+      color: white !important;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.025em;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      border: 1px solid #1e3a8a;
+    }
+
+    table { table-layout: fixed; border-collapse: separate; border-spacing: 0; width: 100%; }
+    th, td { border: 1px solid #e2e8f0; word-wrap: break-word; overflow: hidden; }
+
+    .col-date { width: 110px; }
+    .col-details { width: auto; }
+    .col-voucher { width: 95px; }
+    .col-cr { width: 115px; }
+    .col-dr { width: 115px; }
+    .col-bal { width: 135px; }
+
+    .loader {
+      border: 2px solid #f3f3f3;
+      border-top: 2px solid #1d4ed8;
+      border-radius: 50%;
+      width: 16px;
+      height: 16px;
+      animation: spin 1s linear infinite;
+      display: none;
+    }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+    .detail-row {
+      display: flex;
+      align-items: center;
+      margin-bottom: 6px;
+      line-height: 1.5;
+    }
+    .detail-label {
+      width: 120px;
+      font-weight: 600;
+      color: #334155;
+    }
+    .detail-separator {
+      width: 25px;
+      text-align: center;
+      font-weight: 700;
+      color: #64748b;
+    }
+    .detail-value {
+      flex: 1;
+      color: #0f172a;
+    }
+
+    @media print {
+      @page { size: auto; margin: 15mm 10mm 15mm 10mm; }
+      .no-print, .sticky-top-section .bg-slate-50, #errorBox, .search-container, .date-filter-box { display: none !important; }
+      .sticky-top-section { position: static !important; border-bottom: 2px solid black !important; }
+      #reportTable thead th { position: static !important; background-color: #1e3a8a !important; color: white !important; -webkit-print-color-adjust: exact; }
+      .main-wrapper { max-width: 100% !important; box-shadow: none !important; margin: 0 !important; }
+      body { background: white; font-size: 11pt; }
+      .print-grid { display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 30px !important; }
+      .print-footer { display: flex !important; position: fixed; bottom: 0; left: 0; right: 0; font-size: 9pt; border-top: 1px solid #000; padding: 8px 20px; color: #000; background: white; justify-content: space-between; }
+    }
+    .print-footer { display: none; }
+  </style>
+</head>
+<body>
+
+  <div class="main-wrapper">
+    <div class="sticky-top-section" id="topHeader">
+      <div class="text-center py-5 px-6 relative">
+        <p class="text-[10px] font-bold text-slate-500 italic mb-1 uppercase tracking-widest">বিসমিল্লাহির রাহমানির রাহিম</p>
+        <h1 class="text-4xl font-black text-blue-900 tracking-tight mb-1">মেসার্স নূর এন্টারপ্রাইজ</h1>
+        <div class="inline-block bg-blue-800 text-white px-6 py-1 rounded-md font-bold text-md mb-2 shadow-sm">প্রোঃ এম. এম. নূর-ই-মোহাম্মদ</div>
+        <p class="text-[15px] font-semibold text-slate-700">বি,সি,আই,সি অনুমোদিত ডিলার, রাসায়নিক সার, কীটনাশক ও সিমেন্ট বিক্রেতা</p>
+        <p class="text-xs font-medium text-slate-500">আমবাড়ী বাজার, পার্বতীপুর, দিনাজপুর।</p>
+        <p class="text-[11px] font-bold text-slate-600 mt-1">মোবাঃ ০১৭৭২-৯৫৭৫১৫, ০১৭২০-৩৩৭৮১২, ০১৭১৭-৫২৭২৯২, ০১৭৩১-৭৩৩৩৪০</p>
       </div>
 
-      <div class="table-responsive">
-        <table class="table table-hover table-bordered">
-          <thead class="table-dark">
-            <tr class="text-center">
-              <th>Date</th>
-              <th>Description</th>
-              <th>Voucher</th>
-              <th>Bill (Dr)</th>
-              <th>Paid (Cr)</th>
-              <th>Balance</th>
-            </tr>
-          </thead>
-          <tbody id="statementRows">
-            <tr><td colspan="6" class="text-center text-muted py-4">Search with Customer ID to view ledger.</td></tr>
-          </tbody>
-        </table>
+      <div class="bg-slate-50 p-4 no-print border-t border-b flex flex-col items-center gap-3 search-container">
+        <div class="flex flex-wrap justify-center items-end gap-3">
+          <!-- Customer Select -->
+          <div class="flex flex-col gap-1">
+            <label class="text-[11px] font-bold text-slate-500 uppercase ml-1">Search Customer</label>
+            <input type="text" id="custID" list="custList" class="w-64 px-4 py-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 outline-none text-sm transition-all" placeholder="ID বা নাম লিখুন...">
+            <datalist id="custList"></datalist>
+          </div>
+
+          <!-- Date Filters -->
+          <div class="flex flex-col gap-1">
+            <label class="text-[11px] font-bold text-slate-500 uppercase ml-1">From</label>
+            <input type="date" id="fromDate" class="px-3 py-2 rounded-lg border border-slate-300 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+          </div>
+          <div class="flex flex-col gap-1">
+            <label class="text-[11px] font-bold text-slate-500 uppercase ml-1">To</label>
+            <input type="date" id="toDate" class="px-3 py-2 rounded-lg border border-slate-300 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+          </div>
+
+          <button onclick="fetchLedger()" id="searchBtn" class="bg-blue-700 text-white px-6 py-2 rounded-lg font-bold text-sm hover:bg-blue-800 active:scale-95 transition-all flex items-center gap-2 shadow-sm h-[38px]">
+            <span>Search Report</span>
+            <div id="loader" class="loader"></div>
+          </button>
+          
+          <button onclick="window.print()" class="bg-slate-800 text-white px-4 py-2 rounded-lg font-bold text-sm hover:bg-slate-900 active:scale-95 transition-all shadow-sm h-[38px]">Print</button>
+        </div>
+        <div id="errorBox" class="bg-red-50 border border-red-200 text-red-600 px-4 py-1.5 rounded-lg text-xs font-bold hidden">
+          <span>⚠️ কাস্টমার পাওয়া যায়নি! সঠিক আইডি চেক করুন।</span>
+        </div>
       </div>
+    </div>
+
+    <div class="p-8">
+      <div id="pDetails" class="hidden">
+        <div class="print-grid grid grid-cols-1 md:grid-cols-2 gap-8 border border-slate-200 p-8 rounded-xl mb-10 bg-white shadow-sm" id="customerInfoCard">
+          <div class="space-y-1">
+            <div class="detail-row"><span class="detail-label text-slate-500">কাস্টমার কোড</span><span class="detail-separator">:</span><span class="detail-value font-mono font-bold text-blue-700" id="c"></span></div>
+            <div class="detail-row"><span class="detail-label text-slate-500">কাস্টমার নাম</span><span class="detail-separator">:</span><span class="detail-value font-bold text-2xl text-slate-900" id="n"></span></div>
+            <div class="detail-row"><span class="detail-label text-slate-500">মোবাইল</span><span class="detail-separator">:</span><span class="detail-value font-medium" id="m"></span></div>
+            <div class="detail-row"><span class="detail-label text-slate-500">ঠিকানা</span><span class="detail-separator">:</span><span class="detail-value text-slate-600" id="ad"></span></div>
+          </div>
+          <div class="space-y-1">
+            <div class="detail-row"><span class="detail-label text-slate-500">টাইপ</span><span class="detail-separator">:</span><span class="detail-value" id="type"></span></div>
+            <div class="detail-row"><span class="detail-label text-slate-500">পেমেন্ট</span><span class="detail-separator">:</span><span class="detail-value" id="pay"></span></div>
+            <div class="detail-row"><span class="detail-label text-slate-500">এলাকা</span><span class="detail-separator">:</span><span class="detail-value" id="a"></span></div>
+            <div class="detail-row bg-blue-50 p-2 rounded-md -ml-2">
+              <span class="detail-label text-blue-700">ওপেনিং ব্যালেন্স</span><span class="detail-separator">:</span><span class="detail-value font-bold text-xl text-blue-900" id="open"></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="overflow-visible min-h-[400px]">
+          <table id="reportTable" class="w-full text-[14px] text-center">
+            <thead>
+              <tr class="text-white">
+                <th class="py-4 px-2 col-date">তারিখ</th>
+                <th class="py-4 px-3 text-left col-details">বিবরণ (Details)</th>
+                <th class="py-4 px-2 col-voucher">ভাউচার</th>
+                <th class="py-4 px-2 text-right col-cr">জমা (Cr)</th>
+                <th class="py-4 px-2 text-right col-dr">খরচ (Dr)</th>
+                <th class="py-4 px-2 text-right col-bal">জের (Balance)</th>
+              </tr>
+            </thead>
+            <tbody id="rows" class="divide-y divide-slate-200"></tbody>
+          </table>
+        </div>
+
+        <div class="mt-28 flex justify-between px-12 pb-24">
+          <div class="border-t border-slate-400 pt-2 w-48 text-center font-bold text-sm text-slate-700">কাস্টমার স্বাক্ষর</div>
+          <div class="border-t border-slate-400 pt-2 w-48 text-center font-bold text-sm text-slate-700">কর্তৃপক্ষের স্বাক্ষর</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="print-footer">
+      <div>প্রিন্ট সময়: <span id="printTime" class="font-bold"></span></div>
+      <div class="font-medium">মেসার্স নূর এন্টারপ্রাইজ - আমবাড়ী বাজার</div>
+      <div class="text-right italic">Software Powered by AI</div>
     </div>
   </div>
-</div>
 
+  <script>
+    const API_URL = "https://script.google.com/macros/s/AKfycbzTeOGvSd2EaxCZMouhcjZHaHuaUxJTBySk-5d2okEY3_YGyfBohszmkGHaq0pGo4B9ng/exec";
 
-
-<script>
-  // আপনার প্রদানকৃত URL
-  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzTeOGvSd2EaxCZMouhcjZHaHuaUxJTBySk-5d2okEY3_YGyfBohszmkGHaq0pGo4B9ng/exec";
-
-  async function loadCustomerLedger(custCode) {
-    if (!custCode) return alert("Please enter ID");
-    
-    const profileDiv = document.getElementById('customerProfile');
-    const tableBody = document.getElementById('statementRows');
-    
-    try {
-      const response = await fetch(`${SCRIPT_URL}?action=getCustomerStatement&custCode=${custCode}`);
-      const res = await response.json();
-
-      if (res.status === "success") {
-        // প্রোফাইল আপডেট
-        profileDiv.classList.remove('d-none');
-        document.getElementById('pName').innerText = res.info.name;
-        document.getElementById('pID').innerText = res.info.code;
-        document.getElementById('pMobile').innerText = res.info.mobile;
-        document.getElementById('pArea').innerText = res.info.area;
-        document.getElementById('pAddress').innerText = res.info.address;
-        document.getElementById('pDate').innerText = new Date().toLocaleString();
-
-        // টেবিল ডাটা আপডেট
-        let rowsHtml = "";
-        res.data.forEach(item => {
-          rowsHtml += `
-            <tr>
-              <td class="text-center">${item.date}</td>
-              <td>${item.description}</td>
-              <td class="text-center">${item.voucher || '-'}</td>
-              <td class="text-end text-danger">${item.bill > 0 ? item.bill.toFixed(2) : '-'}</td>
-              <td class="text-end text-success">${item.paid > 0 ? item.paid.toFixed(2) : '-'}</td>
-              <td class="text-end fw-bold">${item.balance.toFixed(2)}</td>
-            </tr>`;
+    function adjustStickyHeader() {
+      const topHeader = document.getElementById('topHeader');
+      const tableHeader = document.querySelectorAll('#reportTable thead th');
+      if (topHeader && tableHeader.length > 0) {
+        const headerHeight = topHeader.getBoundingClientRect().height;
+        tableHeader.forEach(th => {
+          th.style.top = (headerHeight - 1) + 'px'; 
         });
-        tableBody.innerHTML = rowsHtml;
-      } else {
-        alert(res.message);
-        profileDiv.classList.add('d-none');
-        tableBody.innerHTML = '<tr><td colspan="6" class="text-center text-danger">Data Not Found!</td></tr>';
+        return headerHeight;
       }
-    } catch (err) {
-      console.error("Error fetching data:", err);
+      return 0;
     }
-  }
-</script>
+
+    window.addEventListener('resize', () => setTimeout(adjustStickyHeader, 100));
+    
+    window.onbeforeprint = () => {
+      const now = new Date();
+      const options = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true };
+      document.getElementById('printTime').innerText = now.toLocaleString('bn-BD', options);
+    };
+
+    window.onload = () => {
+      fetch(`${API_URL}?action=getAllCustomers`)
+      .then(r => r.json()).then(d => {
+        if(d.status === "success") {
+          const list = document.getElementById('custList');
+          d.data.forEach(c => {
+            let opt = document.createElement('option');
+            opt.value = c.id;
+            opt.textContent = `${c.id} - ${c.name}`;
+            list.appendChild(opt);
+          });
+        }
+      });
+      setTimeout(adjustStickyHeader, 500);
+    };
+
+    async function fetchLedger() {
+      const idInput = document.getElementById('custID');
+      const id = idInput.value.trim().split(' - ')[0]; 
+      const fromDate = document.getElementById('fromDate').value;
+      const toDate = document.getElementById('toDate').value;
+      
+      const errorBox = document.getElementById('errorBox');
+      const pDetails = document.getElementById('pDetails');
+      
+      if(!id) return;
+      
+      errorBox.classList.add('hidden');
+      document.getElementById('loader').style.display = 'block';
+      document.getElementById('searchBtn').disabled = true;
+
+      try {
+        let url = `${API_URL}?action=getCustomerStatement&custCode=${id}`;
+        if(fromDate) url += `&fromDate=${fromDate}`;
+        if(toDate) url += `&toDate=${toDate}`;
+
+        const r = await fetch(url);
+        const d = await r.json();
+        
+        document.getElementById('loader').style.display = 'none';
+        document.getElementById('searchBtn').disabled = false;
+
+        if(d.status === "success" && d.info) {
+          pDetails.classList.remove('hidden');
+          document.getElementById('c').innerText = d.info.code;
+          document.getElementById('n').innerText = d.info.name;
+          document.getElementById('m').innerText = d.info.mobile;
+          document.getElementById('ad').innerText = d.info.address;
+          document.getElementById('type').innerText = d.info.type || 'N/A';
+          document.getElementById('pay').innerText = d.info.payType || 'N/A';
+          document.getElementById('a').innerText = d.info.area;
+          document.getElementById('open').innerText = Number(d.info.openingBal || 0).toLocaleString() + " /-";
+
+          let h = "";
+          d.data.forEach(x => {
+            h += `<tr class="hover:bg-slate-50 transition-colors">
+              <td class="py-3 px-2 text-slate-500 font-medium">${x.date}</td>
+              <td class="py-3 px-3 text-left font-semibold text-slate-700">${x.description}</td>
+              <td class="py-3 px-2 text-slate-600 font-mono">${x.voucher || '-'}</td>
+              <td class="py-3 px-2 text-right text-emerald-600 font-bold">${x.paid > 0 ? x.paid.toLocaleString() : '-'}</td>
+              <td class="py-3 px-2 text-right text-rose-600 font-bold">${x.bill > 0 ? x.bill.toLocaleString() : '-'}</td>
+              <td class="py-3 px-2 text-right font-black text-blue-900 bg-slate-50 border-l-2 border-slate-200">${x.balance.toLocaleString()}</td>
+            </tr>`;
+          });
+          document.getElementById('rows').innerHTML = h;
+          
+          const headerHeight = adjustStickyHeader();
+          const card = document.getElementById('customerInfoCard');
+          const cardPosition = card.getBoundingClientRect().top + window.pageYOffset;
+          const offsetPosition = cardPosition - headerHeight - 20;
+
+          window.scrollTo({ top: offsetPosition, behavior: 'smooth' });
+
+        } else {
+          pDetails.classList.add('hidden');
+          errorBox.classList.remove('hidden');
+        }
+      } catch(e) { 
+        document.getElementById('loader').style.display = 'none';
+        document.getElementById('searchBtn').disabled = false;
+        errorBox.innerText = "⚠️ সার্ভার ত্রুটি! আবার চেষ্টা করুন।";
+        errorBox.classList.remove('hidden');
+      }
+    }
+  </script>
+</body>
+</html>
