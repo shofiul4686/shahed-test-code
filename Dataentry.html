@@ -450,132 +450,120 @@
     </div>
 
     <script>
-      const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzTeOGvSd2EaxCZMouhcjZHaHuaUxJTBySk-5d2okEY3_YGyfBohszmkGHaq0pGo4B9ng/exec";
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzTeOGvSd2EaxCZMouhcjZHaHuaUxJTBySk-5d2okEY3_YGyfBohszmkGHaq0pGo4B9ng/exec";
 
-window.onload = function () {
-    // ইউজার ট্র্যাকিং
-    const uId = localStorage.getItem('userId'); 
-    const uName = localStorage.getItem('userName');
-    const pageTitle = document.title || "ERP Page";
+    window.onload = function () {
+        // ১. ইউজার ট্র্যাকিং ও আইডেন্টিটি ফিক্স
+        const uId = localStorage.getItem('userId') || "IPI-004686"; 
+        const uName = localStorage.getItem('userName') || "SHOFIUL ALOM";
+        const pageTitle = document.title || "ERP Page";
 
-    // google অবজেক্ট চেক করে ট্র্যাকিং চালানো
-    if (uId && typeof google !== 'undefined' && google.script) {
-        google.script.run.trackUserActivity(uId, uName, "Visited: " + pageTitle);
-    } else {
-        console.log("Tracking skipped: Not in Google Apps Script environment.");
+        if (typeof google !== 'undefined' && google.script) {
+            google.script.run.trackUserActivity(uId, uName, "Visited: " + pageTitle);
+        }
+
+        // ২. তারিখ সেট করা
+        const today = new Date().toLocaleDateString("en-GB");
+        const statusEl = document.getElementById("connectionStatus");
+        if (statusEl) statusEl.innerText = "Today: " + today;
+        
+        // ৩. ফর্ম রিসেট ও লোড
+        resetFormUI();
+
+        // ৪. রিয়েল টাইম ব্যালেন্স আপডেট
+        const opInput = document.getElementById('openingBalance');
+        if(opInput) updateInWord(opInput.value);
+        setInterval(updateFinalBalanceInWord, 1000);
+    };
+
+    // --- কাস্টমার কোড জেনারেশন (এরর ফিক্সড) ---
+    async function fetchNextCode() {
+        const codInput = document.getElementById("cod");
+        if (!codInput) return;
+        try {
+            const response = await fetch(`${SCRIPT_URL}?action=getNextCustomerCode`);
+            const dataResult = await response.json(); // ভেরিয়েবল নাম dataResult দেওয়া হলো
+            if (dataResult && dataResult.nextCode) {
+                codInput.value = dataResult.nextCode;
+            } else {
+                codInput.value = "NEP-0001";
+            }
+        } catch (e) {
+            console.error("Fetch Error:", e);
+            codInput.value = "NEP-0001";
+        }
     }
 
-    // তারিখ সেট করা
-    const today = new Date().toLocaleDateString("en-GB");
-    const statusEl = document.getElementById("connectionStatus");
-    if (statusEl) statusEl.innerText = "Today: " + today;
-    
-    if (typeof resetFormUI === 'function') resetFormUI();
-
-    const opInput = document.getElementById('openingBalance');
-    if(opInput) updateInWord(opInput.value);
-    
-    setInterval(updateFinalBalanceInWord, 1000);
-};
-      async function fetchNextCode() {
-        const codInput = document.getElementById("cod");
-        try {
-          const response = await fetch(
-            `${SCRIPT_URL}?action=getNextCustomerCode`,
-          );
-          const data = await response.json();
-          if (data && data.nextCode) {
-            codInput.value = data.nextCode;
-          } else {
-            codInput.value = "NEP-0001";
-          }
-        } catch (e) {
-          console.error("Fetch Error:", e);
-          codInput.value = "NEP-0001";
-        }
-      }
-
-      function resetFormUI() {
+    function resetFormUI() {
+        // সব ইনপুট ফিল্ড খালি করা
+        const fields = ["custName", "mobile", "area", "address", "custType", "payType", "openingBalance"];
+        fields.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.value = "";
+        });
+        
         document.getElementById("statementBody").innerHTML = "";
-        document.getElementById("custName").value = "";
-        document.getElementById("mobile").value = "";
-        document.getElementById("area").value = "";
-        document.getElementById("address").value = "";
-        document.getElementById("custType").value = "";
-        document.getElementById("payType").value = "";
-        document.getElementById("openingBalance").value = "";
-        addRow(false);
-        fetchNextCode();
-        document.getElementById("custName").focus();
-      }
+        addRow(false); // প্রথম রো যোগ করা
+        fetchNextCode(); // অটো কোড জেনারেট
+        
+        setTimeout(() => {
+            const nameField = document.getElementById("custName");
+            if(nameField) nameField.focus();
+        }, 100);
+    }
 
-      function addRow(focus = true) {
+    function addRow(focus = true) {
         const tbody = document.getElementById("statementBody");
         const row = document.createElement("tr");
-        row.className =
-          "border-b border-black even:bg-gray-50 print:bg-transparent";
+        row.className = "border-b border-black even:bg-gray-50 print:bg-transparent";
         row.innerHTML = `
-      <td class="border border-black p-0"><input type="text" class="date-input text-center font-bold" placeholder="DD-MM-YYYY" onkeydown="handleTableNav(event, 'particulars')"></td>
-      <td class="border border-black p-0"><input type="text" class="particular-input px-2" placeholder="Details" onkeydown="handleTableNav(event, 'voucher')"></td>
-      <td class="border border-black p-0"><input type="text" class="voucher-input text-center" placeholder="-" onkeydown="handleTableNav(event, 'deposit')"></td>
-      <td class="border border-black p-0 bg-green-50 print:bg-transparent"><input type="number" class="deposit-input text-right font-bold text-green-700 print:text-black" oninput="calculateStatement()" onkeydown="handleTableNav(event, 'expense')" placeholder="0"></td>
-      <td class="border border-black p-0 bg-red-50 print:bg-transparent"><input type="number" class="expense-input text-right font-bold text-red-700 print:text-black" oninput="calculateStatement()" onkeydown="handleTableNav(event, 'nextRow')" placeholder="0"></td>
-      <td class="border border-black p-3 text-right font-bold text-blue-900 row-balance">0.00</td>
-      <td class="no-print text-center"><button onclick="this.closest('tr').remove(); calculateStatement();" class="text-red-500 font-bold hover:text-red-700">×</button></td>
-    `;
+            <td class="border border-black p-0"><input type="text" class="date-input text-center font-bold" placeholder="DD-MM-YYYY" onkeydown="handleTableNav(event, 'particulars')"></td>
+            <td class="border border-black p-0"><input type="text" class="particular-input px-2" placeholder="Details" onkeydown="handleTableNav(event, 'voucher')"></td>
+            <td class="border border-black p-0"><input type="text" class="voucher-input text-center" placeholder="-" onkeydown="handleTableNav(event, 'deposit')"></td>
+            <td class="border border-black p-0 bg-green-50 print:bg-transparent"><input type="number" class="deposit-input text-right font-bold text-green-700" oninput="calculateStatement()" onkeydown="handleTableNav(event, 'expense')" placeholder="0"></td>
+            <td class="border border-black p-0 bg-red-50 print:bg-transparent"><input type="number" class="expense-input text-right font-bold text-red-700" oninput="calculateStatement()" onkeydown="handleTableNav(event, 'nextRow')" placeholder="0"></td>
+            <td class="border border-black p-3 text-right font-bold text-blue-900 row-balance">0.00</td>
+            <td class="no-print text-center"><button onclick="this.closest('tr').remove(); calculateStatement();" class="text-red-500 font-bold hover:text-red-700">×</button></td>
+        `;
         tbody.appendChild(row);
 
         flatpickr(row.querySelector(".date-input"), {
-          dateFormat: "d-m-Y",
-          defaultDate: "today",
-          allowInput: true,
-          onClose: function (selectedDates, dateStr, instance) {
-            setTimeout(() => {
-              const r = instance.element.closest("tr");
-              if (r) r.querySelector(".particular-input").focus();
-            }, 50);
-          },
+            dateFormat: "d-m-Y",
+            defaultDate: "today",
+            allowInput: true,
+            onClose: function (selectedDates, dateStr, instance) {
+                setTimeout(() => {
+                    const r = instance.element.closest("tr");
+                    if (r) r.querySelector(".particular-input").focus();
+                }, 50);
+            },
         });
 
         if (focus) row.querySelector(".date-input").focus();
-      }
+    }
 
-      function calculateStatement() {
-        let opening =
-          parseFloat(document.getElementById("openingBalance").value) || 0;
-        let tDep = 0,
-          tExp = 0,
-          running = opening;
+    function calculateStatement() {
+        let opening = parseFloat(document.getElementById("openingBalance").value) || 0;
+        let tDep = 0, tExp = 0, running = opening;
 
         document.querySelectorAll("#statementBody tr").forEach((row) => {
-          let d = parseFloat(row.querySelector(".deposit-input").value) || 0;
-          let e = parseFloat(row.querySelector(".expense-input").value) || 0;
-          tDep += d;
-          tExp += e;
-          running = running + e - d;
-          row.querySelector(".row-balance").innerText = running.toLocaleString(
-            "en-IN",
-            { minimumFractionDigits: 2 },
-          );
+            let d = parseFloat(row.querySelector(".deposit-input").value) || 0;
+            let e = parseFloat(row.querySelector(".expense-input").value) || 0;
+            tDep += d;
+            tExp += e;
+            running = running + e - d;
+            row.querySelector(".row-balance").innerText = running.toLocaleString("en-IN", { minimumFractionDigits: 2 });
         });
 
         document.getElementById("totalDeposit").innerText = tDep.toFixed(2);
         document.getElementById("totalExpense").innerText = tExp.toFixed(2);
         document.getElementById("finalBalance").innerText = running.toFixed(2);
-      }
+    }
 
-      function handleInfoNav(e, nextId) {
-        if (e.key === "Enter") {
-          e.preventDefault();
-          const nextEl = document.getElementById(nextId);
-          if (nextEl) nextEl.focus();
-        }
-      }
-
-   function numberToWords(num) {
+    // --- সংখ্যা থেকে কথায় রূপান্তর ---
+    function numberToWords(num) {
         const a = ['', 'One ', 'Two ', 'Three ', 'Four ', 'Five ', 'Six ', 'Seven ', 'Eight ', 'Nine ', 'Ten ', 'Eleven ', 'Twelve ', 'Thirteen ', 'Fourteen ', 'Fifteen ', 'Sixteen ', 'Seventeen ', 'Eighteen ', 'Nineteen '];
         const b = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
-
         function toWords(n) {
             if (n < 20) return a[n];
             if (n < 100) return b[Math.floor(n / 10)] + (n % 10 !== 0 ? ' ' + a[n % 10] : '');
@@ -584,33 +572,20 @@ window.onload = function () {
             if (n < 10000000) return toWords(Math.floor(n / 100000)) + 'Lakh ' + (n % 100000 !== 0 ? toWords(n % 100000) : '');
             return toWords(Math.floor(n / 10000000)) + 'Crore ' + (n % 10000000 !== 0 ? toWords(n % 10000000) : '');
         }
-
         let n = Math.floor(Math.abs(num));
-        if (n === 0) return 'Zero Taka Only';
-        return toWords(n).trim() + ' Taka Only';
+        return n === 0 ? 'Zero Taka Only' : toWords(n).trim() + ' Taka Only';
     }
 
-    /**
-     * ওপেনিং ব্যালেন্স আপডেট করার ফাংশন
-     */
     function updateInWord(val) {
         const display = document.getElementById('openingBalanceInWord');
-        if (display) {
-            display.innerText = numberToWords(parseFloat(val) || 0);
-        }
-        if (typeof calculateStatement === 'function') {
-            calculateStatement();
-            updateFinalBalanceInWord(); 
-        }
+        if (display) display.innerText = numberToWords(parseFloat(val) || 0);
+        calculateStatement();
+        updateFinalBalanceInWord();
     }
 
-    /**
-     * ফাইনাল ব্যালেন্সকে কথায় রূপান্তর করার আপডেট কোড
-     */
     function updateFinalBalanceInWord() {
         const finalBalEl = document.getElementById('finalBalance');
         const wordDisplay = document.getElementById('finalBalanceInWord');
-        
         if (finalBalEl && wordDisplay) {
             const amountText = finalBalEl.innerText || "0.00";
             const amount = parseFloat(amountText.replace(/,/g, '')) || 0;
@@ -618,192 +593,139 @@ window.onload = function () {
         }
     }
 
-    /**
-     * Enter নেভিগেশন
-     */
-    function handleOpeningBalanceNav(event) {
-        if (event.key === "Enter") {
-            event.preventDefault(); 
-            const firstTableInput = document.querySelector("#statementBody tr:first-child input");
-            if (firstTableInput) {
-                firstTableInput.focus();
+    // --- নেভিগেশন ও এলার্ট ---
+    function handleTableNav(e, fieldType) {
+        if (e.key === "Enter") {
+            e.preventDefault();
+            const row = e.target.closest("tr");
+            const depVal = parseFloat(row.querySelector(".deposit-input").value) || 0;
+            const expVal = parseFloat(row.querySelector(".expense-input").value) || 0;
+            const partVal = row.querySelector(".particular-input").value.trim();
+
+            if (fieldType === "nextRow") {
+                if (depVal === 0 && expVal === 0) {
+                    showAlert("জমা অথবা খরচ এর ঘরে সঠিক সংখ্যা লিখুন।");
+                    row.querySelector(".deposit-input").focus();
+                    return;
+                }
+                addRow(true);
+            } else {
+                let nextSelector = { particulars: ".particular-input", voucher: ".voucher-input", deposit: ".deposit-input", expense: ".expense-input" }[fieldType];
+                if (fieldType === "voucher" && !partVal) {
+                    showAlert("বিবরণ (Particulars) এর ঘরটি পূরণ করুন।");
+                    row.querySelector(".particular-input").focus();
+                    return;
+                }
+                const nextInput = row.querySelector(nextSelector);
+                if (nextInput) nextInput.focus();
             }
         }
     }
 
-      function showAlert(msg, targetId = null) {
+    function showAlert(msg, targetId = null) {
         const alertOverlay = document.getElementById("alertOverlay");
-        document.getElementById("alertMsg").innerText = msg;
-        alertOverlay.style.display = "flex";
+        if(alertOverlay) {
+            document.getElementById("alertMsg").innerText = msg;
+            alertOverlay.style.display = "flex";
+            alertOverlay.dataset.targetId = targetId || "";
+        } else { alert(msg); }
+    }
 
-        // Store target focus for closing
-        alertOverlay.dataset.targetId = targetId || "";
-      }
-
-      function closeAlert() {
+    function closeAlert() {
         const alertOverlay = document.getElementById("alertOverlay");
         alertOverlay.style.display = "none";
         const targetId = alertOverlay.dataset.targetId;
-        if (targetId) {
-          const el = document.getElementById(targetId);
-          if (el) el.focus();
-        }
-      }
+        if (targetId) { document.getElementById(targetId)?.focus(); }
+    }
 
-      function handleTableNav(e, fieldType) {
-        if (e.key === "Enter") {
-          e.preventDefault();
-          const row = e.target.closest("tr");
-
-          // Validation: Particular, Deposit, Expense must not be empty/zero to move forward
-          const depVal =
-            parseFloat(row.querySelector(".deposit-input").value) || 0;
-          const expVal =
-            parseFloat(row.querySelector(".expense-input").value) || 0;
-          const partVal = row.querySelector(".particular-input").value.trim();
-
-          if (fieldType === "nextRow") {
-            if (depVal === 0 && expVal === 0) {
-              showAlert("জমা অথবা খরচ এর ঘরে সঠিক সংখ্যা লিখুন।", null);
-              row.querySelector(".deposit-input").focus();
-              return;
-            }
-            addRow(true);
-          } else {
-            let nextSelector = "";
-            switch (fieldType) {
-              case "particulars":
-                nextSelector = ".particular-input";
-                break;
-              case "voucher":
-                if (!partVal) {
-                  showAlert("বিবরণ (Particulars) এর ঘরটি পূরণ করুন।");
-                  row.querySelector(".particular-input").focus();
-                  return;
-                }
-                nextSelector = ".voucher-input";
-                break;
-              case "deposit":
-                nextSelector = ".deposit-input";
-                break;
-              case "expense":
-                nextSelector = ".expense-input";
-                break;
-            }
-            const nextInput = row.querySelector(nextSelector);
-            if (nextInput) nextInput.focus();
-          }
-        }
-      }
-
-      function initiateSave() {
-        // Required IDs and Labels for user focus
+    // --- ডাটা সেভ ফাংশন ---
+    async function initiateSave() {
         const required = [
-          { id: "custName", label: "Customer Name" },
-          { id: "mobile", label: "Mobile" },
-          { id: "area", label: "Area" },
-          { id: "address", label: "Address" },
-          { id: "custType", label: "Type" },
-          { id: "payType", label: "Payment Method" },
+            { id: "custName", label: "Customer Name" },
+            { id: "mobile", label: "Mobile" },
+            { id: "area", label: "Area" },
+            { id: "address", label: "Address" },
+            { id: "custType", label: "Type" },
+            { id: "payType", label: "Payment Method" }
         ];
 
         for (let field of required) {
-          const el = document.getElementById(field.id);
-          if (!el.value.trim()) {
-            showAlert(
-              `${field.label} এর ঘরটি খালি। অনুগ্রহ করে পূরণ করুন।`,
-              field.id,
-            );
-            return; // Stop execution
-          }
+            const el = document.getElementById(field.id);
+            if (!el || !el.value.trim()) {
+                showAlert(`${field.label} এর ঘরটি খালি।`, field.id);
+                return;
+            }
         }
 
-        // If all passed, check if there's at least one transaction row with values
         const rows = document.querySelectorAll("#statementBody tr");
         let hasTransaction = false;
-        rows.forEach((r) => {
-          const d = parseFloat(r.querySelector(".deposit-input").value) || 0;
-          const e = parseFloat(r.querySelector(".expense-input").value) || 0;
-          if (d > 0 || e > 0) hasTransaction = true;
+        rows.forEach(r => {
+            if ((parseFloat(r.querySelector(".deposit-input").value) || 0) > 0 || 
+                (parseFloat(r.querySelector(".expense-input").value) || 0) > 0) hasTransaction = true;
         });
 
         if (!hasTransaction) {
-          showAlert("অন্তত একটি জমা বা খরচের এন্ট্রি থাকতে হবে।");
-          return;
+            showAlert("অন্তত একটি জমা বা খরচের এন্ট্রি থাকতে হবে।");
+            return;
         }
-
         saveData();
-      }
+    }
 
-      async function saveData() {
+    async function saveData() {
         const btn = document.getElementById("saveBtn");
         const overlay = document.getElementById("loadingOverlay");
-
         overlay.style.display = "flex";
         btn.disabled = true;
 
-        const currentUserName = localStorage.getItem('userName') || "Unknown User";
-    const currentUserId = localStorage.getItem('userId') || "000";
+        const currentUserName = localStorage.getItem('userName') || "SHOFIUL ALOM";
+        const currentUserId = localStorage.getItem('userId') || "IPI-004686";
 
-        const rows = Array.from(
-          document.querySelectorAll("#statementBody tr"),
-        ).map((tr) => {
-          return {
+        const rows = Array.from(document.querySelectorAll("#statementBody tr")).map(tr => ({
             date: tr.querySelector(".date-input")?.value || "",
             description: tr.querySelector(".particular-input")?.value || "",
             voucher: tr.querySelector(".voucher-input")?.value || "",
             deposit: parseFloat(tr.querySelector(".deposit-input")?.value) || 0,
             expense: parseFloat(tr.querySelector(".expense-input")?.value) || 0,
-            balance:
-              tr.querySelector(".row-balance")?.innerText.replace(/,/g, "") ||
-              "0.00",
-          };
-        });
+            balance: tr.querySelector(".row-balance")?.innerText.replace(/,/g, "") || "0.00"
+        }));
 
         const payload = {
-          action: "saveLedger",
-          cod: document.getElementById("cod").value,
-          name: document.getElementById("custName").value,
-          mobile: document.getElementById("mobile").value,
-          area: document.getElementById("area").value,
-          address: document.getElementById("address").value,
-          custType: document.getElementById("custType").value,
-          payType: document.getElementById("payType").value,
-          openingBalance: document.getElementById("openingBalance").value || 0,
-          finalBalance: document.getElementById("finalBalance").innerText,
-          rows: rows,
-          // --- এই দুটি কি (Key) আপনার নাম শিটে নিয়ে যাবে ---
-        userName: currentUserName,
-        recordedBy: currentUserId
+            action: "saveLedger",
+            cod: document.getElementById("cod").value,
+            name: document.getElementById("custName").value,
+            mobile: document.getElementById("mobile").value,
+            area: document.getElementById("area").value,
+            address: document.getElementById("address").value,
+            custType: document.getElementById("custType").value,
+            payType: document.getElementById("payType").value,
+            openingBalance: document.getElementById("openingBalance").value || 0,
+            finalBalance: document.getElementById("finalBalance").innerText,
+            rows: rows,
+            userName: currentUserName,
+            recordedBy: currentUserId
         };
 
         try {
-          const response = await fetch(SCRIPT_URL, {
-            method: "POST",
-            body: JSON.stringify(payload),
-          });
-          const result = await response.json();
-
-          overlay.style.display = "none";
-          btn.disabled = false;
-
-          if (result.status === "success") {
-            document.getElementById("successOverlay").style.display = "flex";
-          } else {
-            alert("Error: " + result.message);
-          }
+            const response = await fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify(payload) });
+            const result = await response.json();
+            overlay.style.display = "none";
+            if (result.status === "success") {
+                document.getElementById("successOverlay").style.display = "flex";
+            } else {
+                alert("Error: " + result.message);
+            }
         } catch (e) {
-          console.error(e);
-          overlay.style.display = "none";
-          btn.disabled = false;
-          alert("সংরক্ষণে সমস্যা হয়েছে। ইন্টারনেট সংযোগ চেক করুন।");
+            overlay.style.display = "none";
+            alert("সংরক্ষণে সমস্যা হয়েছে।");
+        } finally {
+            btn.disabled = false;
         }
-      }
+    }
 
-      function closeSuccess() {
+    function closeSuccess() {
         document.getElementById("successOverlay").style.display = "none";
         resetFormUI();
-      }
-    </script>
+    }
+</script>
   </body>
 </html>
