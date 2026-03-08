@@ -238,25 +238,41 @@
     
 
     <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzTeOGvSd2EaxCZMouhcjZHaHuaUxJTBySk-5d2okEY3_YGyfBohszmkGHaq0pGo4B9ng/exec";
-        let allCustomers = [];
-        let currentYear = new Date().getFullYear();
-        let currentMonth = new Date().getMonth();
-        let activeDateCell = null;
+       const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzTeOGvSd2EaxCZMouhcjZHaHuaUxJTBySk-5d2okEY3_YGyfBohszmkGHaq0pGo4B9ng/exec";
 
-       window.onload = async () => { 
-    resetForm(); 
-    await loadInitialData(); 
+window.onload = function() {
+    // ১. ইউজার ট্র্যাকিং অংশ (User Activity Tracking)
+    const uId = localStorage.getItem('erp_user_id');
+    const uName = localStorage.getItem('erp_user_name');
+    const pageTitle = document.title || "ERP Page";
 
-    // সেভ হওয়ার পর রিফ্রেশ হয়েছে কি না চেক
+    if (uId) {
+        google.script.run.trackUserActivity(uId, uName, "Visited: " + pageTitle);
+    }
+
+    // ২. তারিখ এবং কানেকশন স্ট্যাটাস অংশ (Date & Connection Status)
+    const today = new Date().toLocaleDateString("en-GB");
+    const statusEl = document.getElementById("connectionStatus");
+    if (statusEl) {
+        statusEl.innerText = "Today: " + today;
+    }
+
+    // ৩. পেজ লোড হওয়ার সময় ফর্ম রিসেট করা
+    if (typeof resetFormUI === "function") {
+        resetFormUI();
+    }
+
+    // ৪. সেভ হওয়ার পর সাকসেস ওভারলে এবং URL ক্লিনআপ
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('saved') === 'true') {
-        document.getElementById("successOverlay").style.display = "flex";
-        // URL থেকে saved লেখাটি সরিয়ে ফেলা
+        const successOverlay = document.getElementById("successOverlay");
+        if (successOverlay) {
+            successOverlay.style.display = "flex";
+        }
+        // URL থেকে ?saved=true অংশটি সরিয়ে ফেলা (পেজ রিফ্রেশ না করেই)
         window.history.replaceState({}, document.title, window.location.pathname);
     }
 };
-
         function openDatePicker(element) {
             event.stopPropagation(); 
             closeAllPickers(); 
