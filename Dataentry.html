@@ -755,6 +755,9 @@ window.onload = function() {
         overlay.style.display = "flex";
         btn.disabled = true;
 
+        const currentUserName = localStorage.getItem('userName') || "Unknown User";
+    const currentUserId = localStorage.getItem('userId') || "000";
+
         const rows = Array.from(
           document.querySelectorAll("#statementBody tr"),
         ).map((tr) => {
