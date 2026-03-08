@@ -2,197 +2,352 @@
 <html>
 <head>
     <base target="_top">
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-     <link rel="icon" type="image/png" href="store.png">
-    <title>Stock Report</title>
+    <title>Stock Report - NEP ERP</title>
     <style>
         :root {
-            --primary: #1a73e8;
-            --secondary: #e67e22;
-            --success: #27ae60;
-            --danger: #e74c3c;
-            --dark: #2c3e50;
-            --light: #f8f9fa;
+            --primary: #1e3a8a;
+            --dark: #0f172a;
         }
 
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; background-color: #f0f2f5; margin: 0; padding: 20px; }
-        .container { max-width: 1200px; margin: auto; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background-color: #f1f5f9; 
+            margin: 0; 
+            padding: 20px 10px;
+        }
+
+        .container { 
+            width: 100%;
+            max-width: 1200px;
+            background: white; 
+            padding: 25px; 
+            border-radius: 12px; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1); 
+            margin: auto;
+        }
         
-        .header-section { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; flex-wrap: wrap; gap: 15px; }
-        h2 { color: var(--primary); margin: 0; border-left: 5px solid var(--primary); padding-left: 12px; }
+        .header-section { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: flex-end; 
+            margin-bottom: 20px; 
+            border-bottom: 2px solid #f1f5f9; 
+            padding-bottom: 15px; 
+        }
+
+        .title-area h2 { color: var(--primary); margin: 0; font-size: 22px; }
         
-        .action-area { display: flex; gap: 10px; flex-grow: 1; justify-content: flex-end; }
-        #searchInput { padding: 12px; border: 1px solid #ddd; border-radius: 8px; width: 100%; max-width: 300px; font-size: 15px; }
+        .action-area { display: flex; gap: 8px; flex-wrap: wrap; }
 
-        .btn-purchase { background-color: var(--secondary); color: white; padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.3s; }
-        .btn-purchase:hover { background-color: #d35400; }
+        #searchInput { 
+            padding: 10px 15px; 
+            border: 2px solid #e2e8f0; 
+            border-radius: 8px; 
+            width: 250px; 
+        }
 
-        /* টেবিল ডিজাইন */
-        .table-wrapper { max-height: 750px; overflow-y: auto; border: 1px solid #eee; border-radius: 8px; }
-        table { width: 100%; border-collapse: collapse; min-width: 800px; }
-        th { background-color: var(--primary); color: white; padding: 12px; text-align: left; position: sticky; top: 0; z-index: 10; font-size: 14px; }
-        td { padding: 12px; border-bottom: 1px solid #eee; font-size: 14px; }
-        tr:hover { background-color: #f1f8ff; }
+        .btn { 
+            padding: 10px 18px; 
+            border: none; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            font-weight: bold;
+            color: white;
+            transition: opacity 0.2s;
+        }
+        .btn:hover { opacity: 0.9; }
+        .btn-refresh { background-color: var(--dark); }
+        .btn-csv { background-color: #059669; }
+        .btn-print { background-color: #1e293b; }
 
-        /* মডাল ডিজাইন */
-        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(2px); }
-        .modal-content { background: white; margin: 3% auto; padding: 25px; border-radius: 12px; width: 90%; max-width: 1000px; max-height: 85vh; overflow-y: auto; }
-        .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 20px; }
-        .close { font-size: 28px; cursor: pointer; color: #888; }
+        .table-wrapper { 
+            max-height: 65vh; 
+            overflow: auto; 
+            border: 1px solid #e2e8f0; 
+            border-radius: 8px; 
+            margin-bottom: 10px;
+        }
+
+        table { width: 100%; border-collapse: collapse; }
         
-        .filter-bar { display: flex; gap: 10px; align-items: center; background: #f9f9f9; padding: 15px; border-radius: 8px; margin-bottom: 15px; }
-        .filter-bar input { padding: 8px; border: 1px solid #ddd; border-radius: 4px; }
-        .btn-fetch { background: var(--success); color: white; border: none; padding: 9px 20px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        th { 
+            background-color: var(--primary); 
+            color: white; 
+            padding: 12px 8px; 
+            position: sticky; 
+            top: 0; 
+            font-size: 13px;
+        }
+        
+        td { 
+            padding: 10px 8px; 
+            border-bottom: 1px solid #f1f5f9; 
+            font-size: 13px; 
+            text-align: center;
+        }
 
-        #pStatus { padding: 10px; border-radius: 5px; margin-bottom: 10px; font-weight: bold; text-align: center; display: none; }
-        #loader { text-align: center; padding: 50px; font-size: 18px; color: var(--primary); }
+        .name-cell { text-align: left !important; font-weight: 600; }
+        .sl-cell { font-weight: bold; width: 40px; }
+
+        /* --- PRINT STYLES --- */
+        #printHeader, #printFooter { display: none; }
+
+        @media print {
+            @page { 
+                margin: 1.5cm; 
+                size: A4 portrait; 
+            }
+
+             
+            body { background: white !important; padding: 0; color: black;  counter-reset: page; /* Initialize page counter */}
+            .container { box-shadow: none; padding: 0; max-width: 100%; width: 100%; border: none; }
+            .action-area, .btn, #searchInput, .header-section, #loader { display: none !important; }
+            
+            #printHeader { 
+                display: block !important; 
+                text-align: center; 
+                border-bottom: 1px solid black; 
+                padding-bottom: 10px; 
+                margin-bottom: 20px; 
+            }
+            .print-title { font-size: 26px; font-weight: bold; margin: 0; color: black; }
+            .print-proprietor { font-weight: bold; margin: 5px 0; font-size: 15px; border: 1px solid black; display: inline-block; padding: 2px 10px; }
+            .print-info { font-size: 11px; margin: 2px 0; line-height: 1.2; }
+            .print-meta { display: flex; justify-content: space-between; margin-top: 15px; font-size: 11px; font-weight: bold; }
+
+            .table-wrapper { 
+                max-height: none; 
+                overflow: visible; 
+                border: none; 
+                margin-bottom: 50px; /* Space before signature to prevent overlap */
+            }
+            table { 
+                border: 0.5pt solid black !important; 
+                width: 100%; 
+                page-break-inside: auto;
+            }
+            tr { page-break-inside: avoid; page-break-after: auto; }
+            th { 
+                background-color: #f0f0f0 !important; 
+                color: black !important; 
+                border: 0.5pt solid black !important; 
+                position: static; 
+                font-size: 10px;
+                -webkit-print-color-adjust: exact;
+            }
+            td { 
+                border: 0.5pt solid black !important; 
+                color: black !important; 
+                font-size: 9px; 
+                padding: 4px 3px; 
+            }
+
+            /* Signature Block & Page No */
+            #printFooter {
+                display: block !important;
+                margin-top: 60px; /* Space between table and signature */
+                page-break-inside: avoid;
+            }
+            .signature-section {
+                display: flex;
+                justify-content: space-between;
+                padding-bottom: 10px;
+            }
+            .sig-box {
+                text-align: center;
+                width: 25%;
+            }
+            .sig-line {
+                border-top: 1px solid black;
+                margin-bottom: 5px;
+            }
+            .sig-text {
+                font-size: 10px;
+                font-weight: bold;
+                text-transform: uppercase;
+            }
+            .page-info {
+                text-align: right;
+                font-size: 9px;
+                margin-top: 20px;
+                border-top: 0.5px solid #ccc;
+                padding-top: 5px;
+            }
+            /* Page Numbering Logic */
+            .page-number-box {
+                text-align: right;
+                font-size: 10px;
+                margin-top: 10px;
+                padding-top: 5px;
+                border-top: 0.5px solid #000;
+            }
+            /* Modern browsers support counter-increment in page-break-after/before */
+            .page-number-box::after {
+                counter-increment: page;
+                content: "Page " counter(page);
+          
+            }
+        }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div class="header-section">
-        <h2>Stock Report</h2>
-        <div class="action-area">
-            <input type="text" id="searchInput" onkeyup="filterInventory()" placeholder="Search ...">
-            <button class="btn-purchase" onclick="openModal()">🧾 Purchase Report</button>
+    <!-- Print Header -->
+    <div id="printHeader">
+        <p style="margin: 0; font-size: 10px; font-weight: bold;">বিসমিল্লাহির রাহমানির রাহিম</p>
+        <h1 class="print-title">মেসার্স নূর এন্টারপ্রাইজ</h1>
+        <div class="print-proprietor">প্রোঃ এম. এম. নূর-ই-মোহাম্মদ</div>
+        <p class="print-info">বি,সি,আই,সি অনুমোদিত ডিলার, রাসায়নিক সার, কীটনাশক ও সিমেন্ট বিক্রেতা</p>
+        <p class="print-info">আমবাড়ী বাজার, পার্বতীপুর, দিনাজপুর। মোবাঃ ০১৭১৭-৫২৭২৯২, ০১৭৩১-৭৩৩৩৪০</p>
+        
+        <div class="print-meta">
+            <span>স্টক রিপোর্ট (Stock Report)</span>
+            <span>তারিখ: <span id="pDate"></span></span>
         </div>
     </div>
 
-    <div id="loader">Loading Please Wait...</div>
+    <!-- UI Header -->
+    <div class="header-section">
+        <div class="title-area">
+            <h2>Stock Inventory</h2>
+            <p style="margin: 0; font-size: 12px; color: #666;">M/S NOOR ENTERPRISE</p>
+        </div>
+        <div class="action-area">
+            <input type="text" id="searchInput" onkeyup="filterInventory()" placeholder="Search Products...">
+            <button class="btn btn-refresh" onclick="fetchInventory()">Refresh</button>
+            <button class="btn btn-csv" onclick="exportToCSV()">CSV Export</button>
+            <button class="btn btn-print" onclick="printReport()">Print Report</button>
+        </div>
+    </div>
+
+    <div id="loader" style="text-align: center; padding: 20px;">ডাটা লোড হচ্ছে...</div>
 
     <div class="table-wrapper" id="inventoryBox" style="display:none;">
         <table id="inventoryTable">
-            <thead id="invHead"></thead>
+            <thead>
+                <tr>
+                    <th style="width: 30px;">SL</th>
+                    <th>Product ID</th>
+                    <th style="text-align: left; padding-left: 10px;">Product Name</th>
+                    <th>Pack Size</th>
+                    <th>Category</th>
+                    <th>Unit</th>
+                    <th>P. Rate</th>
+                    <th>S. Price</th>
+                    <th>Stock</th>
+                    <th>Store</th>
+                </tr>
+            </thead>
             <tbody id="invBody"></tbody>
         </table>
     </div>
-</div>
 
-<!-- Purchase Modal -->
-<div id="purchaseModal" class="modal">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h3>Purcrss Report</h3>
-            <span class="close" onclick="closeModal()">&times;</span>
+    <!-- Print Footer (Signature & Page Number) -->
+    <div id="printFooter">
+        <div class="signature-section">
+            <div class="sig-box">
+                <div class="sig-line"></div>
+                <div class="sig-text">Prepared By</div>
+            </div>
+            <div class="sig-box">
+                <div class="sig-line"></div>
+                <div class="sig-text">Checked By</div>
+            </div>
+            <div class="sig-box">
+                <div class="sig-line"></div>
+                <div class="sig-text">Authorized By</div>
+            </div>
         </div>
-        
-        <div class="filter-bar">
-            <label>Date:</label>
-            <input type="date" id="targetDate">
-            <button class="btn-fetch" onclick="loadPurchaseRecords()">Show</button>
-        </div>
-
-        <div id="pStatus"></div>
-
-        <div class="table-wrapper">
-            <table id="purchaseTable">
-                <thead id="pHead"></thead>
-                <tbody id="pBody"></tbody>
-            </table>
-        </div>
+        <div class="page-info"></div>
     </div>
 </div>
 
 <script>
-    // আপনার Web App URL এখানে দিন
     const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzTeOGvSd2EaxCZMouhcjZHaHuaUxJTBySk-5d2okEY3_YGyfBohszmkGHaq0pGo4B9ng/exec";
+    const targetColumns = ["Product ID", "Product Name", "Pack Size", "Category", "Unit", "Purchase Rate", "Sales Price", "Stock", "STORE NO"];
+    let currentData = [];
 
-    // শুরুতে ইনভেন্টরি ডাটা লোড
-    window.onload = () => {
-        document.getElementById('targetDate').value = new Date().toISOString().split('T')[0];
-        fetchInventory();
-    };
+    window.onload = fetchInventory;
 
-    // ইনভেন্টরি ডাটা আনার নতুন ফাংশন
-    function fetchInventory() {
-        fetch(`${WEB_APP_URL}?action=getFilteredData`)
-            .then(res => res.json())
-            .then(data => showInventory(data))
-            .catch(err => console.error("Error fetching inventory:", err));
+    async function fetchInventory() {
+        document.getElementById('loader').style.display = 'block';
+        document.getElementById('inventoryBox').style.display = 'none';
+        try {
+            const response = await fetch(`${WEB_APP_URL}?action=getInventoryData`);
+            const data = await response.json();
+            if (data && data.length > 1) {
+                currentData = data;
+                renderTable(data);
+            }
+        } catch (err) { console.error(err); }
     }
 
-    function showInventory(data) {
-        const head = document.getElementById('invHead');
+    function renderTable(rawData) {
         const body = document.getElementById('invBody');
-        
-        if (data && data.length > 0) {
-            head.innerHTML = "<tr>" + data[0].map(h => `<th>${h}</th>`).join('') + "</tr>";
-            let rows = "";
-            for (let i = 1; i < data.length; i++) {
-                rows += "<tr>" + data[i].map(c => `<td>${c}</td>`).join('') + "</tr>";
-            }
-            body.innerHTML = rows;
-            document.getElementById('loader').style.display = 'none';
-            document.getElementById('inventoryBox').style.display = 'block';
-        }
+        const headers = rawData[0];
+        const rows = rawData.slice(1);
+        const colIndices = targetColumns.map(col => headers.indexOf(col));
+
+        body.innerHTML = rows.map((row, index) => {
+            return `<tr>
+                <td class="sl-cell">${index + 1}</td>
+                ${colIndices.map((colIdx, i) => {
+                    let val = row[colIdx] || "";
+                    let cls = (targetColumns[i] === "Product Name") ? 'name-cell' : '';
+                    return `<td class="${cls}">${val}</td>`;
+                }).join('')}
+            </tr>`;
+        }).join('');
+
+        document.getElementById('loader').style.display = 'none';
+        document.getElementById('inventoryBox').style.display = 'block';
     }
 
     function filterInventory() {
         let val = document.getElementById("searchInput").value.toUpperCase();
-        let rows = document.getElementById("invBody").rows;
-        for (let row of rows) {
-            row.style.display = row.innerText.toUpperCase().includes(val) ? "" : "none";
-        }
+        let rows = document.querySelectorAll("#invBody tr");
+        let visibleCount = 1;
+        rows.forEach(row => {
+            if (row.innerText.toUpperCase().includes(val)) {
+                row.style.display = "";
+                row.querySelector('.sl-cell').innerText = visibleCount++;
+            } else {
+                row.style.display = "none";
+            }
+        });
     }
 
-    function openModal() { document.getElementById('purchaseModal').style.display = 'block'; }
-    function closeModal() { document.getElementById('purchaseModal').style.display = 'none'; }
-
-    // পারচেজ রেকর্ড লোড করার আপডেট ফাংশন
-    function loadPurchaseRecords() {
-        const date = document.getElementById('targetDate').value;
-        const status = document.getElementById('pStatus');
-        const pHead = document.getElementById('pHead');
-        const pBody = document.getElementById('pBody');
-
-        status.style.display = 'block';
-        status.innerText = "সার্ভার থেকে ডাটা আনা হচ্ছে...";
-        status.style.background = "#e8f0fe";
-        status.style.color = "#1a73e8";
-        pHead.innerHTML = "";
-        pBody.innerHTML = "";
-
-        // fetch ব্যবহার করে সার্ভার থেকে ডাটা আনা
-        fetch(`${WEB_APP_URL}?action=getPurchaseDataByDate&date=${date}`)
-            .then(res => res.json())
-            .then(res => {
-                if (res.error) {
-                    status.innerText = res.error;
-                    status.style.background = "#fee8e8";
-                    status.style.color = "red";
-                } else if (res.rows && res.rows.length > 0) {
-                    pHead.innerHTML = "<tr>" + res.headers.map(h => `<th>${h}</th>`).join('') + "</tr>";
-                    pBody.innerHTML = res.rows.map(row => 
-                        "<tr>" + row.map((cell, idx) => {
-                            if (idx === 0 && cell) {
-                                let d = new Date(cell);
-                                return `<td>${!isNaN(d) ? d.toLocaleDateString('en-GB') : cell}</td>`;
-                            }
-                            return `<td>${cell}</td>`;
-                        }).join('') + "</tr>"
-                    ).join('');
-                    status.innerText = res.rows.length + " টি রেকর্ড পাওয়া গেছে।";
-                    status.style.background = "#e8fee8";
-                    status.style.color = "green";
-                } else {
-                    status.innerText = "উক্ত তারিখে কোনো রেকর্ড নেই।";
-                    status.style.background = "#fff3cd";
-                    status.style.color = "#856404";
-                }
-            })
-            .catch(err => {
-                status.innerText = "Error: " + err.message;
-                status.style.background = "#fee8e8";
-                status.style.color = "red";
+    function exportToCSV() {
+        if (currentData.length === 0) return;
+        let csvContent = "data:text/csv;charset=utf-8,\uFEFF";
+        csvContent += ["SL", ...targetColumns].join(",") + "\n";
+        const headers = currentData[0];
+        const rows = currentData.slice(1);
+        const colIndices = targetColumns.map(col => headers.indexOf(col));
+        rows.forEach((row, index) => {
+            let rowData = [index + 1];
+            colIndices.forEach(idx => {
+                let cellVal = String(row[idx] || "").replace(/,/g, " ");
+                rowData.push(cellVal);
             });
+            csvContent += rowData.join(",") + "\n";
+        });
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", `Stock_Report_${new Date().toLocaleDateString()}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
     }
 
-    window.onclick = (e) => {
-        if (e.target == document.getElementById('purchaseModal')) closeModal();
+    function printReport() {
+        document.getElementById('pDate').innerText = new Date().toLocaleDateString('bn-BD');
+        window.print();
     }
 </script>
 </body>
-
 </html>
-
