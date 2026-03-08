@@ -104,12 +104,23 @@
     </div>
 
 <script>
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzTeOGvSd2EaxCZMouhcjZHaHuaUxJTBySk-5d2okEY3_YGyfBohszmkGHaq0pGo4B9ng/exec"; 
+   const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzTeOGvSd2EaxCZMouhcjZHaHuaUxJTBySk-5d2okEY3_YGyfBohszmkGHaq0pGo4B9ng/exec"; 
 
-    window.onload = function() {
+window.onload = function() {
+    // ১. ইউজার ট্র্যাকিং (পেজ লোড হওয়ার সাথে সাথে চলবে)
+    const uId = localStorage.getItem('erp_user_id');
+    const uName = localStorage.getItem('erp_user_name');
+    const pageTitle = document.title || "ERP Page";
+
+    if (uId) {
+        google.script.run.trackUserActivity(uId, uName, "Visited: " + pageTitle);
+    }
+
+    // ২. অটো কোড জেনারেশন (যেমন: কাস্টমার বা প্রোডাক্ট আইডি)
+    if (typeof generateAutoCode === "function") {
         generateAutoCode();
-    };
-
+    }
+};
     // কাস্টম মেসেজ দেখানোর ফাংশন
     function showToast(message, type = 'success') {
         const toast = document.getElementById('customToast');
@@ -196,4 +207,3 @@
 </script>
 </body>
 </html>
-
