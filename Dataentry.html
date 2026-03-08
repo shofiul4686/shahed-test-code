@@ -452,9 +452,9 @@
     <script>
       const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzTeOGvSd2EaxCZMouhcjZHaHuaUxJTBySk-5d2okEY3_YGyfBohszmkGHaq0pGo4B9ng/exec";
 
-window.onload = function() {
-    // ১. ইউজার ট্র্যাকিং অংশ (User Activity Tracking)
-   const uId = localStorage.getItem('userId'); 
+window.onload = function () {
+    // ইউজার ট্র্যাকিং
+    const uId = localStorage.getItem('userId'); 
     const uName = localStorage.getItem('userName');
     const pageTitle = document.title || "ERP Page";
 
@@ -462,18 +462,19 @@ window.onload = function() {
         google.script.run.trackUserActivity(uId, uName, "Visited: " + pageTitle);
     }
 
-    // ২. তারিখ এবং কানেকশন স্ট্যাটাস অংশ (Date & Connection Status)
+    // তারিখ সেট করা
     const today = new Date().toLocaleDateString("en-GB");
     const statusEl = document.getElementById("connectionStatus");
-    if (statusEl) {
-        statusEl.innerText = "Today: " + today;
-    }
-
-    // ৩. পেজ লোড হওয়ার সময় ফর্ম রিসেট করা
-    resetFormUI();
+    if (statusEl) statusEl.innerText = "Today: " + today;
     
-    // আপনার যদি আরও কোনো ইনিশিয়াল ফাংশন থাকে (যেমন কাস্টমার লোড), এখানে দিতে পারেন
-    // loadCustomers();
+    // ফর্ম রিসেট ও ইন-ওয়ার্ড আপডেট
+    if (typeof resetFormUI === 'function') resetFormUI();
+
+    const opInput = document.getElementById('openingBalance');
+    if(opInput) updateInWord(opInput.value);
+    
+    // রিয়েল টাইম ক্যালকুলেশন
+    setInterval(updateFinalBalanceInWord, 1000);
 };
       async function fetchNextCode() {
         const codInput = document.getElementById("cod");
@@ -628,21 +629,6 @@ window.onload = function() {
             }
         }
     }
-
-    // উইন্ডো লোড হওয়ার সময় এক্সিকিউশন
-    window.onload = function () {
-        const today = new Date().toLocaleDateString("en-GB");
-        const statusEl = document.getElementById("connectionStatus");
-        if (statusEl) statusEl.innerText = "Today: " + today;
-        
-        if (typeof resetFormUI === 'function') resetFormUI();
-
-        const opInput = document.getElementById('openingBalance');
-        if(opInput) updateInWord(opInput.value);
-        
-        // রিয়েল টাইম ক্যালকুলেশনের জন্য অবজার্ভার
-        setInterval(updateFinalBalanceInWord, 1000);
-    };
 
       function showAlert(msg, targetId = null) {
         const alertOverlay = document.getElementById("alertOverlay");
