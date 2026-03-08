@@ -9,70 +9,37 @@
   <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   
   <style>
-    body { 
-      font-family: 'Hind Siliguri', sans-serif; 
-      background-color: #ffffff; 
+    body { font-family: 'Hind Siliguri', sans-serif; background-color: #ffffff; color: #1e293b; }
+    
+    .custom-table-container { border: 1px solid #000000; border-radius: 4px; overflow: hidden; background: white; }
+    
+    table thead th { 
+      background-color: #000000; 
+      color: #ffffff; 
+      font-weight: 700; 
+      text-transform: uppercase; 
+      font-size: 0.75rem; 
+      padding: 1rem 0.5rem; 
+      border-right: 1px solid #333333; 
     }
     
-    .glass-header {
-      background: #000000;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    }
-
-    .custom-table-container {
-      border: 1px solid #000000;
-      border-radius: 4px;
-      overflow: hidden;
-      background: white;
-    }
-
-    /* Black & White Table Headers */
-    table thead th {
-      background-color: #000000;
-      color: #ffffff;
-      font-weight: 700;
-      text-transform: uppercase;
-      font-size: 0.75rem;
-      padding: 1rem 0.5rem;
-      border-right: 1px solid #333333;
-    }
+    .badge-text { font-size: 0.75rem; font-weight: 600; color: #000000; text-transform: uppercase; }
     
-    table thead th:last-child { border-right: none; }
-
-    .row-hover:hover {
-      background-color: #f2f2f2;
+    .btn-preview { 
+      background: white; 
+      color: black; 
+      border: 1px solid black; 
+      padding: 4px 10px; 
+      border-radius: 4px; 
+      font-size: 11px; 
+      font-weight: 700; 
+      transition: all 0.2s; 
     }
-
-    /* Removed Border from Badge for Type and Pay Mode */
-    .badge-text {
-      font-size: 0.75rem;
-      font-weight: 600;
-      display: inline-block;
-      color: #000000;
-      background: transparent;
-      text-transform: uppercase;
-    }
-
-    .btn-preview {
-      background: white;
-      color: black;
-      border: 1px solid black;
-      padding: 4px 10px;
-      border-radius: 4px;
-      font-size: 11px;
-      font-weight: 700;
-      transition: all 0.2s;
-      text-transform: uppercase;
-    }
-
-    .btn-preview:hover {
-      background: black;
-      color: white;
-    }
-
+    .btn-preview:hover { background: black; color: white; cursor: pointer; }
+    
     .loader {
       border: 3px solid #f3f3f3;
-      border-top: 3px solid #000000;
+      border-top: 3px solid #1e3a8a;
       border-radius: 50%;
       width: 30px;
       height: 30px;
@@ -80,101 +47,69 @@
     }
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-    /* Modal Styling */
-    .modal {
-      display: none;
-      position: fixed;
-      z-index: 100;
-      left: 0;
-      top: 0;
-      width: 100%;
-      height: 100%;
-      background-color: rgba(0,0,0,0.7);
-    }
-    .modal-content {
-      background-color: white;
-      margin: 10% auto;
-      padding: 2rem;
-      border: 2px solid black;
-      border-radius: 4px;
-      width: 90%;
-      max-width: 500px;
-    }
-
-    /* PRINT STYLES */
     @media print {
-      @page { margin: 1cm; }
-      body { background: white !important; padding: 0 !important; }
-      .glass-header, .search-container, .btn-preview, #loaderUI, .action-cell, .no-print {
-        display: none !important;
-      }
-      .max-w-7xl { max-width: 100% !important; margin: 0 !important; }
-      .custom-table-container { border: 1px solid #000 !important; box-shadow: none !important; }
+      body { background: white !important; }
+      .no-print, .search-container, .btn-preview, #loaderUI, .action-cell { display: none !important; }
+      .main-content { padding: 0 !important; }
       table { width: 100% !important; border-collapse: collapse !important; }
-      table thead th { background-color: #eeeeee !important; color: black !important; border: 1px solid #000 !important; font-size: 9pt !important; }
-      table tbody td { border: 1px solid #000 !important; font-size: 9pt !important; color: black !important; padding: 5px !important; }
-      
-      .print-header {
-        display: block !important;
-        text-align: center;
-        margin-bottom: 20px;
-      }
+      table thead th { background-color: #eeeeee !important; color: black !important; border: 1px solid #000 !important; }
+      table tbody td { border: 1px solid #000 !important; font-size: 9pt !important; padding: 5px !important; }
     }
-    .print-header { display: none; }
   </style>
 </head>
 <body class="p-4 md:p-6">
-
-  <div class="max-w-7xl mx-auto">
+  <div class="max-w-7xl mx-auto main-content">
     
-    <!-- Print Header -->
-    <div class="print-header">
-      <h1 style="font-size: 22px; font-weight: bold; border-bottom: 2px solid black; padding-bottom: 5px;">মেসার্স নূর এন্টারপ্রাইজ</h1>
-      <p style="font-size: 12px; margin-top: 5px;">কাস্টমার রিপোর্ট | তারিখ: <span id="printDate"></span></p>
+    <!-- Updated Header Section -->
+    <div class="text-center mb-8 border-b-2 border-slate-900 pb-6 relative">
+      <p class="text-sm font-bold text-slate-700 italic mb-1">বিসমিল্লাহির রাহমানির রাহিম</p>
+      
+      <h1 class="text-4xl md:text-6xl font-black text-blue-900 tracking-tight mb-2">মেসার্স নূর এন্টারপ্রাইজ</h1>
+      
+      <div class="inline-block bg-blue-700 text-white px-8 py-1.5 rounded-full font-bold text-lg mb-3 shadow-md">প্রোঃ এম. এম. নূর-ই-মোহাম্মদ</div>
+      
+      <p class="text-lg md:text-xl font-bold text-slate-800 mb-1">বি,সি,আই,সি অনুমোদিত ডিলার, রাসায়নিক সার, কীটনাশক ও সিমেন্ট বিক্রেতা</p>
+      <p class="text-md font-bold text-slate-600 mb-2">আমবাড়ী বাজার, পার্বতীপুর, দিনাজপুর।</p>
+      <p class="text-sm font-black text-slate-900">মোবাঃ ০১৭৭২-৯৫৭৫১৫, ০১৭২০-৩৩৭৮১২, ০১৭১৭-৫২৭২৯২, ০১৭৩১-৭৩৩৩৪০</p>
     </div>
 
-    <!-- Header -->
-    <div class="glass-header rounded-lg p-6 mb-6 text-white flex flex-col md:flex-row justify-between items-center gap-4">
-      <div>
-        <h1 class="text-2xl font-bold tracking-tighter uppercase">NEP ERP - CUSTOMER DATABASE</h1>
-        <p class="text-gray-400 text-xs mt-1 font-light">M/S NOOR ENTERPRISE | B&W EDITION</p>
+    <!-- Search & Actions Row -->
+    <div class="search-container no-print flex flex-col md:flex-row items-center gap-4 mb-6">
+      <!-- Total Count Box -->
+      <div class="bg-black text-white px-6 py-2.5 rounded-md border-2 border-black text-center min-w-[120px] shadow-sm">
+        <p class="text-[10px] uppercase font-bold text-gray-400 leading-none mb-1">Total Customer</p>
+        <span id="totalCount" class="text-xl font-bold leading-none">0</span>
       </div>
-      <div class="bg-white/10 p-2 px-6 rounded border border-white/20 text-center">
-        <p class="text-[10px] uppercase font-bold text-gray-300 tracking-widest">Count</p>
-        <span id="totalCount" class="text-2xl font-bold">0</span>
-      </div>
-    </div>
 
-    <!-- Search & Actions -->
-    <div class="search-container flex flex-col md:flex-row gap-4 mb-6">
-      <div class="relative flex-grow">
-        <input type="text" id="searchInput" onkeyup="filterTable()" placeholder="সার্চ করুন (নাম, কোড, মোবাইল...)" class="w-full px-4 py-3 bg-white border-2 border-black rounded-md outline-none focus:bg-gray-50 transition-all text-black font-medium">
-      </div>
-      <div class="flex gap-2">
-        <button onclick="loadCustomers()" class="bg-gray-200 hover:bg-black hover:text-white text-black border-2 border-black px-5 py-3 rounded-md font-bold transition-all flex items-center gap-2">
+      <!-- Search Input -->
+      <input type="text" id="searchInput" onkeyup="filterTable()" placeholder="সার্চ করুন (নাম, কোড, মোবাইল...)" class="flex-grow w-full px-4 py-3 border-2 border-black rounded-md outline-none focus:ring-2 focus:ring-blue-500 transition-all font-medium">
+      
+      <!-- Action Buttons -->
+      <div class="flex gap-2 w-full md:w-auto">
+        <button onclick="loadCustomers()" class="flex-1 md:flex-none bg-gray-100 border-2 border-black px-5 py-3 rounded-md font-bold hover:bg-black hover:text-white transition-all flex items-center justify-center gap-2">
           Refresh
         </button>
-        <button onclick="printTable()" class="bg-black text-white px-5 py-3 rounded-md font-bold transition-all flex items-center gap-2 hover:bg-gray-800">
-          Print Report
+        <button onclick="window.print()" class="flex-1 md:flex-none bg-black text-white px-6 py-3 rounded-md font-bold hover:bg-slate-800 transition-all">
+          Print
         </button>
       </div>
     </div>
 
     <!-- Table Container -->
-    <div id="printArea" class="custom-table-container">
-      <div id="loaderUI" class="flex flex-col items-center justify-center py-20 bg-white">
+    <div class="custom-table-container shadow-sm">
+      <div id="loaderUI" class="flex flex-col items-center justify-center py-20">
         <div class="loader mb-4"></div>
-        <p class="text-black font-bold tracking-widest text-xs uppercase">Loading Data...</p>
+        <p class="text-xs font-bold uppercase tracking-widest text-slate-500">Loading Customers...</p>
       </div>
 
       <div id="tableWrapper" class="hidden overflow-x-auto">
-        <table id="mainTable" class="w-full border-collapse">
+        <table class="w-full border-collapse">
           <thead>
             <tr>
               <th class="w-12">SL</th>
               <th class="w-24">Code</th>
               <th class="text-left px-4">Customer Name</th>
-              <th>Mobile No</th>
+              <th class="text-left px-4">Mobile No</th>
               <th>Area</th>
               <th class="text-left px-4">Address</th>
               <th>Type</th>
@@ -182,124 +117,61 @@
               <th class="action-cell">Action</th>
             </tr>
           </thead>
-          <tbody id="customerRows" class="divide-y divide-gray-300 text-center">
-            <!-- Data Rows -->
-          </tbody>
+          <tbody id="customerRows" class="divide-y divide-gray-200"></tbody>
         </table>
       </div>
-
-      <div id="noData" class="hidden py-16 text-center text-black font-black uppercase tracking-widest">
-        No Customer Records Found!
-      </div>
-    </div>
-  </div>
-
-  <!-- Detail Preview Modal -->
-  <div id="detailsModal" class="modal">
-    <div class="modal-content relative">
-      <button onclick="closeModal()" class="absolute top-4 right-4 text-black font-bold text-2xl">&times;</button>
-      <h2 class="text-xl font-black text-black mb-6 border-b-2 border-black pb-2 uppercase italic">Customer Details</h2>
-      <div id="modalBody" class="space-y-4 text-black">
-        <!-- Content -->
-      </div>
-      <button onclick="closeModal()" class="w-full mt-8 bg-black text-white py-3 rounded font-bold uppercase tracking-widest hover:bg-gray-800">Close Window</button>
     </div>
   </div>
 
   <script>
-    const API_URL = "https://script.google.com/macros/s/AKfycbzTeOGvSd2EaxCZMouhcjZHaHuaUxJTBySk-5d2okEY3_YGyfBohszmkGHaq0pGo4B9ng/exec";
-    let allData = [];
-
+    const API_URL = "https://script.google.com/macros/s/AKfycbxwBXVROsZF5WcdlDpPUHCTDhoZYHrZka0Y-RKM6ggphitVLxFaj2W-ZxXIVTc9-7oh/exec";
+    
     window.onload = loadCustomers;
 
     async function loadCustomers() {
       const loader = document.getElementById('loaderUI');
       const tableWrapper = document.getElementById('tableWrapper');
-      const noData = document.getElementById('noData');
       const rows = document.getElementById('customerRows');
       const countEl = document.getElementById('totalCount');
 
       loader.classList.remove('hidden');
       tableWrapper.classList.add('hidden');
-      noData.classList.add('hidden');
       rows.innerHTML = "";
 
       try {
-        const response = await fetch(`${API_URL}?action=getAllCustomers`);
-        const result = await response.json();
-        allData = result;
-
-        loader.classList.add('hidden');
-
-        if (Array.isArray(result) && result.length > 0) {
-          countEl.innerText = result.length;
-          let html = "";
-          
-          result.forEach((c, index) => {
-            html += `
-              <tr class="row-hover text-black">
-                <td class="py-3 font-bold text-xs border-r border-gray-200">${index + 1}</td>
-                <td class="py-3 font-mono font-bold text-xs border-r border-gray-200">${c.code || '-'}</td>
-                <td class="text-left px-4 py-3 font-bold text-sm border-r border-gray-200">${c.name || '-'}</td>
-                <td class="py-3 text-sm border-r border-gray-200">${c.mobile || '-'}</td>
-                <td class="py-3 text-sm border-r border-gray-200">${c.area || '-'}</td>
-                <td class="text-left px-4 py-3 text-[11px] truncate max-w-[150px] border-r border-gray-200">${c.address || '-'}</td>
-                <td class="py-3 border-r border-gray-200"><span class="badge-text">${c.type}</span></td>
-                <td class="py-3 border-r border-gray-200"><span class="badge-text">${c.payMode}</span></td>
-                <td class="py-3 action-cell">
-                  <button onclick="showDetails(${index})" class="btn-preview">Preview</button>
-                </td>
-              </tr>
-            `;
-          });
-          
-          rows.innerHTML = html;
+        const res = await fetch(`${API_URL}?action=getAllCustomers`);
+        const data = await res.json();
+        
+        if (Array.isArray(data)) {
+          countEl.innerText = data.length;
+          loader.classList.add('hidden');
           tableWrapper.classList.remove('hidden');
-        } else {
-          countEl.innerText = "0";
-          noData.classList.remove('hidden');
+
+          rows.innerHTML = data.map((c, i) => `
+            <tr class="hover:bg-slate-50 text-center transition-colors">
+              <td class="py-3 font-bold text-xs border-r">${i + 1}</td>
+              <td class="py-3 font-mono font-bold text-xs border-r text-blue-800">${c.code || '-'}</td>
+              <td class="text-left px-4 py-3 font-bold text-sm border-r text-slate-800">${c.name || '-'}</td>
+              <td class="text-left px-4 py-3 text-sm border-r font-medium">${c.mobile || '-'}</td>
+              <td class="py-3 text-sm border-r">${c.area || '-'}</td>
+              <td class="text-left px-4 py-3 text-[11px] border-r truncate max-w-[150px] text-slate-600">${c.address || '-'}</td>
+              <td class="py-3 border-r"><span class="badge-text">${c.type || '-'}</span></td>
+              <td class="py-3 border-r"><span class="badge-text">${c.payMode || '-'}</span></td>
+              <td class="py-3 action-cell">
+                <button onclick="goToReport('${c.code}')" class="btn-preview">Preview</button>
+              </td>
+            </tr>
+          `).join('');
         }
-      } catch (error) {
-        loader.classList.add('hidden');
-        noData.classList.remove('hidden');
-        noData.innerText = "ERROR FETCHING DATA!";
+      } catch (e) { 
+        console.error(e);
+        loader.innerHTML = `<p class="text-red-500 font-bold p-4">Failed to load data. Please try again.</p>`;
       }
     }
 
-    function printTable() {
-      document.getElementById('printDate').innerText = new Date().toLocaleDateString('bn-BD');
-      window.print();
-    }
-
-    function showDetails(index) {
-      const customer = allData[index];
-      const modal = document.getElementById('detailsModal');
-      const body = document.getElementById('modalBody');
-      
-      body.innerHTML = `
-        <div class="grid grid-cols-2 gap-4 text-sm">
-          <div class="text-gray-500 uppercase font-bold text-xs">Customer Code:</div> <div class="font-bold">${customer.code}</div>
-          <div class="text-gray-500 uppercase font-bold text-xs">Full Name:</div> <div class="font-bold">${customer.name}</div>
-          <div class="text-gray-500 uppercase font-bold text-xs">Mobile No:</div> <div class="font-bold">${customer.mobile}</div>
-          <div class="text-gray-500 uppercase font-bold text-xs">Area:</div> <div class="font-bold">${customer.area}</div>
-          <div class="text-gray-500 uppercase font-bold text-xs">Type:</div> <div><span class="badge-text">${customer.type}</span></div>
-          <div class="text-gray-500 uppercase font-bold text-xs">Payment:</div> <div><span class="badge-text">${customer.payMode}</span></div>
-          <div class="col-span-2 mt-2 pt-4 border-t border-black">
-            <div class="text-gray-500 uppercase font-bold text-xs mb-1">Full Address:</div>
-            <div class="bg-gray-100 p-3 text-black text-sm">${customer.address || 'N/A'}</div>
-          </div>
-        </div>
-      `;
-      
-      modal.style.display = "block";
-    }
-
-    function closeModal() {
-      document.getElementById('detailsModal').style.display = "none";
-    }
-
-    window.onclick = function(event) {
-      if (event.target == document.getElementById('detailsModal')) closeModal();
+    function goToReport(custId) {
+      localStorage.setItem('selectedCustId', custId);
+      window.location.href = 'Reports.html?id=' + custId;
     }
 
     function filterTable() {
