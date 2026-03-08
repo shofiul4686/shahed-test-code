@@ -306,6 +306,7 @@ window.onload = function() {
     if (!supplier) return showToast("Supplier required!", "danger");
 
     // সরাসরি লোকাল স্টোরেজ থেকে নাম ও আইডি নেওয়া (সবচেয়ে নিরাপদ পদ্ধতি)
+   // --- এখান থেকে ইউজার ডাটা নেওয়া হচ্ছে ---
     const currentUserName = localStorage.getItem('userName') || "Unknown User";
     const currentUserId = localStorage.getItem('userId') || "000";
 
@@ -355,6 +356,7 @@ window.onload = function() {
 </body>
 
 </html>
+
 
 
 
