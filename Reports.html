@@ -440,8 +440,8 @@ input[type="date"]:focus {
    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzTeOGvSd2EaxCZMouhcjZHaHuaUxJTBySk-5d2okEY3_YGyfBohszmkGHaq0pGo4B9ng/exec";
 
 // ১. ইউজার ইনফরমেশন সেটআপ (localStorage কে প্রায়োরিটি দিয়ে)
-const uId = localStorage.getItem('erp_user_id') || "ADMIN";
-const uName = localStorage.getItem('erp_user_name') || "ADMIN";
+const uId = localStorage.getItem('userId'); 
+    const uName = localStorage.getItem('userName');
 
 // ২. ডাটা স্টোরেজ ভ্যারিয়েবল
 let rawSalesData = [];
@@ -1070,4 +1070,5 @@ function exportHistoryCSV() {
 </script>
 </body>
 </html>
+
 
