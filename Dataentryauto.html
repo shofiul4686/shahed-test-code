@@ -93,36 +93,37 @@
     to { transform: rotate(360deg); }
 }
 
-        @media print {
-            @page { size: A4; margin: 10mm; }
-            body { background-color: white; padding: 0; overflow: visible !important; }
-            .no-print { display: none !important; }
-            .print-container { box-shadow: none !important; border: none !important; width: 100% !important; max-width: 100% !important; padding: 0 !important; }
-            .bank-table { border: 2pt solid black !important; width: 100% !important; }
-            .bank-table th, .bank-table td { border: 1pt solid black !important; color: black !important; padding: 4px !important; }
-            input { border: none !important; background: transparent !important; }
-        }
+   #globalDatePicker {
+    position: absolute;
+    z-index: 99999 !important; /* অনেক বেশি ইন্ডেক্স যাতে সবার উপরে থাকে */
+    background: hsl(0, 0%, 100%) !important;
+    border: 1px solid #cbd5e1;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    border-radius: 12px;
+    padding: 10px;
+    width: 280px; /* ক্যালেন্ডারের নির্দিষ্ট উইডথ */
+}
+/* আজকের তারিখের বিশেষ ডিজাইন */
+.datepicker-day.today-highlight {
+    background-color: #1e40af !important; /* গাঢ় নীল রঙ */
+    color: white !important;
+    font-weight: bold;
+    border-radius: 50%; /* গোল আকৃতি */
+    box-shadow: 0 0 5px rgba(30, 64, 175, 0.5);
+}
 
-        .bank-table input { 
-            width: 100%; border: 1px solid #e2e8f0; background: #ffffff; 
-            padding: 6px 8px; font-size: 14px; border-radius: 4px;
-            transition: all 0.2s ease;
-        }
+/* মাউস নিলে যেন ইফেক্ট থাকে */
+.datepicker-day.today-highlight:hover {
+    background-color: #1d4ed8 !important;
+    transform: scale(1.1);
+}
 
-        .date-cell { position: relative; cursor: pointer; outline: none; }
-        .date-cell:focus .date-wrapper { border-color: #2563eb; ring: 2px; ring-color: #bfdbfe; }
-        
-        .datepicker-modal {
-            position: absolute;
-            background: white; 
-            border: 1px solid #cbd5e1; 
-            border-radius: 12px; 
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
-            z-index: 9999; 
-            padding: 10px; 
-            width: 250px; 
-            display: none;
-        }
+
+
+/* স্ক্রিনে থাকাকালীন হাইড থাকবে কিন্তু প্রিন্টে আসবে এমন কিছু */
+.print-only { display: none; }
+@media print { .print-only { display: block; } }
+
         .datepicker-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-weight: bold; }
         .datepicker-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; text-align: center; }
         .datepicker-day-name { font-size: 10px; color: #64748b; font-weight: bold; padding: 4px 0; }
@@ -143,13 +144,7 @@
         .input-label { font-size: 0.9rem; font-weight: 900; color: #1e3a8a; text-transform: uppercase; margin-left: 2px; }
         .customer-input { width: 100%; font-weight: 500; color: #000000; outline: none; background-color: #ffffff; border: 2px solid #cbd5e1; border-radius: 8px; padding: 8px 12px; font-size: 1rem; transition: all 0.2s; }
         .customer-input[readonly] { background-color: #ffffff; border-color: #e2e8f0; color: #000000; cursor: default; }
-        /* আজকের তারিখ হাইলাইট স্টাইল */
-      .datepicker-day.today-highlight { 
-        background: #1e40af !important; 
-        color: white !important; 
-        font-weight: bold;
-        border-radius: 50%;
-      }
+        
     </style>
 </head>
 <body class="p-2 md:p-6" onclick="closeAllPickers(event)" onscroll="closeAllPickers(event)">
@@ -306,6 +301,13 @@
                 <span class="text-blue-600">In Words:</span> <span id="inwordText" class="italic">Zero Taka Only</span>
             </div>
             <div class="flex gap-2">
+				<button onclick="prepareAndPrint()" class="bg-slate-800 text-white px-8 py-2 rounded-lg font-black hover:bg-slate-900 shadow-md flex items-center gap-2">
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+        <path d="M2.5 8a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5z"/>
+        <path d="M5 1a2 2 0 0 0-2 2v2H2a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h1v1a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-1h1a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-1V3a2 2 0 0 0-2-2H5zM4 3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2H4V3zm1 5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-1a.5.5 0 0 1-.5-.5zm-7 2h8v1a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-1z"/>
+    </svg>
+    PRINT
+</button>
                 <button onclick="addRow(true)" class="bg-blue-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-blue-700 shadow-md">ADD ROW</button>
                 <button id="saveBtn" onclick="saveData()" class="bg-green-600 text-white px-8 py-2 rounded-lg font-black hover:bg-green-700 shadow-md transition-all uppercase tracking-wider">SAVE</button>         </div>        </div>
     </div>
@@ -320,6 +322,12 @@
 
    <script>
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzTeOGvSd2EaxCZMouhcjZHaHuaUxJTBySk-5d2okEY3_YGyfBohszmkGHaq0pGo4B9ng/exec";
+
+let currentMonth = new Date().getMonth();
+let currentYear = new Date().getFullYear();
+let activeDateCell = null;
+
+
       window.onload = () => { 
     // ১. টেক্সট ঘোরানোর কোড (এটি আগে রাখুন)
     try {
@@ -360,6 +368,26 @@
     }
 };
 
+
+function prepareAndPrint() {
+    // ১. ডাটা ইনপুটগুলো প্রিন্ট ফ্রেন্ডলি করা
+    const inputs = document.querySelectorAll('input');
+    inputs.forEach(input => {
+        input.setAttribute('value', input.value);
+    });
+
+    // ২. overflow সমস্যা সমাধান করা
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = "visible";
+
+    // ৩. প্রিন্ট করা
+    window.print();
+
+    // ৪. আগের অবস্থায় ফেরত আনা
+    setTimeout(() => {
+        document.body.style.overflow = originalOverflow;
+    }, 500);
+}
 
 async function refreshData() {
     const icon = document.getElementById("refreshIcon");
@@ -405,29 +433,38 @@ function updateClockAndDate() {
     updateClockAndDate();
 
         function openDatePicker(element) {
-            event.stopPropagation(); 
-            closeAllPickers(); 
-            activeDateCell = element;
-            const modal = document.getElementById('globalDatePicker');
-            
-            // পজিশনিং লজিক আপডেট করা হয়েছে
-            const rect = element.getBoundingClientRect();
-            const modalHeight = 280; // আনুমানিক উচ্চতা
-            const spaceBelow = window.innerHeight - rect.bottom;
-            
-            if (spaceBelow < modalHeight) {
-                // উপরে দেখাও
-                modal.style.top = (rect.top + window.scrollY - modalHeight - 5) + 'px';
-            } else {
-                // নিচে দেখাও
-                modal.style.top = (rect.bottom + window.scrollY + 5) + 'px';
-            }
-            
-            modal.style.left = rect.left + 'px';
-            modal.style.display = 'block';
-            renderCalendar();
-        }
+    // ইভেন্ট বাবলিং বন্ধ করা যাতে পেজের অন্য ক্লিকের সাথে কনফ্লিক্ট না হয়
+    if (window.event) window.event.stopPropagation(); 
+    
+    closeAllPickers(); 
+    activeDateCell = element;
+    
+    const modal = document.getElementById('globalDatePicker');
+    if (!modal) {
+        console.error("DatePicker Modal not found!");
+        return;
+    }
 
+    const rect = element.getBoundingClientRect();
+    const modalHeight = 280; 
+    const spaceBelow = window.innerHeight - rect.bottom;
+    
+    // ডিসপ্লে ব্লক আগে করতে হবে পজিশন সেট করার জন্য
+    modal.style.display = 'block';
+    modal.style.position = 'fixed'; // স্ক্রলিং এর সুবিধা পেতে fixed ব্যবহার ভালো
+    modal.style.zIndex = '9999';
+
+    if (spaceBelow < modalHeight) {
+        // যদি নিচে জায়গা কম থাকে তবে উপরে দেখাবে
+        modal.style.top = (rect.top - modalHeight - 5) + 'px';
+    } else {
+        // অন্যথায় নিচে দেখাবে
+        modal.style.top = (rect.bottom + 5) + 'px';
+    }
+    
+    modal.style.left = rect.left + 'px';
+    renderCalendar();
+}
         function renderCalendar() {
     const modal = document.getElementById('globalDatePicker');
     const header = modal.querySelector('.datepicker-header');
@@ -454,17 +491,21 @@ function updateClockAndDate() {
 
     for (let i = 0; i < firstDay; i++) grid.innerHTML += '<div></div>';
 
-    for (let d = 1; d <= daysInMonth; d++) {
-        const dateStr = `${String(d).padStart(2, '0')}-${String(currentMonth + 1).padStart(2, '0')}-${currentYear}`;
-        
-        // আজকের তারিখ হলে 'today-highlight' ক্লাস যোগ হবে
-        const isToday = (isThisMonth && d === todayDate) ? 'today-highlight' : '';
-        
-        grid.innerHTML += `
-            <div class="datepicker-day ${isToday}" onclick="selectDate('${dateStr}')">
-                ${d}
-            </div>`;
-    }
+   for (let d = 1; d <= daysInMonth; d++) {
+    const dateStr = `${String(d).padStart(2, '0')}-${String(currentMonth + 1).padStart(2, '0')}-${currentYear}`;
+    
+    // ১. আজকের তারিখ বের করা
+    const now = new Date();
+    const isToday = (now.getDate() === d && 
+                     now.getMonth() === currentMonth && 
+                     now.getFullYear() === currentYear) ? 'today-highlight' : '';
+    
+    // ২. গ্রিডে ক্লাসটি যোগ করা
+    grid.innerHTML += `
+        <div class="datepicker-day ${isToday}" onclick="event.stopPropagation(); selectDate('${dateStr}')">
+            ${d}
+        </div>`;
+}
   }
 
         function changeMonth(step) {
@@ -475,11 +516,33 @@ function updateClockAndDate() {
         }
 
         function selectDate(date) {
-            if (activeDateCell) activeDateCell.querySelector('.date-text').innerText = date;
-            document.getElementById('globalDatePicker').style.display = 'none';
-            const row = activeDateCell.closest('tr');
-            if(row) row.querySelector('.desc-input').focus();
+    // ১. যদি কোনো সেল আগে থেকে সিলেক্ট করা থাকে (activeDateCell)
+    if (activeDateCell) {
+        // সেলের ভেতরের .date-text ক্লাসে নতুন তারিখটি বসিয়ে দাও
+        const textElement = activeDateCell.querySelector('.date-text');
+        if (textElement) {
+            textElement.innerText = date;
+            
+            // ভিজ্যুয়াল ফিডব্যাক: তারিখ সেট হলে হালকা এনিমেশন বা কালার চেঞ্জ (ঐচ্ছিক)
+            textElement.style.color = "#1e40af"; 
         }
+    }
+
+    // ২. তারিখ সিলেক্ট হওয়ার পর ক্যালেন্ডারটি হাইড বা বন্ধ করে দাও
+    const modal = document.getElementById('globalDatePicker');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+
+    // ৩. তারিখ সেট করার পর অটোমেটিক পরের ঘরে (বিবরণ/Description) ফোকাস নিয়ে যাওয়া
+    const row = activeDateCell.closest('tr');
+    if (row) {
+        const descInput = row.querySelector('.desc-input');
+        if (descInput) {
+            descInput.focus();
+        }
+    }
+}
 
         function closeAllPickers(e) {
             document.getElementById('globalDatePicker').style.display = 'none';
@@ -606,26 +669,36 @@ function updateClockAndDate() {
     }
 }
         function addRow(focus = false) {
-            const tbody = document.getElementById("statementBody");
-            const row = document.createElement("tr");
-            const today = new Date().toISOString().split('T')[0];
-            row.className = "border-b border-slate-100 hover:bg-slate-50";
-            row.innerHTML = `
-                <td tabindex="0" class="p-2 border-r border-slate-900 date-cell" onclick="openDatePicker(this)" onkeydown="handleEnter(event, 'date')">
-                    <div class="flex items-center justify-between bg-white px-2 py-1.5 rounded border border-slate-200 date-wrapper">
-                        <span class="date-text font-bold text-blue-900">${today}</span>
-                    </div>
-                </td>
-                <td class="border-r border-slate-900"><input type="text" placeholder="বিবরণ..." class="desc-input font-bold border-none outline-none" onkeydown="handleEnter(event, 'desc')"></td>
-                <td class="border-r border-slate-900"><input type="text" class="voucher-input text-center border-none outline-none" onkeydown="handleEnter(event, 'voucher')"></td>
-                <td class="border-r border-slate-900 bg-green-50"><input type="number" step="0.01" class="deposit-input text-right font-black text-green-700 border-none outline-none" oninput="calculateStatement()" onkeydown="handleEnter(event, 'deposit')"></td>
-                <td class="border-r border-slate-900 bg-red-50"><input type="number" step="0.01" class="expense-input text-right font-black text-red-700 border-none outline-none" oninput="calculateStatement()" onkeydown="handleEnter(event, 'expense')"></td>
-                <td class="text-right px-3 py-2 font-black text-slate-900 bg-slate-100 row-balance">0.00</td>
-                <td class="no-print text-center"><button onclick="this.closest('tr').remove(); calculateStatement();" class="text-red-400 font-bold px-2">×</button></td>
-            `;
-            tbody.appendChild(row);
-            if (focus) row.querySelector('.desc-input').focus();
-        }
+    const tbody = document.getElementById("statementBody");
+    const row = document.createElement("tr");
+    
+    // তারিখ ফরম্যাট ঠিক করা (DD-MM-YYYY)
+    const now = new Date();
+    const day = String(now.getDate()).padStart(2, '0');
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const year = now.getFullYear();
+    const today = `${day}-${month}-${year}`;
+
+    row.className = "border-b border-slate-100 hover:bg-slate-50";
+    row.innerHTML = `
+        <td tabindex="0" class="p-2 border-r border-slate-900 date-cell cursor-pointer" 
+            onclick="openDatePicker(this)" 
+            onkeydown="if(event.key==='Enter') openDatePicker(this)">
+            <div class="flex items-center justify-between bg-white px-2 py-1.5 rounded border border-slate-200 date-wrapper pointer-events-none">
+                <span class="date-text font-bold text-blue-900">${today}</span>
+                <span class="text-[10px] text-slate-400 no-print">▼</span>
+            </div>
+        </td>
+        <td class="border-r border-slate-900"><input type="text" placeholder="বিবরণ..." class="desc-input font-bold border-none outline-none w-full px-1" onkeydown="handleEnter(event, 'desc')"></td>
+        <td class="border-r border-slate-900"><input type="text" class="voucher-input text-center border-none outline-none w-full" onkeydown="handleEnter(event, 'voucher')"></td>
+        <td class="border-r border-slate-900 bg-green-50"><input type="number" step="0.01" class="deposit-input text-right font-black text-green-700 border-none outline-none w-full px-1" oninput="calculateStatement()" onkeydown="handleEnter(event, 'deposit')"></td>
+        <td class="border-r border-slate-900 bg-red-50"><input type="number" step="0.01" class="expense-input text-right font-black text-red-700 border-none outline-none w-full px-1" oninput="calculateStatement()" onkeydown="handleEnter(event, 'expense')"></td>
+        <td class="text-right px-3 py-2 font-black text-slate-900 bg-slate-100 row-balance">0.00</td>
+        <td class="no-print text-center"><button onclick="this.closest('tr').remove(); calculateStatement();" class="text-red-400 font-bold px-2">×</button></td>
+    `;
+    tbody.appendChild(row);
+    if (focus) row.querySelector('.desc-input').focus();
+}
 
         function handleEnter(e, type) {
             if (e.key === "Enter") {
