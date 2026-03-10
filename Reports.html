@@ -61,94 +61,157 @@ input[type="date"]:focus {
 .print-grand-total {
     display: none;
 }
-        /* BLACK AND WHITE PRINT STYLES */
-         @media print {
+        /* UPDATED PRINT STYLES: SHOWING DUE COLUMN ONLY */
+        /* FINAL B/W PRINT STYLES: SOLID BLACK & BOLD HEADER */
+        @media print {
             @page { size: landscape; margin: 10mm; }
-            body { background-color: white !important; color: black !important; padding: 0 !important; margin: 0 !important; }
             
-           /* Hide UI Elements & Cards (Cards like Today Sale, Total Sale etc.) */
-.no-print, .sticky-top-container, .toast-msg, .action-select, .paid-input, 
-#bulkPayContainer, #historyBtn, .spinner-border, #mainSummary, 
-.row.g-1.mb-2, #pTotalSale, #pTotalColl, #pTotalDue { 
-    display: none !important; 
-}
-
-/* প্রিন্ট করার সময় টেবিলের অংশ হিসেবে দেখাবে */
-    .print-grand-total {
-        display: table-row !important;
-        background-color: #f2f2f2 !important; /* হালকা ধূসর রঙ */
-        -webkit-print-color-adjust: exact;
-    }
-
-    .print-grand-total td {
-        border: 1px solid black !important;
-        font-size: 11px !important; /* কিছুটা বড় করা হয়েছে স্পষ্টতার জন্য */
-        padding: 6px 4px !important;
-        font-weight: bold !important; /* পুরো রো-টি বোল্ড হবে */
-        color: black !important;
-        text-transform: uppercase; /* লেখাগুলো বড় হাতের হবে */
-    }
-            .table-container { 
-                box-shadow: none !important; 
-                border: none !important; 
-                border-radius: 0 !important; 
-                overflow: visible !important; 
-                margin: 0 !important;
-                padding: 0 !important;
+            /* পুরো বডি এবং সব লেখার কালার সলিড ব্ল্যাক নিশ্চিত করা */
+            body { 
+                background-color: white !important; 
+                color: #000000 !important; 
+                padding: 0 !important; 
+                margin: 0 !important; 
             }
+            
+            /* হাইড করার এলিমেন্টসমূহ */
+            .no-print, .sticky-top-container, .toast-msg, .action-select, .paid-input, 
+            #bulkPayContainer, #historyBtn, .spinner-border, #mainSummary, 
+            .row.g-1.mb-2, 
+            .table th:nth-child(9), .table td:nth-child(9),   /* Total Hide */
+            .table th:nth-child(10), .table td:nth-child(10), /* Paid Hide */
+            .table th:nth-child(12), .table td:nth-child(12), /* Status Hide */
+            .table th:nth-child(13), .table td:nth-child(13)  /* Action Hide */ { 
+                display: none !important; 
+            }
+
+            /* টেবিল ও কন্টেইনার ফিক্স */
+            .table-container { border: none !important; }
             .table-responsive { overflow: visible !important; max-height: none !important; }
             
             .table { 
-    width: 100% !important; 
-    /* বর্ডারগুলো একে অপরের সাথে মিশে যাবে (ডাবল দেখাবে না) */
-    border-collapse: collapse !important; 
-    color: black !important;
-    /* পুরো টেবিলের বাইরের বর্ডার */
-    border: 1px solid black !important; 
-}
+                width: 100% !important; 
+                border-collapse: collapse !important; 
+                display: table !important; 
+                color: #000000 !important; /* লেখার রং কালো */
+            }
+
+            /* টেবিল হেডার: বোল্ড এবং হালকা ধূসর ব্যাকগ্রাউন্ড */
+            .table thead { display: table-header-group !important; }
+            .table thead.sticky-top { position: static !important; }
 
             .table thead th { 
-    background-color: #f2f2f2 !important; 
-    color: black !important; 
-    /* বর্ডার ১ পিক্সেল করলে প্রিন্টে আরও স্পষ্ট আসবে */
-    border: 1px solid black !important; 
-    font-size: 10px !important;
-    text-align: center !important;
-    font-weight: bold !important; 
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
-}
+                background-color: #f2f2f2 !important; /* হালকা গ্রে ব্যাকগ্রাউন্ড */
+                color: #000000 !important; /* গাঢ় কালো লেখা */
+                border: 1.5px solid #000000 !important; /* স্পষ্ট বর্ডার */
+                font-size: 11px !important;
+                font-weight: 900 !important; /* সর্বোচ্চ বোল্ডনেস */
+                text-align: center !important;
+                text-transform: uppercase;
+                -webkit-print-color-adjust: exact;
+            }
 
+            /* টেবিল ডাটা: স্পষ্ট কালো লেখা */
             .table td { 
-    border: 1px solid black !important; 
-    color: black !important;
-    font-size: 10px !important;
-    background: white !important;
-    font-weight: normal !important; 
-    padding: 4px !important; /* লেখা যেন বর্ডারের সাথে লেগে না যায় */
-}
-
-            /* Remove bold classes during print */
-            .table td.fw-bold, .table td .fw-bold, .text-primary, .text-success, .text-danger, .fw-bold { 
-                font-weight: normal !important; 
-                color: black !important; 
+                border: 1px solid #000000 !important; 
+                color: #000000 !important;
+                font-size: 11px !important;
+                padding: 6px !important;
+                font-weight: 500 !important; /* লেখাকে আরেকটু স্পষ্ট করার জন্য */
+                page-break-inside: avoid !important;
             }
 
-            .status-badge { 
-                border: 0.5px solid rgb(245, 240, 240) !important; 
-                color: black !important; 
-                background: white !important; 
-                padding: 1px 3px !important;
-                font-weight: normal !important;
+            /* Due কলামের লেখাগুলো আরও বোল্ড করা */
+            .table td:nth-child(11) { 
+                font-weight: bold !important; 
+                text-align: right !important; 
             }
 
+            /* গ্র্যান্ড টোটাল রো ডিজাইন */
+            .print-grand-total {
+                display: table-row !important;
+                background-color: #f2f2f2 !important;
+                -webkit-print-color-adjust: exact;
+            }
+            .print-grand-total td {
+                font-weight: 900 !important;
+                border: 1.5px solid #000000 !important;
+                color: #000000 !important;
+            }
+
+            /* মেইন হেডার ডিজাইন */
             #printHeader { 
                 display: block !important; 
-                border-bottom: none;
-                margin-bottom: 10px;
-                padding-bottom: 5px;
+                text-align: center; 
+                margin-bottom: 10px; 
+                color: #000000 !important;
             }
+            #printHeader h1 { font-size: 26px; font-weight: 900; margin-bottom: 5px; }
+            #printHeader h3 { font-size: 16px; font-weight: bold; }
         }
+
+		/* ১. টেবিলের উপরের বাড়তি বর্ডার বা লাইন দূর করা */
+.table { 
+    border-top: none !important; 
+    margin-top: 0 !important;
+}
+
+/* ২. হেডার কন্টেইনারের শ্যাডো বা আউটলাইন রিমুভ করা */
+#reportTableBody, #reportTable {
+    border-top: none !important;
+    outline: none !important;
+}
+
+
+
+
+/* ৪. যদি এইচটিএমএল-এ কোনো <hr> বা খালি ডিভ থাকে যা প্রিন্টে আসছে */
+hr, .separator { display: none !important; }
+
+/* টেবিল এবং এর কন্টেইনারের রাউন্ড কোণা মুছে ফেলা */
+    .table, 
+    .table-responsive, 
+    .table-container,
+    .table td, 
+    .table th {
+        border-radius: 0 !important; /* রাউন্ড কোণা জিরো করে দিবে */
+        outline: none !important;
+    }
+
+    /* যদি কোনো বক্স শ্যাডো থাকে যা কোণাকে রাউন্ড দেখাতে পারে */
+    .table-container {
+        border: none !important;
+        box-shadow: none !important;
+    }
+
+    /* টেবিলের বাইরের বর্ডার শার্প করা */
+    .table {
+        border: 1px solid #000 !important;
+        border-collapse: collapse !important; /* বর্ডারগুলোকে একসাথে জুড়ে দিবে */
+    }
+	#printHeader p {
+        font-size: 14px !important;
+        color: #000 !important;
+        margin: 0;
+        padding: 2px 0;
+        text-transform: uppercase; /* দেখতে প্রফেশনাল লাগবে */
+    }
+	#printSignatureSection {
+        display: block !important;
+        page-break-inside: avoid !important; /* সিগনেচার যেন পরের পেজে না কেটে যায় */
+    }
+    
+    /* গ্র্যান্ড টোটাল রো-এর ফন্ট সাইজ এবং প্যাডিং */
+    .print-grand-total td {
+        padding: 8px !important;
+        font-size: 14px !important;
+    }
+}
+
+/* সাধারণ স্ক্রিনে হাইড রাখা */
+#printSignatureSection {
+    display: none;
+}
     </style>
 </head>
 <body>
@@ -192,16 +255,16 @@ input[type="date"]:focus {
 </div>
 
 <!-- Main Print Header (Visible only in Print - B&W) -->
-<div id="printHeader" style="display:none;">
-    <h1 style="text-align: center; margin-bottom: 2px; font-weight: bold;">SALES MASTER REPORT</h1>
-    
-    <h3 id="dynamicFilterName" style="text-align: center; margin-top: 0; margin-bottom: 10px; font-weight: bold; text-transform: uppercase;"></h3>
-    
-    <div style="text-align: center; font-size: 12px; margin-bottom: 10px;">
-        Generated on: <span id="printDateTime"></span> | Operator: <span id="printOperator"></span>
-    </div>
-    <hr style="border: 0.5px solid black;">
+<body>
+
+<div id="printHeader" style="display:none; text-align: center; font-family: 'Segoe UI', sans-serif;">
+    <h1 style="margin: 0; font-size: 28px; font-weight: bold;">মেসার্স নূর এন্টারপ্রাইজ</h1>
+    <h3 id="dynamicFilterName" style="margin: 5px 0; font-size: 16px; text-transform: uppercase;"></h3>
+    <p id="printDateRange" style="margin: 0; font-size: 13px; font-weight: bold; color: #333;"></p>
+    <hr style="border: 1px solid black; margin-top: 10px;">
 </div>
+
+
 
 <div class="container-fluid px-3">
     <!-- Header & Main Summary -->
@@ -213,7 +276,7 @@ input[type="date"]:focus {
             </div>
             <div class="d-flex gap-2">
                 <button class="btn btn-outline-dark btn-sm rounded-pill px-3" onclick="printMainTable()">
-                    <i class="fas fa-print me-1"></i> Print Report (B&W)
+                    <i class="fas fa-print me-1"></i> Print Report 
                 </button>
                 <button id="historyBtn" class="btn btn-primary btn-sm rounded-pill px-3" onclick="toggleHistorySection()">
                     <i class="fas fa-history me-1"></i> Payment History
@@ -238,10 +301,10 @@ input[type="date"]:focus {
 
             <div class="col-md-2">
                 <select id="statusFilter" class="form-select form-select-sm" onchange="applyMainFilters()">
-                    <option value="">All Status</option>
-                    <option value="UNPAID">Unpaid</option>
-                    <option value="PART PAID">Part Paid</option>
-                    <option value="FULL PAID">Full Paid</option>
+                    <option value="">STATUS</option>
+                    <option value="UNPAID">ALL UNPAID</option>
+                    <option value="PART PAID">PART PAID</option>
+                    <option value="FULL PAID">FULL PAID</option>
                 </select>
             </div>
 
@@ -434,7 +497,27 @@ input[type="date"]:focus {
             </div>
         </div>
     </div>
+
+<div id="printFooter" style="display:none; margin-top: 50px; font-family: 'Segoe UI', sans-serif;">
+    <div style="display: flex; justify-content: space-between; text-align: center;">
+        <div style="width: 200px;">
+            <hr style="border: 1px solid black; margin-bottom: 5px;">
+            <p style="font-size: 12px; font-weight: bold;">PREPARED BY</p>
+            <p id="footerOperator" style="font-size: 11px; margin: 0;"></p>
+        </div>
+        <div style="width: 200px;">
+            <hr style="border: 1px solid black; margin-bottom: 5px;">
+            <p style="font-size: 12px; font-weight: bold;">AUTHORIZED BY</p>
+        </div>
+    </div>
+    <div style="margin-top: 20px; text-align: right; font-size: 10px; color: #555;">
+        Printed on: <span id="footerDateTime"></span>
+    </div>
 </div>
+
+
+</div>
+
 
 <script>
    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzTeOGvSd2EaxCZMouhcjZHaHuaUxJTBySk-5d2okEY3_YGyfBohszmkGHaq0pGo4B9ng/exec";
@@ -511,31 +594,36 @@ window.onload = function() {
     
     currentFilteredData = rawSalesData.filter(row => {
         const rowDate = normalizeToISO(row[1]); 
-        const rowStatus = String(row[10] || "").trim().toUpperCase(); // K কলামের স্ট্যাটাস
-        
+        const rowStatus = String(row[10] || "").trim().toUpperCase(); 
+        const dueAmount = Number(row[13] || 0); // ১৩ নম্বর ইনডেক্সে Due থাকে
+
         const matchesSearch = row.some(c => String(c).toLowerCase().includes(search));
         const matchesDate = (!dateFilter || rowDate === dateFilter);
 
-        // নতুন লজিক: UNPAID সিলেক্ট করলে PART PAID এবং UNPAID দুইটাই দেখাবে
         let matchesStatus = false;
-        if (!status) {
-            matchesStatus = true; // All Status এর জন্য সব দেখাবে
+
+        // আপনার রিকোয়ারমেন্ট অনুযায়ী লজিক:
+        if (status === "") {
+            // ড্রপডাউন 'All Status' থাকলে ডিফল্টভাবে শুধু যাদের Due আছে তাদের দেখাবে
+            matchesStatus = (dueAmount > 0);
         } else if (status === "UNPAID") {
+            // Unpaid সিলেক্ট করলে শুধু UNPAID এবং PART PAID দেখাবে (যেহেতু এগুলোতে Due থাকে)
             matchesStatus = (rowStatus === "UNPAID" || rowStatus === "PART PAID");
         } else {
+            // বাকি সব ক্ষেত্রে (FULL PAID বা PART PAID আলাদাভাবে সিলেক্ট করলে)
             matchesStatus = (rowStatus === status);
         }
 
         return matchesSearch && matchesStatus && matchesDate;
     });
 
-    // বাল্ক পে কন্টেইনার আপডেট লজিক
+    // বাল্ক পে UI আপডেট
     const bulkContainer = document.getElementById('bulkPayContainer');
-    const duesOnly = currentFilteredData.filter(r => Number(r[13] || 0) > 0); // Index 13 এ Due থাকে
+    const duesOnly = currentFilteredData.filter(r => Number(r[13] || 0) > 0);
     
     if (search.length >= 4 && duesOnly.length > 1) {
         const totalDue = duesOnly.reduce((acc, r) => acc + Number(r[13] || 0), 0);
-        document.getElementById('bulkPayMsg').innerText = `${duesOnly.length}টি পেন্ডিং ইনভয়েস পাওয়া গেছে। মোট ডিউ: ${totalDue.toLocaleString()} টাকা।`;
+        document.getElementById('bulkPayMsg').innerText = `${duesOnly.length}টি পেন্ডিং ইনভয়েস পাওয়া গেছে। মোট ডিউ: ${totalDue.toLocaleString()} টাকা।`;
         bulkContainer.style.display = 'flex';
     } else {
         bulkContainer.style.display = 'none';
@@ -776,43 +864,72 @@ window.onload = function() {
     }
 
     function filterHistoryData() {
-        const search = document.getElementById('historySearch').value.toLowerCase();
-        const dateFilter = document.getElementById('historyDateFilter').value;
-        const statusFilter = document.getElementById('historyStatusFilter').value;
+    const search = document.getElementById('historySearch').value.toLowerCase();
+    const dateFilter = document.getElementById('historyDateFilter').value;
+    const statusFilter = document.getElementById('historyStatusFilter').value;
 
-        let totalAmt = 0, partAmt = 0, fullAmt = 0, dateTotal = 0;
-        let totalCount = 0, partCount = 0, fullCount = 0;
+    let totalAmt = 0, partAmt = 0, fullAmt = 0, dateTotal = 0;
+    let totalCount = 0, partCount = 0, fullCount = 0;
 
-        currentFilteredHistory = rawHistoryData.filter(row => {
-            const payDate = normalizeToISO(row[0]);
-            const matchesSearch = row.some(c => String(c).toLowerCase().includes(search));
-            const matchesDate = (!dateFilter || payDate === dateFilter);
-            const matchesStatus = (!statusFilter || row[7] === statusFilter);
+    currentFilteredHistory = rawHistoryData.filter(row => {
+        // ইনডেক্স অনুযায়ী ডাটা নেওয়া (আপনার শিট অনুযায়ী ইনডেক্স চেক করে নিন)
+        const payDate = normalizeToISO(row[0]); // A কলামে পেমেন্ট ডেট
+        const rowStatus = String(row[10] || "").trim().toUpperCase(); // K কলামে স্ট্যাটাস
+        const amt = Number(row[8] || 0); // I কলামে পেমেন্ট অ্যামাউন্ট
 
-            const isMatch = matchesSearch && matchesDate && matchesStatus;
+        // ১. সার্চ ম্যাচিং (সব কলামে চেক করবে)
+        const matchesSearch = row.some(c => String(c).toLowerCase().includes(search));
+        
+        // ২. ডেট ফিল্টার ম্যাচিং
+        const matchesDate = (!dateFilter || payDate === dateFilter);
+        
+        // ৩. স্ট্যাটাস ফিল্টার ম্যাচিং
+        let matchesStatus = false;
+        if (!statusFilter) {
+            matchesStatus = true; // 'All' থাকলে সব দেখাবে
+        } else if (statusFilter === "FULL PAID") {
+            matchesStatus = (rowStatus.includes("FULL") || rowStatus === "PAID");
+        } else if (statusFilter === "PART PAID") {
+            matchesStatus = (rowStatus.includes("PART") || rowStatus.includes("DUE"));
+        } else {
+            matchesStatus = (rowStatus === statusFilter.toUpperCase());
+        }
 
-            if (isMatch) {
-                const amt = Number(row[8] || 0);
-                totalAmt += amt;
-                totalCount++;
-                if (row[7] === 'FULL PAID') { fullAmt += amt; fullCount++; }
-                if (row[7] === 'PART PAID') { partAmt += amt; partCount++; }
-                if (dateFilter && payDate === dateFilter) dateTotal += amt;
+        const isMatch = matchesSearch && matchesDate && matchesStatus;
+
+        // সামারি ক্যালকুলেশন (শুধু ম্যাচ করা ডাটার জন্য)
+        if (isMatch) {
+            totalAmt += amt;
+            totalCount++;
+            
+            if (rowStatus.includes("FULL") || rowStatus === "PAID") {
+                fullAmt += amt;
+                fullCount++;
+            } else {
+                partAmt += amt;
+                partCount++;
             }
-            return isMatch;
-        });
+            
+            // যদি আজকের তারিখের ফিল্টার থাকে
+            const today = new Date().toISOString().split('T')[0];
+            if (payDate === today) dateTotal += amt;
+        }
+        
+        return isMatch;
+    });
 
-        document.getElementById('histTotalAmt').innerText = totalAmt.toLocaleString();
-        document.getElementById('histTotalCount').innerText = totalCount;
-        document.getElementById('histPartAmt').innerText = partAmt.toLocaleString();
-        document.getElementById('histPartCount').innerText = partCount;
-        document.getElementById('histFullAmt').innerText = fullAmt.toLocaleString();
-        document.getElementById('histFullCount').innerText = fullCount;
-        document.getElementById('histTodayTotal').innerText = dateTotal.toLocaleString();
+    // নিচের কার্ড বা সামারি টেক্সটগুলো আপডেট করা
+    document.getElementById('histTotalAmt').innerText = totalAmt.toLocaleString();
+    document.getElementById('histTotalCount').innerText = totalCount;
+    document.getElementById('histPartAmt').innerText = partAmt.toLocaleString();
+    document.getElementById('histPartCount').innerText = partCount;
+    document.getElementById('histFullAmt').innerText = fullAmt.toLocaleString();
+    document.getElementById('histFullCount').innerText = fullCount;
+    document.getElementById('histTodayTotal').innerText = dateTotal.toLocaleString();
 
-        renderHistoryTable(currentFilteredHistory);
-    }
-
+    // টেবিল নতুন করে রেন্ডার করা
+    renderHistoryTable(currentFilteredHistory);
+}
  function renderHistoryTable(data) {
     const tbody = document.getElementById("historyTableBody");
     let html = "";
@@ -904,26 +1021,96 @@ window.onload = function() {
         filterHistoryData();
     }
 
-    /** PRINT LOGIC - BLACK & WHITE **/
-    function printMainTable() {
-    // ড্রপডাউন থেকে সিলেক্ট করা টেক্সটটি নেওয়া হচ্ছে
+function printMainTable() {
     const filterDropdown = document.getElementById('statusFilter');
-    const selectedText = filterDropdown.options[filterDropdown.selectedIndex].text;
     const dynamicHeader = document.getElementById('dynamicFilterName');
+    const dateRangeEl = document.getElementById('printDateRange');
+    const startDate = document.getElementById('startDate').value;
+    const endDate = document.getElementById('endDate').value;
+    const footerOperator = document.getElementById('footerOperator');
+    const footerDateTime = document.getElementById('footerDateTime');
+    const tableContainer = document.querySelector('.table-responsive');
 
-    // যদি 'All Status' ছাড়া অন্য কিছু সিলেক্ট থাকে তবেই নাম দেখাবে
-    if (filterDropdown.value !== "") {
-        dynamicHeader.innerText = selectedText + " REPORT";
-        dynamicHeader.style.display = "block";
+    const formatDate = (dateStr) => {
+        if (!dateStr) return "";
+        const [y, m, d] = dateStr.split('-');
+        return `${d}.${m}.${y}`;
+    };
+
+    // ২. হেডারের নাম সেট করা
+    if (filterDropdown && filterDropdown.value !== "") {
+        let selectedText = filterDropdown.options[filterDropdown.selectedIndex].text;
+        dynamicHeader.innerText = selectedText.replace("AREA:", "") + " REPORT";
     } else {
-        dynamicHeader.innerText = "ALL SALES REPORT"; // ডিফল্ট নাম
+        dynamicHeader.innerText = "ALL UNPAID REPORT";
     }
 
-    // তারিখ এবং অপারেটর সেট করা
-    document.getElementById('printDateTime').innerText = new Date().toLocaleString();
-    document.getElementById('printOperator').innerText = currentUserName;
+    // ৩. তারিখের রেঞ্জ এবং "As on" লজিক
+    const today = new Date().toLocaleDateString('en-GB').replace(/\//g, '.');
+
+    if (startDate && endDate) {
+        dateRangeEl.innerText = "Reporting Period: " + formatDate(startDate) + " To " + formatDate(endDate);
+    } else if (startDate) {
+        dateRangeEl.innerText = "Date From: " + formatDate(startDate);
+    } else if (endDate) {
+        dateRangeEl.innerText = "Date Up To: " + formatDate(endDate);
+    } else {
+        dateRangeEl.innerText = "Date: As on -" + today;
+    }
+
+    // ৪. গ্র্যান্ড টোটাল হিসাব
+    const rows = document.querySelectorAll('#reportTableBody tr');
+    let totalDue = 0;
+    rows.forEach(row => {
+        if (row.style.display !== 'none' && !row.classList.contains('print-grand-total')) {
+            const dueCell = row.cells[10]; 
+            if (dueCell) {
+                const val = parseFloat(dueCell.innerText.replace(/,/g, '')) || 0;
+                totalDue += val;
+            }
+        }
+    });
+
+    const existingFooter = document.querySelector('.print-grand-total');
+    if (existingFooter) existingFooter.remove();
+
+    const footerRow = document.createElement('tr');
+    footerRow.className = 'print-grand-total';
+    footerRow.innerHTML = `
+        <td colspan="8" style="text-align:right; font-weight:bold; font-size: 14px; padding-right: 10px;">Grand Total :</td>
+        <td style="text-align:right; font-weight:900; font-size: 14px; border: 1.5px solid black !important;">${totalDue.toLocaleString('en-IN')}</td>
+    `;
+    document.getElementById('reportTableBody').appendChild(footerRow);
+
+    // ৫. সিগনেচার সেকশন যোগ করা (যদি আগে না থাকে)
+    const existingSig = document.getElementById('printSignatureSection');
+    if (existingSig) existingSig.remove();
+
+    const signatureDiv = document.createElement('div');
+    signatureDiv.id = 'printSignatureSection';
+    signatureDiv.style.marginTop = '50px';
+    signatureDiv.style.display = 'none'; // শুধু প্রিন্টে দেখাবে
+    signatureDiv.innerHTML = `
+        <div style="display: flex; justify-content: space-between; margin-top: 60px; padding: 0 40px;">
+            <div style="text-align: center; border-top: 1.5px solid black; width: 180px; padding-top: 5px; font-weight: bold;">Prepared By</div>
+            <div style="text-align: center; border-top: 1.5px solid black; width: 180px; padding-top: 5px; font-weight: bold;">Manager Signature</div>
+            <div style="text-align: center; border-top: 1.5px solid black; width: 180px; padding-top: 5px; font-weight: bold;">Authorized Signature</div>
+        </div>
+    `;
+    document.querySelector('.table-container').appendChild(signatureDiv);
+
+    // ৬. প্রিন্ট কমান্ড ও UI ফিক্স
+    if (tableContainer) {
+        tableContainer.style.maxHeight = 'none';
+        tableContainer.style.overflow = 'visible';
+    }
     
     window.print();
+
+    if (tableContainer) {
+        tableContainer.style.maxHeight = '65vh';
+        tableContainer.style.overflow = 'auto';
+    }
 }
    /** EXPORT LOGIC **/
 function exportHistoryCSV() {
@@ -1070,5 +1257,6 @@ function exportHistoryCSV() {
 </script>
 </body>
 </html>
+
 
 
