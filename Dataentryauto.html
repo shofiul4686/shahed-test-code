@@ -799,6 +799,10 @@ async function saveData() {
     const oldText = btn.innerHTML;
     btn.innerHTML = 'Saving...';
 
+	// লোকাল স্টোরেজ থেকে ইউজারের তথ্য সংগ্রহ
+    const currentId = localStorage.getItem('userId') || "000";
+    const currentName = localStorage.getItem('userName') || "Unknown User";
+
     // ২. ফরম থেকে ডাটা সংগ্রহ করা
     const rows = Array.from(document.querySelectorAll("#statementBody tr")).map(tr => {
         return {
@@ -822,7 +826,9 @@ async function saveData() {
         payType: document.getElementById("payType").value,
         openingBalance: document.getElementById("openingBalance").value || 0,
         finalBalance: document.getElementById("finalBalance").innerText,
-        rows: rows
+        rows: rows,
+		operatorId: currentId,
+        operatorName: currentName
     };
 
     try {
