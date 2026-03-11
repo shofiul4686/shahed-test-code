@@ -13,14 +13,29 @@
     if (!localStorage.getItem('userId')) {
         window.location.href = "index.html"; 
     }
+// ১. লগআউট বাটন ক্লিক করলে মোডাল দেখাবে
+function logoutUser() {
+    document.getElementById('logoutModal').style.display = 'block';
+}
 
-    // ২. লগআউট ফাংশন: ক্লিকের পর ডাটা ক্লিয়ার করে ইনডেক্স পেজে পাঠাবে
-    function logoutUser() {
-        if (confirm("আপনি কি নিশ্চিতভাবে লগআউট করতে চান?")) {
-            localStorage.clear(); // ব্রাউজারের মেমোরি থেকে সব ডাটা মুছে ফেলা
-            window.location.href = "index.html"; // index.html পেজে পাঠিয়ে দেওয়া
-        }
+// ২. বাতিল বাটনে ক্লিক করলে মোডাল বন্ধ হবে
+function closeLogoutModal() {
+    document.getElementById('logoutModal').style.display = 'none';
+}
+
+// ৩. কনফার্ম করলে লগআউট হবে
+function executeLogout() {
+    localStorage.clear();
+    window.location.href = "index.html";
+}
+
+// মোডালের বাইরে ক্লিক করলে বন্ধ হবে
+window.onclick = function(event) {
+    let modal = document.getElementById('logoutModal');
+    if (event.target == modal) {
+        modal.style.display = "none";
     }
+}
 
     // ৩. নেভিগেশন ফাংশন (URL-এ নাম/আইডি ছাড়া)
     function navigateTo(page) {
@@ -226,6 +241,66 @@
             justify-content: flex-start; text-align: center; color: white; padding: 60px 20px;
         }
 
+
+/* Custom Modal Style */
+.custom-modal {
+    display: none; 
+    position: fixed; 
+    z-index: 9999; 
+    left: 0; top: 0; width: 100%; height: 100%; 
+    background-color: rgba(0,0,0,0.6); 
+    backdrop-filter: blur(5px);
+}
+
+.modal-content-custom {
+    background: #1c2128;
+    color: white;
+    margin: 15% auto;
+    padding: 30px;
+    border: 1px solid var(--accent-gold);
+    width: 320px;
+    border-radius: 20px;
+    text-align: center;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    animation: modalSlide 0.3s ease-out;
+}
+
+@keyframes modalSlide {
+    from { transform: translateY(-20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+.modal-icon {
+    font-size: 3rem;
+    color: #ff4757;
+    margin-bottom: 15px;
+}
+
+.modal-buttons {
+    display: flex;
+    justify-content: space-around;
+    margin-top: 25px;
+}
+
+.btn-cancel {
+    background: #34495e;
+    color: white;
+    border: none;
+    padding: 8px 25px;
+    border-radius: 10px;
+    cursor: pointer;
+}
+
+.btn-confirm {
+    background: #ff4757;
+    color: white;
+    border: none;
+    padding: 8px 25px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
         .combined-title {
             font-size: clamp(2rem, 8vw, 4.2rem); font-weight: 900; margin-bottom: 15px;
             background: linear-gradient(to bottom, #f1c40f, #f9e79f);
@@ -383,6 +458,19 @@
                 </div>
                 <div id="current-date">...</div>
             </div>
+        </div>
+    </div>
+</div>
+<div id="logoutModal" class="custom-modal">
+    <div class="modal-content-custom">
+        <div class="modal-icon">
+            <i class="fas fa-sign-out-alt"></i>
+        </div>
+        <h4>লগআউট নিশ্চিত করুন</h4>
+        <p>আপনি কি সত্যিই সিস্টেম থেকে বের হয়ে যেতে চান?</p>
+        <div class="modal-buttons">
+            <button class="btn-cancel" onclick="closeLogoutModal()">বাতিল</button>
+            <button class="btn-confirm" onclick="executeLogout()">লগআউট</button>
         </div>
     </div>
 </div>
