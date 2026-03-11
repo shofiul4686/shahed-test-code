@@ -4,38 +4,28 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/619/619153.png">
-    <title>Home </title>
+    <title>Home - মেসার্স নূর এন্টারপ্রাইজ</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <script>
-        (function() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const nameFromUrl = urlParams.get('name');
-            const idFromUrl = urlParams.get('id');
-
-            if (nameFromUrl && idFromUrl) {
-                sessionStorage.setItem('erp_user_name', decodeURIComponent(nameFromUrl));
-                sessionStorage.setItem('erp_user_id', decodeURIComponent(idFromUrl));
-            }
-        })();
+        // সিকিউরিটি চেক: লগইন করা না থাকলে লগইন পেজে পাঠিয়ে দেবে
+        if (!localStorage.getItem('userId')) {
+            window.location.href = "login.html"; // আপনার লগইন ফাইলের নাম এখানে দিন
+        }
 
         function logoutUser() {
-            sessionStorage.clear();
-            // এখানে আপনি আপনার লগইন পেজের লিংক দিতে পারেন
+            localStorage.clear();
             window.location.href = "login.html";
         }
 
-       function navigateTo(page) {
-    const name = sessionStorage.getItem('erp_user_name') || 'Guest';
-    const id = sessionStorage.getItem('erp_user_id') || '000';
-    let targetPage = page.endsWith('.html') ? page : page + '.html';
-    
-    const finalUrl = `${targetPage}?name=${encodeURIComponent(name)}&id=${encodeURIComponent(id)}`;
-    
-    // শুধুমাত্র এটিই যথেষ্ট নতুন ট্যাবে ওপেন করার জন্য
-    window.open(finalUrl, '_blank');
-}
+        function navigateTo(page) {
+            const name = localStorage.getItem('userName') || 'Guest';
+            const id = localStorage.getItem('userId') || '000';
+            let targetPage = page.endsWith('.html') ? page : page + '.html';
+            const finalUrl = `${targetPage}?name=${encodeURIComponent(name)}&id=${encodeURIComponent(id)}`;
+            window.open(finalUrl, '_blank');
+        }
 
         function toggleSidebar() {
             document.getElementById('sidebar').classList.toggle('active');
@@ -45,16 +35,10 @@
         function resetToHome() {
             const allSubmenus = document.querySelectorAll('.submenu');
             const allArrows = document.querySelectorAll('.arrow-icon');
-            
             allSubmenus.forEach(sub => sub.classList.remove('open'));
             allArrows.forEach(arrow => arrow.style.transform = "rotate(0deg)");
-            
-            const scrollContainer = document.getElementById('sidebar-scroll-area');
-            scrollContainer.scrollTo({ top: 0, behavior: 'smooth' });
-            
-            if(window.innerWidth < 992) {
-                toggleSidebar();
-            }
+            document.getElementById('sidebar-scroll-area').scrollTo({ top: 0, behavior: 'smooth' });
+            if(window.innerWidth < 992) toggleSidebar();
         }
 
         function toggleSubMenu(id, element) {
@@ -62,7 +46,6 @@
             const allArrows = document.querySelectorAll('.arrow-icon');
             const targetSubmenu = document.getElementById(id);
             const targetArrow = element.querySelector('.arrow-icon');
-
             const isAlreadyOpen = targetSubmenu.classList.contains('open');
 
             allSubmenus.forEach(sub => sub.classList.remove('open'));
@@ -71,7 +54,6 @@
             if (!isAlreadyOpen) {
                 targetSubmenu.classList.add('open');
                 targetArrow.style.transform = "rotate(90deg)";
-                
                 setTimeout(() => {
                     element.scrollIntoView({ behavior: 'smooth', block: 'start' });
                 }, 300);
@@ -84,8 +66,7 @@
             const minutes = String(now.getMinutes()).padStart(2, '0');
             const seconds = String(now.getSeconds()).padStart(2, '0');
             const ampm = hours >= 12 ? 'PM' : 'AM';
-            hours = hours % 12;
-            hours = hours ? hours : 12; 
+            hours = hours % 12 || 12;
             
             document.getElementById('hrs').textContent = String(hours).padStart(2, '0');
             document.getElementById('min').textContent = minutes;
@@ -116,7 +97,6 @@
             overflow-x: hidden;
         }
 
-        /* Sidebar Styling */
         #sidebar {
             width: var(--sidebar-width);
             height: 100vh;
@@ -141,89 +121,50 @@
             background: linear-gradient(145deg, #1c2128, #14181d);
             border-radius: 16px;
             border: 1px solid var(--glass-border);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.4), inset 0 1px 1px rgba(255,255,255,0.05);
-            position: relative;
-            transform: perspective(1000px) translateZ(0);
-            transition: 0.3s;
-        }
-        .sidebar-header:hover {
-            transform: perspective(1000px) translateZ(10px);
-            box-shadow: 0 15px 30px rgba(0,0,0,0.6);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.4);
         }
 
-        .sidebar-logo {
-            width: 52px; 
-            filter: drop-shadow(0 0 12px rgba(241, 196, 15, 0.5));
-            margin-bottom: 10px;
-        }
+        .sidebar-logo { width: 52px; filter: drop-shadow(0 0 12px rgba(241, 196, 15, 0.5)); margin-bottom: 10px; }
 
-        .sticky-home-area {
-            position: sticky;
-            top: 0;
-            z-index: 20;
-            padding: 5px 15px 15px;
-        }
+        .sticky-home-area { position: sticky; top: 0; z-index: 20; padding: 5px 15px 15px; }
 
-        #sidebar-scroll-area {
-            flex: 1;
-            overflow-y: auto;
-            scrollbar-width: none;
-            padding: 0 15px 20px;
-        }
+        #sidebar-scroll-area { flex: 1; overflow-y: auto; scrollbar-width: none; padding: 0 15px 20px; }
         #sidebar-scroll-area::-webkit-scrollbar { display: none; }
 
         .sidebar-menu { list-style: none; padding: 0; margin: 0; }
         
         .sidebar-menu li {
             padding: 14px 18px;
-            margin-bottom: 15px;
+            margin-bottom: 12px;
             cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.3s;
             display: flex;
             align-items: center;
             gap: 14px;
             font-size: 0.92rem;
-            color: var(--text-main);
             border-radius: 12px;
             background: linear-gradient(145deg, #232a33, #1c2128);
             border: 1px solid var(--glass-border);
-            box-shadow: 0 6px 12px rgba(0,0,0,0.3);
-            position: relative;
-            overflow: hidden;
         }
 
         .sidebar-menu li:hover {
+            transform: translateY(-3px);
             background: linear-gradient(145deg, #2b343f, #232a33);
-            transform: translateY(-4px);
-            box-shadow: 0 12px 20px rgba(0,0,0,0.5);
-            border-color: rgba(241, 196, 15, 0.3);
-            color: white;
+            border-color: var(--accent-gold);
         }
 
-        .home-btn {
-            background: linear-gradient(145deg, #2c333c, #1a2027) !important;
-            border-left: 4px solid var(--accent-gold) !important;
-        }
+        .home-btn { border-left: 4px solid var(--accent-gold) !important; }
 
         .submenu {
             display: none;
             list-style: none;
             padding: 10px;
-            margin: -8px 0 15px 15px; 
-            background: rgba(0, 0, 0, 0.2); 
+            margin: -8px 0 15px 15px;
+            background: rgba(0, 0, 0, 0.2);
             border-radius: 12px;
-            border: 1px solid rgba(255,255,255,0.03);
-            box-shadow: inset 0 2px 10px rgba(0,0,0,0.5);
-        }
-        
-        .submenu li {
-            background: #252d37;
-            font-size: 0.85rem;
-            padding: 11px 15px;
-            margin-bottom: 8px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
         }
 
+        .submenu li { background: #252d37; font-size: 0.85rem; padding: 11px 15px; margin-bottom: 8px; }
         .submenu.open { display: block; animation: slideDown 0.4s ease-out; }
 
         @keyframes slideDown {
@@ -240,19 +181,15 @@
             display: flex;
             align-items: center;
             gap: 12px;
-            box-shadow: 0 -5px 20px rgba(0,0,0,0.2), 0 10px 20px rgba(0,0,0,0.4);
-            position: relative;
-            transition: 0.3s;
         }
 
         .user-avatar {
-            width: 48px; height: 48px;
-            background: linear-gradient(135deg, var(--accent-gold), #b7950b);
+            width: 45px; height: 45px;
+            background: var(--accent-gold);
             color: #000;
             border-radius: 12px;
             display: flex; align-items: center; justify-content: center;
-            font-weight: 900; font-size: 1.3rem;
-            box-shadow: 0 5px 15px rgba(241, 196, 15, 0.2);
+            font-weight: 900; font-size: 1.2rem;
         }
 
         .logout-btn {
@@ -262,30 +199,20 @@
             border-radius: 10px;
             display: flex; align-items: center; justify-content: center;
             cursor: pointer;
-            transition: 0.3s;
             border: 1px solid rgba(255, 71, 87, 0.2);
         }
 
         .menu-toggle {
-            position: fixed;
-            top: 20px; left: 20px;
-            z-index: 1001;
-            background: #1a1d23;
-            color: var(--accent-gold);
+            position: fixed; top: 20px; left: 20px; z-index: 1001;
+            background: #1a1d23; color: var(--accent-gold);
             border: 1.5px solid var(--accent-gold);
-            width: 46px; height: 46px;
-            border-radius: 12px;
-            cursor: pointer;
-            display: flex; align-items: center; justify-content: center;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-            transition: 0.3s;
+            width: 46px; height: 46px; border-radius: 12px;
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
         }
 
         .overlay {
-            position: fixed; top: 0; left: 0;
-            width: 100vw; height: 100vh;
-            background: rgba(0,0,0,0.7);
-            backdrop-filter: blur(5px);
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(0,0,0,0.7); backdrop-filter: blur(5px);
             z-index: 1050; display: none;
         }
         .overlay.active { display: block; }
@@ -294,88 +221,31 @@
             min-height: 100vh;
             background: linear-gradient(rgba(0,0,0,0.75), rgba(0,0,0,0.75)), 
                         url('https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&q=80&w=1600');
-            background-size: cover;
-            background-position: center;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: flex-start;
-            text-align: center;
-            color: white;
-            padding: 40px 20px;
+            background-size: cover; background-position: center;
+            display: flex; flex-direction: column; align-items: center;
+            justify-content: flex-start; text-align: center; color: white; padding: 60px 20px;
         }
 
-        .hero-text .combined-title {
-            font-size: clamp(2rem, 8vw, 4.2rem);
-            font-weight: 900;
-            margin-bottom: 15px;
+        .combined-title {
+            font-size: clamp(2rem, 8vw, 4.2rem); font-weight: 900; margin-bottom: 15px;
             background: linear-gradient(to bottom, #f1c40f, #f9e79f);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            filter: drop-shadow(0 5px 15px rgba(0,0,0,0.5));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
         }
 
-        .unique-clock-card {
-            background: transparent; 
-            padding: 10px 20px;
-            margin-top: 30px;
-            position: relative;
-            animation: fadeInUp 1s ease-out;
-            display: inline-block;
+        .proprietor {
+            background: linear-gradient(135deg, #00acee, #0072b1);
+            padding: 8px 35px; border-radius: 50px; display: inline-block; margin-bottom: 15px;
         }
 
         .time-box {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: clamp(2.5rem, 10vw, 4.5rem);
-            font-weight: 800;
-            letter-spacing: -2px;
-            text-shadow: 0 0 20px rgba(255, 255, 255, 0.4), 2px 2px 10px rgba(0,0,0,0.8);
+            font-family: 'JetBrains Mono', monospace; font-size: clamp(2.5rem, 10vw, 4.5rem);
+            font-weight: 800; text-shadow: 0 0 20px rgba(255, 255, 255, 0.4);
         }
         
-        .time-divider {
-            font-size: clamp(2rem, 8vw, 3.5rem);
-            color: var(--accent-gold);
-            text-shadow: 0 0 15px rgba(241, 196, 15, 0.6);
-            margin: 0 5px;
-        }
+        .time-divider { font-size: 2rem; color: var(--accent-gold); margin: 0 5px; }
+        .ampm-box { font-size: 1.2rem; font-weight: 900; color: var(--accent-gold); margin-left: 10px; }
 
-        .ampm-box {
-            font-size: 1.2rem;
-            font-weight: 900;
-            color: var(--accent-gold);
-            text-transform: uppercase;
-            margin-left: 10px;
-            text-shadow: 0 0 10px rgba(241, 196, 15, 0.5);
-        }
-
-        #current-date {
-            margin-top: 10px;
-            font-size: 0.95rem;
-            color: #fff;
-            letter-spacing: 4px;
-            text-transform: uppercase;
-            font-weight: 700;
-            opacity: 0.8;
-            text-shadow: 1px 1px 5px rgba(0,0,0,0.5);
-        }
-
-        .business-info .proprietor {
-            background: linear-gradient(135deg, #00acee, #0072b1);
-            padding: 8px 35px;
-            font-size: 1.2rem;
-            letter-spacing: 1px;
-            border-radius: 50px;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
-            display: inline-block;
-            margin-bottom: 15px;
-        }
-
-        @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
-
-        @media (max-width: 768px) {
-            .hero-banner { padding-top: 100px; } 
-            .unique-clock-card { padding: 10px; }
-        }
+        #current-date { margin-top: 10px; letter-spacing: 3px; font-weight: 700; opacity: 0.8; }
     </style>
 </head>
 <body onload="updateClock()">
@@ -383,13 +253,13 @@
 <div id="sidebar">
     <div class="sidebar-header">
         <img src="https://cdn-icons-png.flaticon.com/512/619/619153.png" alt="Logo" class="sidebar-logo">
-        <h6 class="mb-0 text-white fw-bold mt-1" style="letter-spacing: 2px;">মেসার্স নূর এন্টারপ্রাইজ </h6>
-        <p style="color: var(--accent-gold); font-size: 0.68rem; font-weight: 800; margin-bottom: 0; opacity: 0.8;">আমবাড়ী বাজার, পার্বতীপুর, দিনাজপুর </p>
+        <h6 class="mb-0 text-white fw-bold mt-1" style="letter-spacing: 1px;">মেসার্স নূর এন্টারপ্রাইজ</h6>
+        <p style="color: var(--accent-gold); font-size: 0.65rem; font-weight: 700; margin-bottom: 0;">আমবাড়ী বাজার, পার্বতীপুর, দিনাজপুর</p>
     </div>
 
     <div class="sticky-home-area">
         <ul class="sidebar-menu">
-            <li onclick="resetToHome()" class="home-btn"><i class="fas fa-home" style="color: var(--accent-gold);"></i> HOME </li>
+            <li onclick="resetToHome()" class="home-btn"><i class="fas fa-home" style="color: var(--accent-gold);"></i> HOME</li>
         </ul>
     </div>
 
@@ -472,7 +342,7 @@
 
     <div class="sidebar-footer-profile">
         <div class="user-avatar" id="user-initial">U</div>
-        <div class="user-info-text" style="flex: 1; overflow: hidden; padding-left: 10px;">
+        <div class="user-info-text" style="flex: 1; overflow: hidden; padding-left: 5px;">
             <div id="display-user-name" style="white-space: nowrap; text-overflow: ellipsis; font-weight: bold; font-size: 0.85rem;">GUEST USER</div>
             <div id="display-user-id" style="font-size: 0.75rem; opacity: 0.7;">ID: 0000</div>
         </div>
@@ -491,55 +361,44 @@
 
     <div class="hero-banner">
         <div class="hero-text">
-            <div class="bismillah" style="letter-spacing: 2px; opacity: 0.8; margin-bottom: 10px;">বিসমিল্লাহির রাহমানির রাহিম</div>
+            <div style="letter-spacing: 2px; opacity: 0.8; margin-bottom: 10px;">বিসমিল্লাহির রাহমানির রাহিম</div>
             <div class="combined-title">মেসার্স নূর এন্টারপ্রাইজ</div>
             
             <div class="business-info">
                 <div class="proprietor shadow-lg">প্রোঃ এম. এম. নূর-ই-মোহাম্মদ</div>
-                <div class="info-line">বি.সি.আই.সি অনুমোদিত ডিলার, রাসায়নিক সার, কীটনাশক ও সিমেন্ট বিক্রেতা।</div>
+                <div class="info-line">বি.সি.আই.সি অনুমোদিত ডিলার, রাসায়নিক সার ও সিমেন্ট বিক্রেতা।</div>
                 <div class="address">আমবাড়ী বাজার, পার্বতীপুর, দিনাজপুর।</div>
                 <div class="mobile mt-3">
                     <i class="fas fa-phone-alt me-2" style="color: var(--accent-gold);"></i>
-                    ০১ ৭৭২-৯৫৭৫১৫, ০১৭২০-৩৩৭৮১২, ০১৭১৭-৫২৭২৯২
+                    ০১ ৭৭২-৯৫৭৫১৫, ০১৭২০-৩৩৭৮১২
                 </div>
             </div>
 
             <div class="unique-clock-card">
                 <div class="time-display">
-                    <span id="hrs" class="time-box">00</span>
-                    <span class="time-divider">:</span>
-                    <span id="min" class="time-box">00</span>
-                    <span class="time-divider" style="font-size: 1.5rem; opacity: 0.4;">:</span>
-                    <span id="sec" class="time-box" style="font-size: 2.5rem; color: var(--accent-gold); opacity: 0.9;">00</span>
+                    <span id="hrs" class="time-box">00</span><span class="time-divider">:</span>
+                    <span id="min" class="time-box">00</span><span class="time-divider" style="opacity: 0.3;">:</span>
+                    <span id="sec" class="time-box" style="font-size: 2.5rem; color: var(--accent-gold);">00</span>
                     <span id="ampm" class="ampm-box">AM</span>
                 </div>
-                <div id="current-date">MONDAY, MARCH 2, 2026</div>
+                <div id="current-date">...</div>
             </div>
         </div>
     </div>
 </div>
 
 <script>
+    // পেজ লোড হলে ইউজার ডাটা দেখানো
     window.addEventListener('load', function() {
-        const name = sessionStorage.getItem('erp_user_name') || 'Guest User';
-        const id = sessionStorage.getItem('erp_user_id') || '0000';
+        const name = localStorage.getItem('userName') || 'Guest User';
+        const id = localStorage.getItem('userId') || '0000';
         
         document.getElementById('display-user-name').innerText = name.toUpperCase();
         document.getElementById('display-user-id').innerText = "ID: " + id;
-        
-        const firstLetter = name.charAt(0).toUpperCase();
-        document.getElementById('user-initial').innerText = firstLetter;
+        document.getElementById('user-initial').innerText = name.charAt(0).toUpperCase();
     });
 </script>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
-
-
-
-
-
-
-
-
