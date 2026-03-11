@@ -1,148 +1,493 @@
 <!DOCTYPE html>
-<html lang="bn">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/619/619153.png">
-    <title>Login</title>
-
+    <title>Home - মেসার্স নূর এন্টারপ্রাইজ</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
+    <script>
+       // ১. সিকিউরিটি চেক: লগইন ডাটা না থাকলে সরাসরি index.html (লগইন পেজ) এ পাঠিয়ে দেবে
+    if (!localStorage.getItem('userId')) {
+        window.location.href = "index.html"; 
+    }
+// ১. লগআউট বাটন ক্লিক করলে মোডাল দেখাবে
+function logoutUser() {
+    document.getElementById('logoutModal').style.display = 'block';
+}
+
+// ২. বাতিল বাটনে ক্লিক করলে মোডাল বন্ধ হবে
+function closeLogoutModal() {
+    document.getElementById('logoutModal').style.display = 'none';
+}
+
+// ৩. কনফার্ম করলে লগআউট হবে
+function executeLogout() {
+    localStorage.clear();
+    window.location.href = "index.html";
+}
+
+// মোডালের বাইরে ক্লিক করলে বন্ধ হবে
+window.onclick = function(event) {
+    let modal = document.getElementById('logoutModal');
+    if (event.target == modal) {
+        modal.style.display = "none";
+    }
+}
+
+    // ৩. নেভিগেশন ফাংশন (URL-এ নাম/আইডি ছাড়া)
+    function navigateTo(page) {
+        let targetPage = page.endsWith('.html') ? page : page + '.html';
+        window.open(targetPage, '_blank');
+    }
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('active');
+            document.getElementById('overlay').classList.toggle('active');
+        }
+
+        function resetToHome() {
+            const allSubmenus = document.querySelectorAll('.submenu');
+            const allArrows = document.querySelectorAll('.arrow-icon');
+            allSubmenus.forEach(sub => sub.classList.remove('open'));
+            allArrows.forEach(arrow => arrow.style.transform = "rotate(0deg)");
+            document.getElementById('sidebar-scroll-area').scrollTo({ top: 0, behavior: 'smooth' });
+            if(window.innerWidth < 992) toggleSidebar();
+        }
+
+        function toggleSubMenu(id, element) {
+            const allSubmenus = document.querySelectorAll('.submenu');
+            const allArrows = document.querySelectorAll('.arrow-icon');
+            const targetSubmenu = document.getElementById(id);
+            const targetArrow = element.querySelector('.arrow-icon');
+            const isAlreadyOpen = targetSubmenu.classList.contains('open');
+
+            allSubmenus.forEach(sub => sub.classList.remove('open'));
+            allArrows.forEach(arrow => arrow.style.transform = "rotate(0deg)");
+
+            if (!isAlreadyOpen) {
+                targetSubmenu.classList.add('open');
+                targetArrow.style.transform = "rotate(90deg)";
+                setTimeout(() => {
+                    element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }, 300);
+            }
+        }
+
+        function updateClock() {
+            const now = new Date();
+            let hours = now.getHours();
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+            hours = hours % 12 || 12;
+            
+            document.getElementById('hrs').textContent = String(hours).padStart(2, '0');
+            document.getElementById('min').textContent = minutes;
+            document.getElementById('sec').textContent = seconds;
+            document.getElementById('ampm').textContent = ampm;
+            
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            document.getElementById('current-date').textContent = now.toLocaleDateString('en-US', options);
+        }
+        setInterval(updateClock, 1000);
+    </script>
+
     <style>
-        body {
-            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-            height: 100vh;
-            display: flex; align-items: center; justify-content: center;
-            font-family: 'Segoe UI', sans-serif; margin: 0;
+        :root {
+            --sidebar-bg: #0f1216; 
+            --card-bg: rgba(28, 33, 40, 0.95);
+            --header-bg: #05070a;
+            --accent-gold: #f1c40f; 
+            --sidebar-width: 290px;
+            --text-main: #ecf0f1;
+            --glass-border: rgba(255, 255, 255, 0.08);
         }
-        .login-card {
-            background: white; padding: 40px; border-radius: 20px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.3);
-            width: 100%; max-width: 400px; text-align: center;
-        }
-        /* লোগো আইকন স্টাইল */
-        .logo-img { width: 80px; margin-bottom: 20px; filter: drop-shadow(0 5px 10px rgba(0,0,0,0.1)); }
         
-        .form-control { border-radius: 10px; padding: 12px; margin-bottom: 15px; border: 1px solid #ddd; }
-        .form-control:focus { box-shadow: 0 0 10px rgba(30, 60, 114, 0.2); border-color: #1e3c72; }
-        .btn-login {
-            background: #1e3c72; color: white; border: none;
-            padding: 12px; border-radius: 10px; font-weight: bold;
-            width: 100%; transition: 0.3s; cursor: pointer;
+        body {
+            background-color: #f0f3f6;
+            margin: 0;
+            font-family: 'Inter', 'Segoe UI', 'SolaimanLipi', sans-serif;
+            overflow-x: hidden;
         }
-        .btn-login:hover { background: #2a5298; transform: translateY(-2px); }
-        .btn-login:disabled { background: #6c757d; cursor: not-allowed; }
-        #msg { margin-top: 15px; font-size: 14px; min-height: 20px; font-weight: 500; }
 
-		.company-name-bn {
-        font-family: 'SolaimanLipi', 'Segoe UI', sans-serif;
-        font-weight: 900;
-        background: linear-gradient(to bottom, #1e3c72, #2a5298);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        margin-bottom: 2px;
-        font-size: 1.8rem;
-    }
+        #sidebar {
+            width: var(--sidebar-width);
+            height: 100vh;
+            background: var(--sidebar-bg);
+            position: fixed;
+            left: -var(--sidebar-width);
+            top: 0;
+            z-index: 1100;
+            transition: 0.5s cubic-bezier(0.19, 1, 0.22, 1);
+            color: var(--text-main);
+            display: flex;
+            flex-direction: column;
+            box-shadow: 25px 0 50px rgba(0,0,0,0.6);
+            backdrop-filter: blur(10px);
+        }
+        #sidebar.active { left: 0; }
 
-    .company-name-en {
-        font-size: 0.9rem;
-        font-weight: 700;
-        color: #555;
-        letter-spacing: 2px;
-        margin-bottom: 10px;
-    }
+        .sidebar-header {
+            margin: 20px 15px 15px;
+            padding: 25px 15px;
+            text-align: center;
+            background: linear-gradient(145deg, #1c2128, #14181d);
+            border-radius: 16px;
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.4);
+        }
 
-    .brand-divider {
-        width: 60px;
-        height: 3px;
-        background: #f1c40f; /* গোল্ডেন ডিভাইডার */
-        margin: 0 auto;
-        border-radius: 5px;
-    }
+        .sidebar-logo { width: 52px; filter: drop-shadow(0 0 12px rgba(241, 196, 15, 0.5)); margin-bottom: 10px; }
 
-    .logo-img {
-        width: 70px;
-        margin-bottom: 15px;
-        filter: drop-shadow(0 4px 8px rgba(0,0,0,0.1));
-    }
+        .sticky-home-area { position: sticky; top: 0; z-index: 20; padding: 5px 15px 15px; }
+
+        #sidebar-scroll-area { flex: 1; overflow-y: auto; scrollbar-width: none; padding: 0 15px 20px; }
+        #sidebar-scroll-area::-webkit-scrollbar { display: none; }
+
+        .sidebar-menu { list-style: none; padding: 0; margin: 0; }
+        
+        .sidebar-menu li {
+            padding: 14px 18px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            font-size: 0.92rem;
+            border-radius: 12px;
+            background: linear-gradient(145deg, #232a33, #1c2128);
+            border: 1px solid var(--glass-border);
+        }
+
+        .sidebar-menu li:hover {
+            transform: translateY(-3px);
+            background: linear-gradient(145deg, #2b343f, #232a33);
+            border-color: var(--accent-gold);
+        }
+
+        .home-btn { border-left: 4px solid var(--accent-gold) !important; }
+
+        .submenu {
+            display: none;
+            list-style: none;
+            padding: 10px;
+            margin: -8px 0 15px 15px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
+        }
+
+        .submenu li { background: #252d37; font-size: 0.85rem; padding: 11px 15px; margin-bottom: 8px; }
+        .submenu.open { display: block; animation: slideDown 0.4s ease-out; }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .sidebar-footer-profile {
+            margin: 10px 15px 20px;
+            padding: 16px;
+            background: linear-gradient(145deg, #1c2128, #11151a);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .user-avatar {
+            width: 45px; height: 45px;
+            background: var(--accent-gold);
+            color: #000;
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 900; font-size: 1.2rem;
+        }
+
+        .logout-btn {
+            background: rgba(255, 71, 87, 0.1);
+            color: #ff4757;
+            width: 36px; height: 36px;
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer;
+            border: 1px solid rgba(255, 71, 87, 0.2);
+        }
+
+        .menu-toggle {
+            position: fixed; top: 20px; left: 20px; z-index: 1001;
+            background: #1a1d23; color: var(--accent-gold);
+            border: 1.5px solid var(--accent-gold);
+            width: 46px; height: 46px; border-radius: 12px;
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+        }
+
+        .overlay {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(0,0,0,0.7); backdrop-filter: blur(5px);
+            z-index: 1050; display: none;
+        }
+        .overlay.active { display: block; }
+
+        .hero-banner {
+            min-height: 100vh;
+            background: linear-gradient(rgba(0,0,0,0.75), rgba(0,0,0,0.75)), 
+                        url('https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&q=80&w=1600');
+            background-size: cover; background-position: center;
+            display: flex; flex-direction: column; align-items: center;
+            justify-content: flex-start; text-align: center; color: white; padding: 60px 20px;
+        }
+
+
+/* Custom Modal Style */
+.custom-modal {
+    display: none; 
+    position: fixed; 
+    z-index: 9999; 
+    left: 0; top: 0; width: 100%; height: 100%; 
+    background-color: rgba(0,0,0,0.6); 
+    backdrop-filter: blur(5px);
+}
+
+.modal-content-custom {
+    background: #1c2128;
+    color: white;
+    margin: 15% auto;
+    padding: 30px;
+    border: 1px solid var(--accent-gold);
+    width: 320px;
+    border-radius: 20px;
+    text-align: center;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    animation: modalSlide 0.3s ease-out;
+}
+
+@keyframes modalSlide {
+    from { transform: translateY(-20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+.modal-icon {
+    font-size: 3rem;
+    color: #ff4757;
+    margin-bottom: 15px;
+}
+
+.modal-buttons {
+    display: flex;
+    justify-content: space-around;
+    margin-top: 25px;
+}
+
+.btn-cancel {
+    background: #34495e;
+    color: white;
+    border: none;
+    padding: 8px 25px;
+    border-radius: 10px;
+    cursor: pointer;
+}
+
+.btn-confirm {
+    background: #ff4757;
+    color: white;
+    border: none;
+    padding: 8px 25px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+        .combined-title {
+            font-size: clamp(2rem, 8vw, 4.2rem); font-weight: 900; margin-bottom: 15px;
+            background: linear-gradient(to bottom, #f1c40f, #f9e79f);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+
+        .proprietor {
+            background: linear-gradient(135deg, #00acee, #0072b1);
+            padding: 8px 35px; border-radius: 50px; display: inline-block; margin-bottom: 15px;
+        }
+
+        .time-box {
+            font-family: 'JetBrains Mono', monospace; font-size: clamp(2.5rem, 10vw, 4.5rem);
+            font-weight: 800; text-shadow: 0 0 20px rgba(255, 255, 255, 0.4);
+        }
+        
+        .time-divider { font-size: 2rem; color: var(--accent-gold); margin: 0 5px; }
+        .ampm-box { font-size: 1.2rem; font-weight: 900; color: var(--accent-gold); margin-left: 10px; }
+
+        #current-date { margin-top: 10px; letter-spacing: 3px; font-weight: 700; opacity: 0.8; }
     </style>
 </head>
-<body>
+<body onload="updateClock()">
 
-   <div class="login-card">
-    <img src="https://cdn-icons-png.flaticon.com/512/619/619153.png" alt="Logo" class="logo-img">
-    
-    <div class="brand-section mb-4">
-        <h2 class="company-name-bn">মেসার্স নূর এন্টারপ্রাইজ</h2>
-        
-        <div class="brand-divider"></div>
+<div id="sidebar">
+    <div class="sidebar-header">
+        <img src="https://cdn-icons-png.flaticon.com/512/619/619153.png" alt="Logo" class="sidebar-logo">
+        <h6 class="mb-0 text-white fw-bold mt-1" style="letter-spacing: 1px;">মেসার্স নূর এন্টারপ্রাইজ</h6>
+        <p style="color: var(--accent-gold); font-size: 0.65rem; font-weight: 700; margin-bottom: 0;">আমবাড়ী বাজার, পার্বতীপুর, দিনাজপুর</p>
     </div>
 
-    <p class="text-muted mb-4" style="font-size: 0.85rem; letter-spacing: 1px;"> LOGIN PLEASE</p>
-    
-    <input type="text" id="userid" class="form-control" placeholder="User ID" autocomplete="off">
-    <input type="password" id="password" class="form-control" placeholder="Password">
-    
-    <button class="btn-login" id="loginBtn" onclick="handleLogin()">Login</button>
-    
-    <div id="msg"></div>
+    <div class="sticky-home-area">
+        <ul class="sidebar-menu">
+            <li onclick="resetToHome()" class="home-btn"><i class="fas fa-home" style="color: var(--accent-gold);"></i> HOME</li>
+        </ul>
+    </div>
+
+    <div id="sidebar-scroll-area">
+    <ul class="sidebar-menu">
+        <li onclick="toggleSidebar()"><i class="fas fa-desktop" style="color: #3498db;"></i> Dashboard</li>
+
+        <li onclick="toggleSubMenu('sales-sub', this)">
+            <i class="fas fa-file-invoice" style="color: #2ecc71;"></i> Sales Entry
+            <i class="fas fa-chevron-right arrow-icon" style="margin-left: auto; font-size: 0.7rem; opacity: 0.5;"></i>
+        </li>
+        <ul class="submenu" id="sales-sub">
+            <li onclick="navigateTo('Sales.html')">New Sale</li>
+            <li onclick="navigateTo('Sales-Return.html')">Sales Return</li>
+            <li onclick="navigateTo('Sales-List.html')">Invoices List</li>
+            <li onclick="navigateTo('Due-Collection.html')">Due Collection</li>
+            <li onclick="navigateTo('Sales-Draft.html')">Draft Sales</li>
+        </ul>
+
+        <li onclick="toggleSubMenu('pur-sub', this)">
+            <i class="fas fa-shopping-basket" style="color: #e67e22;"></i> Purchase Entry
+            <i class="fas fa-chevron-right arrow-icon" style="margin-left: auto; font-size: 0.7rem; opacity: 0.5;"></i>
+        </li>
+        <ul class="submenu" id="pur-sub">
+            <li onclick="navigateTo('Purchase.html')">New Purchase</li>
+            <li onclick="navigateTo('Purchase-Return.html')">Purchase Return</li>
+            <li onclick="navigateTo('Supplier-List.html')">Supplier List</li>
+            <li onclick="navigateTo('Purchase-History.html')">Purchase History</li>
+            <li onclick="navigateTo('Purchase-Order.html')">Purchase Order</li>
+        </ul>
+        
+        <li onclick="toggleSubMenu('inv-sub', this)">
+            <i class="fas fa-warehouse" style="color: #9b59b6;"></i> Stock
+            <i class="fas fa-chevron-right arrow-icon" style="margin-left: auto; font-size: 0.7rem; opacity: 0.5;"></i>
+        </li>
+        <ul class="submenu" id="inv-sub">
+            <li onclick="navigateTo('Product.html')">New Product Add</li>
+            <li onclick="navigateTo('Stock.html')">Stock Report</li>
+            <li onclick="navigateTo('Category.html')">Product Category</li>
+            <li onclick="navigateTo('Stock-Adjustment.html')">Stock Adjustment</li>
+            <li onclick="navigateTo('Damaged-Stock.html')">Damaged Goods</li>
+        </ul>
+
+        <li onclick="toggleSubMenu('cust-sub', this)">
+            <i class="fas fa-address-book" style="color: #1abc9c;"></i> Customer
+            <i class="fas fa-chevron-right arrow-icon" style="margin-left: auto; font-size: 0.7rem; opacity: 0.5;"></i>
+        </li>
+        <ul class="submenu" id="cust-sub">
+            <li onclick="navigateTo('Customer.html')">Add New Customer</li>
+            <li onclick="navigateTo('Customerlist.html')">Customer List</li>
+            <li onclick="navigateTo('Customer-Ledger.html')">Customer Ledger</li>
+            <li onclick="navigateTo('Customer-Due.html')">Due Analysis</li>
+            <li onclick="navigateTo('Customer-Msg.html')">Send SMS/Notice</li>
+        </ul>
+        
+        <li onclick="toggleSubMenu('rep-sub', this)">
+            <i class="fas fa-chart-bar" style="color: #f1c40f;"></i> Report 
+            <i class="fas fa-chevron-right arrow-icon" style="margin-left: auto; font-size: 0.7rem; opacity: 0.5;"></i>
+        </li>
+        <ul class="submenu" id="rep-sub">
+            <li onclick="navigateTo('Reports.html')">Main Report</li>
+            <li onclick="navigateTo('Sales-Report.html')">Daily Sales Report</li>
+            <li onclick="navigateTo('Profit-Loss.html')">Profit & Loss</li>
+            <li onclick="navigateTo('Expense-Report.html')">Expense Report</li>
+            <li onclick="navigateTo('Tax-Report.html')">VAT/Tax Report</li>
+        </ul>
+
+        <li onclick="toggleSubMenu('data-sub', this)">
+            <i class="fas fa-edit" style="color: #e74c3c;"></i> Data Entry 
+            <i class="fas fa-chevron-right arrow-icon" style="margin-left: auto; font-size: 0.7rem; opacity: 0.5;"></i>
+        </li>
+        <ul class="submenu" id="data-sub">
+    <li onclick="navigateTo('Dataentry.html')">Manual Entry</li>
+    <li onclick="navigateTo('Dataentryauto.html')">Auto Entry</li>
+    <li onclick="navigateTo('CustomerStatement.html')">Customer Statement</li> <li onclick="navigateTo('Dataentrypreview.html')">Preview</li>
+    <li onclick="navigateTo('Old-Data.html')">Old Data Import</li>
+</ul>
+    </ul>
 </div>
 
-    <script>
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzkDCX5zax-NuoSKRSxJIjL9Rx4MbtVxvm5QlrOEIxrTR-s3sVuRHJy_ISNIm3ehDYs/exec"; 
+    <div class="sidebar-footer-profile">
+        <div class="user-avatar" id="user-initial">U</div>
+        <div class="user-info-text" style="flex: 1; overflow: hidden; padding-left: 5px;">
+            <div id="display-user-name" style="white-space: nowrap; text-overflow: ellipsis; font-weight: bold; font-size: 0.85rem;">GUEST USER</div>
+            <div id="display-user-id" style="font-size: 0.75rem; opacity: 0.7;">ID: 0000</div>
+        </div>
+        <div class="logout-btn" onclick="logoutUser()" title="Logout">
+            <i class="fas fa-power-off"></i>
+        </div>
+    </div>
+</div>
 
-    async function handleLogin() {
-        const id = document.getElementById('userid').value.trim();
-        const pass = document.getElementById('password').value.trim();
-        const msg = document.getElementById('msg');
-        const btn = document.getElementById('loginBtn');
+<div id="overlay" class="overlay" onclick="toggleSidebar()"></div>
 
-        if (!id || !pass) {
-            msg.innerHTML = '<span class="text-danger"><i class="fas fa-exclamation-circle"></i> আইডি এবং পাসওয়ার্ড দিন!</span>';
-            return;
-        }
+<div id="main-content">
+    <button class="menu-toggle" onclick="toggleSidebar()">
+        <i class="fas fa-bars"></i>
+    </button>
 
-        btn.disabled = true;
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Checking...';
-        msg.innerHTML = '<span class="text-primary">সার্ভারের সাথে সংযোগ করা হচ্ছে...</span>';
+    <div class="hero-banner">
+        <div class="hero-text">
+            <div style="letter-spacing: 2px; opacity: 0.8; margin-bottom: 10px;">বিসমিল্লাহির রাহমানির রাহিম</div>
+            <div class="combined-title">মেসার্স নূর এন্টারপ্রাইজ</div>
+            
+            <div class="business-info">
+                <div class="proprietor shadow-lg">প্রোঃ এম. এম. নূর-ই-মোহাম্মদ</div>
+                <div class="info-line">বি.সি.আই.সি অনুমোদিত ডিলার, রাসায়নিক সার ও সিমেন্ট বিক্রেতা।</div>
+                <div class="address">আমবাড়ী বাজার, পার্বতীপুর, দিনাজপুর।</div>
+                <div class="mobile mt-3">
+                    <i class="fas fa-phone-alt me-2" style="color: var(--accent-gold);"></i>
+                    ০১৭৭২-৯৫৭৫১৫, ০১৭২০-৩৩৭৮১২, ০১৭১৭-৫২৭২৯২, ০১৭৩১-৭৩৩৩৪০
+                </div>
+            </div>
 
-        const finalUrl = `${SCRIPT_URL}?action=login&id=${encodeURIComponent(id)}&pass=${encodeURIComponent(pass)}`;
+            <div class="unique-clock-card">
+                <div class="time-display">
+                    <span id="hrs" class="time-box">00</span><span class="time-divider">:</span>
+                    <span id="min" class="time-box">00</span><span class="time-divider" style="opacity: 0.3;">:</span>
+                    <span id="sec" class="time-box" style="font-size: 2.5rem; color: var(--accent-gold);">00</span>
+                    <span id="ampm" class="ampm-box">AM</span>
+                </div>
+                <div id="current-date">...</div>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="logoutModal" class="custom-modal">
+    <div class="modal-content-custom">
+        <div class="modal-icon">
+            <i class="fas fa-sign-out-alt"></i>
+        </div>
+        <h4>লগআউট নিশ্চিত করুন</h4>
+        <p>আপনি কি সত্যিই সিস্টেম থেকে বের হয়ে যেতে চান?</p>
+        <div class="modal-buttons">
+            <button class="btn-cancel" onclick="closeLogoutModal()">বাতিল</button>
+            <button class="btn-confirm" onclick="executeLogout()">লগআউট</button>
+        </div>
+    </div>
+</div>
 
-        try {
-            const response = await fetch(finalUrl);
-            const data = await response.json();
-
-            if (data.status === "success") {
-                msg.innerHTML = '<span class="text-success"><i class="fas fa-check-circle"></i> সফল হয়েছে! ড্যাশবোর্ডে পাঠানো হচ্ছে...</span>';
-                
-                localStorage.setItem('userName', data.name);
-                localStorage.setItem('userId', data.userId);
-
-                setTimeout(() => {
-                    window.location.href = "dashboard.html";
-                }, 500); 
-                
-            } else {
-                msg.innerHTML = `<span class="text-danger"><i class="fas fa-times-circle"></i> ${data.message || "ভুল আইডি বা পাসওয়ার্ড!"}</span>`;
-                resetBtn();
-            }
-        } catch (error) {
-            msg.innerHTML = '<span class="text-danger"><i class="fas fa-wifi"></i> নেটওয়ার্ক সমস্যা!</span>';
-            resetBtn();
-        }
-    }
-
-    function resetBtn() {
-        const btn = document.getElementById('loginBtn');
-        btn.disabled = false;
-        btn.innerHTML = 'Login';
-    }
-
-    document.addEventListener('keypress', function (e) {
-        if (e.key === 'Enter') handleLogin();
+<script>
+    // পেজ লোড হলে ইউজার ডাটা দেখানো
+    window.addEventListener('load', function() {
+        const name = localStorage.getItem('userName') || 'Guest User';
+        const id = localStorage.getItem('userId') || '0000';
+        
+        document.getElementById('display-user-name').innerText = name.toUpperCase();
+        document.getElementById('display-user-id').innerText = "ID: " + id;
+        document.getElementById('user-initial').innerText = name.charAt(0).toUpperCase();
     });
 </script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
+
