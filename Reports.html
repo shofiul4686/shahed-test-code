@@ -10,6 +10,9 @@
     <!-- PDF Library -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/material_blue.css">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     
     <style>
         :root{--report-blue:#3498db;--header-bg:#2c3e50;--history-bg:#ffffff}
@@ -44,6 +47,30 @@ input[type="date"] {
 
 input[type="date"]:focus {
     color: #000; /* সিলেক্ট করলে গাঢ় হবে */
+}
+
+/* ক্যালেন্ডারের ভেতরের টেক্সট বড় ও ব্ল্যাক করা */
+.flatpickr-calendar {
+    font-size: 16px !important; 
+    border: 1px solid #000 !important;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.3) !important;
+}
+
+.flatpickr-day.selected {
+    background: #000 !important; /* সিলেক্ট করলে ব্ল্যাক হবে */
+    border-color: #000 !important;
+}
+
+.flatpickr-current-month .flatpickr-monthDropdown-months {
+    font-weight: bold !important;
+    color: #000 !important;
+}
+
+/* ইনপুট বক্সের টেক্সট বড় করা */
+.custom-date {
+    font-size: 1rem !important;
+    cursor: pointer !important;
+    color: #000 !important;
 }
 
 
@@ -206,7 +233,7 @@ hr, .separator { display: none !important; }
         padding: 8px !important;
         font-size: 14px !important;
     }
-}
+
 
 /* সাধারণ স্ক্রিনে হাইড রাখা */
 #printSignatureSection {
@@ -414,32 +441,40 @@ hr, .separator { display: none !important; }
             </div>
         </div>
 
-        <div class="p-2 border-bottom bg-light no-print">
-            <div class="row g-2">
-                <div class="col-md-4">
-                    <div class="input-group input-group-sm">
-                        <span class="input-group-text bg-white"><i class="fas fa-search"></i></span>
-                        <input type="text" id="historySearch" class="form-control" placeholder="Search history..." onkeyup="filterHistoryData()">
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="input-group input-group-sm">
-                        <span class="input-group-text bg-white">Pay Date</span>
-                        <input type="date" id="historyDateFilter" class="form-control" onchange="filterHistoryData()">
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <select id="historyStatusFilter" class="form-select form-select-sm" onchange="filterHistoryData()">
-                        <option value="">All Types</option>
-                        <option value="FULL PAID">FULL PAID</option>
-                        <option value="PART PAID">PART PAID</option>
-                    </select>
-                </div>
-                <div class="col-md-2">
-                    <button class="btn btn-sm btn-outline-secondary w-100" onclick="resetHistoryFilters()">Clear Filter</button>
-                </div>
+        <div class="p-3 border-bottom bg-light no-print">
+    <div class="row g-2 align-items-center">
+        <div class="col-md-3">
+            <div class="input-group">
+                <span class="input-group-text bg-white"><i class="fas fa-search"></i></span>
+                <input type="text" id="historySearch" class="form-control" placeholder="Search history..." onkeyup="filterHistoryData()">
             </div>
         </div>
+        
+        <div class="col-md-4">
+            <div class="input-group">
+    <span class="input-group-text bg-light fw-bold" style="font-size: 0.85rem; color: #000;">FROM</span>
+    <input type="text" id="histStartDate" class="form-control fw-bold custom-date" placeholder="Select Date" style="color: #000; background: #fff;">
+    
+    <span class="input-group-text bg-light fw-bold" style="font-size: 0.85rem; color: #000;">TO</span>
+    <input type="text" id="histEndDate" class="form-control fw-bold custom-date" placeholder="Select Date" style="color: #000; background: #fff;">
+</div>
+        </div>
+
+        <div class="col-md-3">
+            <select id="historyStatusFilter" class="form-select" onchange="filterHistoryData()">
+                <option value="">ALL TYPES</option>
+                <option value="FULL PAID">FULL PAID</option>
+                <option value="PART PAID">PART PAID</option>
+            </select>
+        </div>
+        
+        <div class="col-md-2">
+            <button class="btn btn-outline-danger w-100 fw-bold" onclick="resetHistoryFilters()">
+                <i class="fas fa-undo-alt me-1"></i> CLEAR
+            </button>
+        </div>
+    </div>
+</div>
 
         <div class="table-responsive" style="max-height: 400px; min-height: 100px;">
             <div id="historyLoader" class="no-print"><div class="spinner-border text-primary"></div></div>
@@ -522,46 +557,49 @@ hr, .separator { display: none !important; }
 <script>
    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzTeOGvSd2EaxCZMouhcjZHaHuaUxJTBySk-5d2okEY3_YGyfBohszmkGHaq0pGo4B9ng/exec";
 
-// ১. ইউজার ইনফরমেশন সেটআপ (localStorage কে প্রায়োরিটি দিয়ে)
-const uId = localStorage.getItem('userId'); 
-    const uName = localStorage.getItem('userName');
+    // ১. ইউজার ইনফরমেশন সেটআপ (Global Variables)
+    // এগুলো শুরুতে থাকলে নিচের সব ফাংশন ইউজারকে চিনতে পারবে
+    const currentUserId = localStorage.getItem('userId'); 
+    const currentUserName = localStorage.getItem('userName');
+    const uId = currentUserId; 
+    const uName = currentUserName;
 
-// ২. ডাটা স্টোরেজ ভ্যারিয়েবল
-let rawSalesData = [];
-let currentFilteredData = [];
-let rawHistoryData = [];
-let currentFilteredHistory = [];
+    // ২. ডাটা স্টোরেজ ভ্যারিয়েবল
+    let rawSalesData = [];
+    let currentFilteredData = [];
+    let rawHistoryData = [];
+    let currentFilteredHistory = [];
 
-// ৩. পেজ লোড ও ট্র্যাকিং ফাংশন
-window.onload = function() {
-    const pageTitle = document.title || "Unknown Page"; 
+    // ৩. পেজ লোড ও ট্র্যাকিং ফাংশন
+    window.onload = function() {
+        const pageTitle = document.title || "Sales Master Report"; 
 
-    // ব্যাকএন্ডে ইউজার অ্যাক্টিভিটি পাঠানো
-    if (uId && uName) {
-        google.script.run.trackUserActivity(uId, uName, "Visited: " + pageTitle);
-    }
-    
-    // ড্যাশবোর্ডে বা হেবারে ইউজারের নাম দেখানোর জন্য (যদি এলিমেন্ট থাকে)
-    const userDisplay = document.getElementById("userNameDisplay");
-    if (userDisplay) userDisplay.innerText = uName;
+        if (uId && uName) {
+            // Apps Script এর activity tracking কল করা
+            try {
+                google.script.run.trackUserActivity(uId, uName, "Visited: " + pageTitle);
+            } catch(e) { console.log("Activity tracking not available"); }
+        }
+        
+        const userDisplay = document.getElementById("userNameDisplay");
+        if (userDisplay) userDisplay.innerText = uName || "Admin";
 
-    // প্রাথমিক ডাটা লোড করার ফাংশন থাকলে এখানে কল করুন
-    // loadDashboardData();
-};
-
+        // প্রাথমিক ডাটা লোড
+        fetchRecentSales(true);
+    };
+    // ৬. টোস্ট মেসেজ
     function showToast(msg, isError = false) {
         const t = document.getElementById('toast');
+        if(!t) return;
         t.innerText = msg;
         t.style.backgroundColor = isError ? '#e74c3c' : '#27ae60';
         t.style.display = 'block';
         setTimeout(() => { t.style.display = 'none'; }, 3000);
     }
-
     function generateMRNo() {
         const d = new Date();
         return "MR-" + d.getFullYear() + (d.getMonth() + 1).toString().padStart(2, '0') + d.getDate().toString().padStart(2, '0') + "-" + Math.floor(1000 + Math.random() * 9000);
     }
-
     function normalizeToISO(dateVal) {
         if (!dateVal || dateVal === "-" || dateVal === "undefined") return "";
         let dStr = String(dateVal).trim();
@@ -575,7 +613,6 @@ window.onload = function() {
         }
         return "";
     }
-
     async function fetchRecentSales(showLoader = false) {
         if(showLoader) document.getElementById('tableLoader').style.display = 'flex';
         try {
@@ -586,22 +623,18 @@ window.onload = function() {
         } catch (e) { showToast("Connection Error!", true); }
         finally { document.getElementById('tableLoader').style.display = 'none'; }
     }
-
     function applyMainFilters() {
     const search = document.getElementById('globalSearch').value.toLowerCase();
     const status = document.getElementById('statusFilter').value;
     const dateFilter = document.getElementById('startDate').value; 
-    
-    currentFilteredData = rawSalesData.filter(row => {
+        currentFilteredData = rawSalesData.filter(row => {
         const rowDate = normalizeToISO(row[1]); 
         const rowStatus = String(row[10] || "").trim().toUpperCase(); 
         const dueAmount = Number(row[13] || 0); // ১৩ নম্বর ইনডেক্সে Due থাকে
 
         const matchesSearch = row.some(c => String(c).toLowerCase().includes(search));
         const matchesDate = (!dateFilter || rowDate === dateFilter);
-
         let matchesStatus = false;
-
         // আপনার রিকোয়ারমেন্ট অনুযায়ী লজিক:
         if (status === "") {
             // ড্রপডাউন 'All Status' থাকলে ডিফল্টভাবে শুধু যাদের Due আছে তাদের দেখাবে
@@ -720,43 +753,52 @@ window.onload = function() {
         } catch (e) {}
     }
 
+    // ৫. অ্যাকশন ড্রপডাউন হ্যান্ডলার
     function handleAction(inv, due, cust, el) {
-        const p = document.getElementById(`part-${inv}`);
+        const pInput = document.getElementById(`part-${inv}`);
         if(el.value === 'FULL') { 
-            if(confirm(`আপনি কি এই ইনভয়েসের (${inv}) পুরো ${due.toLocaleString()} টাকা পেমেন্ট হিসেবে জমা করতে চান?`)) {
+            if(confirm(`ইনভয়েস ${inv}-এর পুরো ${due.toLocaleString()} টাকা জমা করবেন?`)) {
                 processPay(inv, due, cust, true); 
                 el.value = ''; 
-            } else {
-                el.value = ''; 
-            }
+            } else { el.value = ''; }
         }
         else if(el.value === 'PART') {
-            p.classList.remove('d-none');
+            if(pInput) pInput.classList.remove('d-none');
         } else {
-            p.classList.add('d-none');
+            if(pInput) pInput.classList.add('d-none');
         }
     }
 
     async function processPay(inv, due, cust, isFull, silent = false, mrNo = null) {
-        let amt = isFull ? due : parseFloat(document.getElementById(`in-${inv}`).value);
+        let amt = 0;
+        if (isFull) {
+            amt = due;
+        } else {
+            const inputEl = document.getElementById(`in-${inv}`);
+            amt = inputEl ? parseFloat(inputEl.value) : 0;
+        }
+
+        // ভ্যালিডেশন
         if(!amt || amt <= 0 || amt > due) {
-            if(!silent) alert('সঠিক অ্যামাউন্ট লিখুন।');
-            return false;
+            if(!silent) alert('সঠিক অ্যামাউন্ট লিখুন (বকেয়ার সমান বা কম হতে হবে)।');
+            return { ok: false };
         }
         
         const finalMRNo = mrNo || generateMRNo();
 
         try {
             if(!silent) document.getElementById('tableLoader').style.display = 'flex';
+            
             const postData = {
                 action: "updateSalesPaidAmount",
                 invNo: inv,
                 amount: amt,
-                operatorName: currentUserName,
-                operatorId: currentUserId,
+                operatorName: uName || "Unknown", 
+                operatorId: uId || "0",
                 mrNo: finalMRNo
             };
             
+            // POST Request পাঠানো (ব্যাকএন্ড আপডেট)
             await fetch(WEB_APP_URL, { 
                 method: "POST", 
                 mode: "no-cors", 
@@ -765,12 +807,14 @@ window.onload = function() {
             
             if(!silent) {
                 showToast("পেমেন্ট সফলভাবে সম্পন্ন হয়েছে!");
-                showReceipt(inv, cust, amt, due - amt, finalMRNo);
+                // রিসিট দেখানো
+                showReceipt(inv, cust, amt, (due - amt), finalMRNo);
+                // টেবিল রিফ্রেশ করা
                 fetchRecentSales(false);
             }
             return { ok: true, amt: amt, inv: inv, mr: finalMRNo };
         } catch (e) { 
-            if(!silent) showToast("পেমেন্ট করতে সমস্যা হয়েছে!", true); 
+            if(!silent) showToast("পেমেন্ট করতে কানেকশন সমস্যা হয়েছে!", true); 
             return { ok: false };
         } finally { 
             if(!silent) document.getElementById('tableLoader').style.display = 'none'; 
@@ -846,13 +890,60 @@ window.onload = function() {
         document.getElementById('receiptModal').style.display = 'none';
     }
 
-    function toggleHistorySection() {
-        const hs = document.getElementById('historySection'), mt = document.getElementById('mainTableContainer'), mf = document.getElementById('mainFilterContainer');
-        const isHidden = hs.style.display === 'none' || hs.style.display === '';
-        hs.style.display = isHidden ? 'block' : 'none'; mt.style.display = isHidden ? 'none' : 'block'; mf.style.display = isHidden ? 'none' : 'block';
-        if(isHidden) fetchHistory();
+   function toggleHistorySection() {
+    const hs = document.getElementById('historySection');
+    const mt = document.getElementById('mainTableContainer');
+    const mf = document.getElementById('mainFilterContainer');
+    const ms = document.getElementById('mainSummary');
+    const btn = document.getElementById('historyBtn'); // বাটনের আইডি
+
+    if (!hs || !mt || !mf) {
+        console.error("ID missing! Please check: historySection, mainTableContainer, mainFilterContainer");
+        return;
     }
 
+    const isHidden = (hs.style.display === 'none' || hs.style.display === '');
+
+    if (isHidden) {
+        // ১. সাধারণ ইনপুট ক্লিয়ার
+        if(document.getElementById('historySearch')) document.getElementById('historySearch').value = '';
+        if(document.getElementById('historyStatusFilter')) document.getElementById('historyStatusFilter').value = '';
+        
+        // ২. Flatpickr ক্লিয়ার (নিরাপদভাবে)
+        try {
+            const sPicker = document.querySelector("#histStartDate")?._flatpickr;
+            const ePicker = document.querySelector("#histEndDate")?._flatpickr;
+            if (sPicker) sPicker.clear();
+            if (ePicker) ePicker.clear();
+        } catch (e) { console.log("Flatpickr not ready yet"); }
+
+        // ৩. ডিসপ্লে পরিবর্তন
+        hs.style.display = 'block';
+        mt.style.display = 'none';
+        mf.style.display = 'none';
+        if(ms) ms.style.display = 'none';
+
+        // ৪. বাটনের নাম ও রঙ পরিবর্তন
+        if(btn) {
+            btn.innerHTML = '<i class="fas fa-arrow-left me-1"></i> Back to Report';
+            btn.classList.replace('btn-primary', 'btn-warning');
+        }
+
+        if (typeof fetchHistory === "function") fetchHistory(); 
+
+    } else {
+        // হিস্ট্রি হাইড এবং মেইন ভিউ শো
+        hs.style.display = 'none';
+        mt.style.display = 'block';
+        mf.style.display = 'block';
+        if(ms) ms.style.display = 'flex';
+
+        if(btn) {
+            btn.innerHTML = '<i class="fas fa-history me-1"></i> Payment History';
+            btn.classList.replace('btn-warning', 'btn-primary');
+        }
+    }
+}
     async function fetchHistory() {
         document.getElementById('historyLoader').style.display = 'flex';
         try {
@@ -863,73 +954,50 @@ window.onload = function() {
         } finally { document.getElementById('historyLoader').style.display = 'none'; }
     }
 
-    function filterHistoryData() {
+   function filterHistoryData() {
+    // ১. ফিল্টার বক্স থেকে মান নেওয়া
     const search = document.getElementById('historySearch').value.toLowerCase();
-    const dateFilter = document.getElementById('historyDateFilter').value;
-    const statusFilter = document.getElementById('historyStatusFilter').value;
+    const statusFilter = document.getElementById('historyStatusFilter').value.trim().toUpperCase();
+    const startDate = document.getElementById('histStartDate').value; // ISO format (YYYY-MM-DD)
+    const endDate = document.getElementById('histEndDate').value;
 
-    let totalAmt = 0, partAmt = 0, fullAmt = 0, dateTotal = 0;
-    let totalCount = 0, partCount = 0, fullCount = 0;
-
+    // ২. ফিল্টারিং শুরু
     currentFilteredHistory = rawHistoryData.filter(row => {
-        // ইনডেক্স অনুযায়ী ডাটা নেওয়া (আপনার শিট অনুযায়ী ইনডেক্স চেক করে নিন)
-        const payDate = normalizeToISO(row[0]); // A কলামে পেমেন্ট ডেট
-        const rowStatus = String(row[10] || "").trim().toUpperCase(); // K কলামে স্ট্যাটাস
-        const amt = Number(row[8] || 0); // I কলামে পেমেন্ট অ্যামাউন্ট
+        
+        // তারিখ কলাম (Index 0)
+        const payDate = normalizeToISO(row[0]); 
+        
+        // স্ট্যাটাস কলাম (আপনার কোড অনুযায়ী Index 10 এ Status থাকে)
+        // আমরা সরাসরি Index 10 চেক করবো কারণ ওখানেই "FULL PAID" বা "PART PAID" আছে
+        const rowStatus = String(row[10] || "").trim().toUpperCase(); 
 
-        // ১. সার্চ ম্যাচিং (সব কলামে চেক করবে)
-        const matchesSearch = row.some(c => String(c).toLowerCase().includes(search));
+        // সার্চ ফিল্টার (পুরো রো-তে খুঁজবে)
+        const matchesSearch = row.some(cell => String(cell).toLowerCase().includes(search));
         
-        // ২. ডেট ফিল্টার ম্যাচিং
-        const matchesDate = (!dateFilter || payDate === dateFilter);
-        
-        // ৩. স্ট্যাটাস ফিল্টার ম্যাচিং
-        let matchesStatus = false;
-        if (!statusFilter) {
-            matchesStatus = true; // 'All' থাকলে সব দেখাবে
-        } else if (statusFilter === "FULL PAID") {
-            matchesStatus = (rowStatus.includes("FULL") || rowStatus === "PAID");
-        } else if (statusFilter === "PART PAID") {
-            matchesStatus = (rowStatus.includes("PART") || rowStatus.includes("DUE"));
-        } else {
-            matchesStatus = (rowStatus === statusFilter.toUpperCase());
+        // তারিখ রেঞ্জ ফিল্টার
+        let matchesDate = true;
+        if (startDate && endDate) {
+            matchesDate = (payDate >= startDate && payDate <= endDate);
+        } else if (startDate) {
+            matchesDate = (payDate >= startDate);
+        } else if (endDate) {
+            matchesDate = (payDate <= endDate);
         }
 
-        const isMatch = matchesSearch && matchesDate && matchesStatus;
-
-        // সামারি ক্যালকুলেশন (শুধু ম্যাচ করা ডাটার জন্য)
-        if (isMatch) {
-            totalAmt += amt;
-            totalCount++;
-            
-            if (rowStatus.includes("FULL") || rowStatus === "PAID") {
-                fullAmt += amt;
-                fullCount++;
-            } else {
-                partAmt += amt;
-                partCount++;
-            }
-            
-            // যদি আজকের তারিখের ফিল্টার থাকে
-            const today = new Date().toISOString().split('T')[0];
-            if (payDate === today) dateTotal += amt;
+        // স্ট্যাটাস ফিল্টার (ফিক্সড লজিক)
+        let matchesStatus = true;
+        if (statusFilter !== "") {
+            // যদি ড্রপডাউনে "FULL PAID" থাকে, তবে টেবিলের স্ট্যাটাসে "FULL" আছে কি না দেখবে
+            matchesStatus = rowStatus.includes(statusFilter.split(' ')[0]);
         }
-        
-        return isMatch;
+
+        return matchesSearch && matchesDate && matchesStatus;
     });
 
-    // নিচের কার্ড বা সামারি টেক্সটগুলো আপডেট করা
-    document.getElementById('histTotalAmt').innerText = totalAmt.toLocaleString();
-    document.getElementById('histTotalCount').innerText = totalCount;
-    document.getElementById('histPartAmt').innerText = partAmt.toLocaleString();
-    document.getElementById('histPartCount').innerText = partCount;
-    document.getElementById('histFullAmt').innerText = fullAmt.toLocaleString();
-    document.getElementById('histFullCount').innerText = fullCount;
-    document.getElementById('histTodayTotal').innerText = dateTotal.toLocaleString();
-
-    // টেবিল নতুন করে রেন্ডার করা
+    // ৩. টেবিল এবং সামারি আপডেট
     renderHistoryTable(currentFilteredHistory);
 }
+
  function renderHistoryTable(data) {
     const tbody = document.getElementById("historyTableBody");
     let html = "";
@@ -1014,12 +1082,38 @@ window.onload = function() {
         applyMainFilters();
     }
 
-    function resetHistoryFilters() {
-        document.getElementById('historySearch').value = '';
-        document.getElementById('historyDateFilter').value = '';
-        document.getElementById('historyStatusFilter').value = '';
-        filterHistoryData();
-    }
+  function resetHistoryFilters() {
+    // ১. টেক্সট ফিল্ড এবং ড্রপডাউন ক্লিয়ার করা
+    document.getElementById('historySearch').value = '';
+    document.getElementById('historyStatusFilter').value = '';
+
+    // ২. কাস্টম ডেট পিকার (Flatpickr) ক্লিয়ার করা
+    const startPicker = document.querySelector("#histStartDate")._flatpickr;
+    const endPicker = document.querySelector("#histEndDate")._flatpickr;
+    
+    if (startPicker) startPicker.clear();
+    if (endPicker) endPicker.clear();
+
+    // ৩. সব ফিল্টার মুছে দিয়ে পুরো টেবিল আবার শো করা
+    filterHistoryData();
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const dateConfig = {
+        dateFormat: "Y-m-d",
+        altInput: true,
+        altFormat: "d-M-Y", // ইউজারের কাছে শো করবে (যেমন: 11-Mar-2026)
+        allowInput: true,
+        disableMobile: "true", // মোবাইলেও কাস্টম লুক থাকবে
+        onChange: function(selectedDates, dateStr, instance) {
+            filterHistoryData(); // তারিখ বদলালেই ফিল্টার হবে
+        }
+    };
+
+    // FROM এবং TO ফিল্ডে কাস্টম পিকার সেট করা
+    flatpickr("#histStartDate", dateConfig);
+    flatpickr("#histEndDate", dateConfig);
+});
 
 function printMainTable() {
     const filterDropdown = document.getElementById('statusFilter');
@@ -1027,8 +1121,6 @@ function printMainTable() {
     const dateRangeEl = document.getElementById('printDateRange');
     const startDate = document.getElementById('startDate').value;
     const endDate = document.getElementById('endDate').value;
-    const footerOperator = document.getElementById('footerOperator');
-    const footerDateTime = document.getElementById('footerDateTime');
     const tableContainer = document.querySelector('.table-responsive');
 
     const formatDate = (dateStr) => {
@@ -1037,28 +1129,25 @@ function printMainTable() {
         return `${d}.${m}.${y}`;
     };
 
-    // ২. হেডারের নাম সেট করা
+    // ২. হেডার টেক্সট সেট করা
     if (filterDropdown && filterDropdown.value !== "") {
         let selectedText = filterDropdown.options[filterDropdown.selectedIndex].text;
         dynamicHeader.innerText = selectedText.replace("AREA:", "") + " REPORT";
     } else {
-        dynamicHeader.innerText = "ALL UNPAID REPORT";
+        dynamicHeader.innerText = "SALES MASTER REPORT";
     }
 
-    // ৩. তারিখের রেঞ্জ এবং "As on" লজিক
+    // ৩. তারিখ এবং "As on" লজিক
     const today = new Date().toLocaleDateString('en-GB').replace(/\//g, '.');
-
     if (startDate && endDate) {
         dateRangeEl.innerText = "Reporting Period: " + formatDate(startDate) + " To " + formatDate(endDate);
     } else if (startDate) {
         dateRangeEl.innerText = "Date From: " + formatDate(startDate);
-    } else if (endDate) {
-        dateRangeEl.innerText = "Date Up To: " + formatDate(endDate);
     } else {
-        dateRangeEl.innerText = "Date: As on -" + today;
+        dateRangeEl.innerText = " Date: As on " + today;
     }
 
-    // ৪. গ্র্যান্ড টোটাল হিসাব
+    // ৪. গ্র্যান্ড টোটাল হিসাব এবং রো যোগ করা
     const rows = document.querySelectorAll('#reportTableBody tr');
     let totalDue = 0;
     rows.forEach(row => {
@@ -1082,24 +1171,19 @@ function printMainTable() {
     `;
     document.getElementById('reportTableBody').appendChild(footerRow);
 
-    // ৫. সিগনেচার সেকশন যোগ করা (যদি আগে না থাকে)
-    const existingSig = document.getElementById('printSignatureSection');
-    if (existingSig) existingSig.remove();
-
+    // ৫. সিগনেচার সেকশন তৈরি (শুধুমাত্র প্রিন্টের জন্য)
     const signatureDiv = document.createElement('div');
     signatureDiv.id = 'printSignatureSection';
-    signatureDiv.style.marginTop = '50px';
-    signatureDiv.style.display = 'none'; // শুধু প্রিন্টে দেখাবে
     signatureDiv.innerHTML = `
-        <div style="display: flex; justify-content: space-between; margin-top: 60px; padding: 0 40px;">
-            <div style="text-align: center; border-top: 1.5px solid black; width: 180px; padding-top: 5px; font-weight: bold;">Prepared By</div>
-            <div style="text-align: center; border-top: 1.5px solid black; width: 180px; padding-top: 5px; font-weight: bold;">Manager Signature</div>
-            <div style="text-align: center; border-top: 1.5px solid black; width: 180px; padding-top: 5px; font-weight: bold;">Authorized Signature</div>
+        <div style="display: flex; justify-content: space-between; margin-top: 80px; padding: 0 40px;">
+            <div style="text-align: center; border-top: 1.5px solid black; width: 180px; padding-top: 5px; font-weight: bold; font-size: 12px; color: black;">Prepared By</div>
+            <div style="text-align: center; border-top: 1.5px solid black; width: 180px; padding-top: 5px; font-weight: bold; font-size: 12px; color: black;">Manager Signature</div>
+            <div style="text-align: center; border-top: 1.5px solid black; width: 180px; padding-top: 5px; font-weight: bold; font-size: 12px; color: black;">Authorized Signature</div>
         </div>
     `;
     document.querySelector('.table-container').appendChild(signatureDiv);
 
-    // ৬. প্রিন্ট কমান্ড ও UI ফিক্স
+    // ৬. প্রিন্ট মোড অ্যাক্টিভ করা
     if (tableContainer) {
         tableContainer.style.maxHeight = 'none';
         tableContainer.style.overflow = 'visible';
@@ -1107,6 +1191,8 @@ function printMainTable() {
     
     window.print();
 
+    // ৭. প্রিন্ট শেষে ক্লিনআপ (স্ক্রিন থেকে সিগনেচার সরিয়ে ফেলা)
+    if (signatureDiv) signatureDiv.remove();
     if (tableContainer) {
         tableContainer.style.maxHeight = '65vh';
         tableContainer.style.overflow = 'auto';
@@ -1177,9 +1263,10 @@ function exportHistoryCSV() {
     }
     
     const { jsPDF } = window.jspdf;
-    const doc = new jsPDF('l', 'mm', 'a4'); // Landscape মোড যাতে ১২টি কলাম ধরে
+    // 'l' (Landscape) মোড ব্যবহার করা হয়েছে যাতে ১২টি কলাম সুন্দরভাবে ধরে
+    const doc = new jsPDF('l', 'mm', 'a4'); 
     
-    // তারিখ ফরম্যাট করার ইন্টারনাল ফাংশন
+    // তারিখ ফরম্যাট করার ফাংশন
     const cleanDate = (dateVal) => {
         if (!dateVal || dateVal === "-" || dateVal === "undefined") return "-";
         let processedVal = dateVal;
@@ -1194,13 +1281,14 @@ function exportHistoryCSV() {
         return `${day}-${month}-${year}`;
     };
 
+    // হেডার সেকশন
     doc.setFontSize(18);
     doc.text("Payment History Report", 14, 15);
     doc.setFontSize(10);
     doc.setTextColor(100);
     doc.text(`Generated: ${new Date().toLocaleString()} | User: ${currentUserName}`, 14, 22);
 
-    // ১২টি কলামের হেডার
+    // ১২টি কলামের হেডার নাম
     const tableColumn = [
         "SL", "Pay Date", "MR No", "Inv Date", "Inv No", 
         "Code", "Customer Name", "Address", "Mobile", "Area", "Amount", "Status"
@@ -1210,9 +1298,10 @@ function exportHistoryCSV() {
     let total = 0;
 
     currentFilteredHistory.forEach((row, index) => {
-        total += Number(row[8] || 0);
+        const amt = Number(row[8] || 0);
+        total += amt;
         
-        // আপনার লেটেস্ট ইনডেক্স ম্যাপিং অনুযায়ী:
+        // আপনার লেটেস্ট ইনডেক্স ম্যাপিং অনুযায়ী ডাটা পুশ করা হচ্ছে
         tableRows.push([
             index + 1,           // SL
             cleanDate(row[0]),   // Payment Date (A)
@@ -1224,35 +1313,39 @@ function exportHistoryCSV() {
             row[6] || "",        // Address (G)
             row[11] || "",       // Mobile (L)
             row[7] || "",        // Area (H)
-            Number(row[8] || 0).toLocaleString(), // Paid Amount (I)
-            (row[10] || "").toUpperCase()         // Status (K)
+            amt.toLocaleString(), // Paid Amount (I)
+            (row[10] || "").toUpperCase() // Status (K)
         ]);
     });
 
+    // jsPDF AutoTable কনফিগারেশন
     doc.autoTable({
         head: [tableColumn],
         body: tableRows,
         startY: 28,
         theme: 'striped',
-        headStyles: { fillColor: [44, 62, 80], fontSize: 7 }, // ফন্ট সাইজ ছোট করা হয়েছে কলাম বেশি বলে
-        styles: { fontSize: 7, cellPadding: 1.5 },
+        headStyles: { fillColor: [44, 62, 80], fontSize: 7, halign: 'center' }, 
+        styles: { fontSize: 7, cellPadding: 1.5, valign: 'middle' },
         columnStyles: {
-            6: { cellWidth: 35 }, // Customer Name কলাম বড়
-            7: { cellWidth: 40 }, // Address কলাম বড়
-            10: { halign: 'right' } // Amount ডান দিকে
+            0: { cellWidth: 8 },  // SL
+            6: { cellWidth: 35 }, // Customer Name
+            7: { cellWidth: 40 }, // Address
+            10: { halign: 'right' }, // Amount ডান দিকে
+            11: { halign: 'center' } // Status মাঝখানে
         }
     });
 
+    // টেবিলের শেষে সামারি
     const finalY = doc.lastAutoTable.finalY + 10;
     doc.setFontSize(10); doc.setTextColor(0);
     doc.text(`Total Records: ${currentFilteredHistory.length}`, 14, finalY);
     doc.setFont(undefined, 'bold');
     doc.text(`Total Collection: ${total.toLocaleString()} /-`, 14, finalY + 6);
     
+    // ফাইল সেভ
     doc.save(`Payment_History_${Date.now()}.pdf`);
-    showToast("PDF তৈরি হয়েছে।");
+    showToast("PDF ডাউনলোড সফল হয়েছে।");
 }
-
     window.onload = () => fetchRecentSales(true);
 </script>
 </body>
