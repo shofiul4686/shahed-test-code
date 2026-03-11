@@ -47,64 +47,66 @@
     </div>
 
     <script>
-        // আপনার সঠিক Deployed Web App URL
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzkDCX5zax-NuoSKRSxJIjL9Rx4MbtVxvm5QlrOEIxrTR-s3sVuRHJy_ISNIm3ehDYs/exec"; 
+    // আপনার সঠিক Deployed Web App URL
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzkDCX5zax-NuoSKRSxJIjL9Rx4MbtVxvm5QlrOEIxrTR-s3sVuRHJy_ISNIm3ehDYs/exec"; 
 
-        async function handleLogin() {
-            const id = document.getElementById('userid').value.trim();
-            const pass = document.getElementById('password').value.trim();
-            const msg = document.getElementById('msg');
-            const btn = document.getElementById('loginBtn');
+    async function handleLogin() {
+        const id = document.getElementById('userid').value.trim();
+        const pass = document.getElementById('password').value.trim();
+        const msg = document.getElementById('msg');
+        const btn = document.getElementById('loginBtn');
 
-            if (!id || !pass) {
-                msg.innerHTML = '<span class="text-danger"><i class="fas fa-exclamation-circle"></i> আইডি এবং পাসওয়ার্ড দিন!</span>';
-                return;
-            }
+        if (!id || !pass) {
+            msg.innerHTML = '<span class="text-danger"><i class="fas fa-exclamation-circle"></i> আইডি এবং পাসওয়ার্ড দিন!</span>';
+            return;
+        }
 
-            // UI state change
-            btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Checking...';
-            msg.innerHTML = '<span class="text-primary">সার্ভারের সাথে সংযোগ করা হচ্ছে...</span>';
+        // UI state change
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Checking...';
+        msg.innerHTML = '<span class="text-primary">সার্ভারের সাথে সংযোগ করা হচ্ছে...</span>';
 
-            const finalUrl = `${SCRIPT_URL}?action=login&id=${encodeURIComponent(id)}&pass=${encodeURIComponent(pass)}`;
+        const finalUrl = `${SCRIPT_URL}?action=login&id=${encodeURIComponent(id)}&pass=${encodeURIComponent(pass)}`;
 
-            try {
-                const response = await fetch(finalUrl);
-                const data = await response.json();
+        try {
+            const response = await fetch(finalUrl);
+            const data = await response.json();
 
-                if (data.status === "success") {
-                    msg.innerHTML = '<span class="text-success"><i class="fas fa-check-circle"></i> সফল হয়েছে! ড্যাশবোর্ডে পাঠানো হচ্ছে...</span>';
-                    
-                    // সেশনে ডাটা সেভ করা (যাতে index.html এ ইউজ করা যায়)
-                    localStorage.setItem('userName', data.name);
-                    localStorage.setItem('userId', data.userId);
+            if (data.status === "success") {
+                msg.innerHTML = '<span class="text-success"><i class="fas fa-check-circle"></i> সফল হয়েছে! ড্যাশবোর্ডে পাঠানো হচ্ছে...</span>';
+                
+                // সেশনে ডাটা সেভ করা
+                localStorage.setItem('userName', data.name);
+                localStorage.setItem('userId', data.userId);
 
-                    setTimeout(() => {
-                        window.location.href = `index.html?name=${encodeURIComponent(data.name)}&id=${encodeURIComponent(data.userId)}`;
-                    }, 1200);
-                } else {
-                    msg.innerHTML = `<span class="text-danger"><i class="fas fa-times-circle"></i> ${data.message || "ভুল আইডি বা পাসওয়ার্ড!"}</span>`;
-                    resetBtn();
-                }
-            } catch (error) {
-                console.error("Error Detail:", error);
-                msg.innerHTML = '<span class="text-danger"><i class="fas fa-wifi"></i> নেটওয়ার্ক সমস্যা বা সার্ভার ইরর!</span>';
+                // লগইন সফল হওয়ার সাথে সাথে ড্যাশবোর্ডে পাঠানো (এখানে dashboard.html ব্যবহার করা হয়েছে)
+                setTimeout(() => {
+                    window.location.href = "dashboard.html";
+                }, 500); // দ্রুত ওপেন হওয়ার জন্য ৫০০ মিলিসেকেন্ড দেওয়া হয়েছে
+                
+            } else {
+                msg.innerHTML = `<span class="text-danger"><i class="fas fa-times-circle"></i> ${data.message || "ভুল আইডি বা পাসওয়ার্ড!"}</span>`;
                 resetBtn();
             }
+        } catch (error) {
+            console.error("Error Detail:", error);
+            msg.innerHTML = '<span class="text-danger"><i class="fas fa-wifi"></i> নেটওয়ার্ক সমস্যা বা সার্ভার ইরর!</span>';
+            resetBtn();
         }
+    }
 
-        function resetBtn() {
-            const btn = document.getElementById('loginBtn');
-            btn.disabled = false;
-            btn.innerHTML = 'Login';
+    function resetBtn() {
+        const btn = document.getElementById('loginBtn');
+        btn.disabled = false;
+        btn.innerHTML = 'Login';
+    }
+
+    // Enter কী চাপলে লগইন ট্রিগার করা
+    document.addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') {
+            handleLogin();
         }
-
-        // Enter কী চাপলে লগইন ট্রিগার করা
-        document.addEventListener('keypress', function (e) {
-            if (e.key === 'Enter') {
-                handleLogin();
-            }
-        });
-    </script>
+    });
+</script>
 </body>
 </html>
