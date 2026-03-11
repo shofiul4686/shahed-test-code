@@ -9,24 +9,24 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <script>
-        // সিকিউরিটি চেক: লগইন করা না থাকলে লগইন পেজে পাঠিয়ে দেবে
-        if (!localStorage.getItem('userId')) {
-            window.location.href = "login.html"; // আপনার লগইন ফাইলের নাম এখানে দিন
-        }
+       // ১. সিকিউরিটি চেক: লগইন ডাটা না থাকলে সরাসরি index.html (লগইন পেজ) এ পাঠিয়ে দেবে
+    if (!localStorage.getItem('userId')) {
+        window.location.href = "index.html"; 
+    }
 
-        function logoutUser() {
-            localStorage.clear();
-            window.location.href = "login.html";
+    // ২. লগআউট ফাংশন: ক্লিকের পর ডাটা ক্লিয়ার করে ইনডেক্স পেজে পাঠাবে
+    function logoutUser() {
+        if (confirm("আপনি কি নিশ্চিতভাবে লগআউট করতে চান?")) {
+            localStorage.clear(); // ব্রাউজারের মেমোরি থেকে সব ডাটা মুছে ফেলা
+            window.location.href = "index.html"; // index.html পেজে পাঠিয়ে দেওয়া
         }
+    }
 
-        function navigateTo(page) {
-            const name = localStorage.getItem('userName') || 'Guest';
-            const id = localStorage.getItem('userId') || '000';
-            let targetPage = page.endsWith('.html') ? page : page + '.html';
-            const finalUrl = `${targetPage}?name=${encodeURIComponent(name)}&id=${encodeURIComponent(id)}`;
-            window.open(finalUrl, '_blank');
-        }
-
+    // ৩. নেভিগেশন ফাংশন (URL-এ নাম/আইডি ছাড়া)
+    function navigateTo(page) {
+        let targetPage = page.endsWith('.html') ? page : page + '.html';
+        window.open(targetPage, '_blank');
+    }
         function toggleSidebar() {
             document.getElementById('sidebar').classList.toggle('active');
             document.getElementById('overlay').classList.toggle('active');
@@ -402,4 +402,3 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
-
