@@ -85,107 +85,41 @@
       flex: 1;
       color: #0f172a;
     }
-	#reportTable {
-  border: 2px solid #1e3a8a;
-  font-size: 18px; /* ফন্ট সাইজ ১৮ পিক্সেল করা হয়েছে */
-}
-
-#reportTable td {
-  border: 1px solid #94a3b8; /* গ্রিড লাইন আরও স্পষ্ট */
-  padding: 12px 6px; /* প্যাডিং বাড়ানো হয়েছে যাতে সেল বড় দেখায় */
-  color: #000; 
-  font-weight: 600; /* লেখা বোল্ড করা হয়েছে */
-}
-
-
-#reportTable thead th {
-  font-size: 17px; /* হেডার ফন্ট আরও বড় */
-  padding: 15px 5px;
-}
-/* তারিখের কলামের জন্য বিশেষ স্টাইল */
-.col-date {
-  background-color: #f1f5f9; /* হালকা ব্যাকগ্রাউন্ড */
-  font-family: 'Courier New', Courier, monospace; /* ফিক্সড উইথ ফন্ট */
-}
-@media print {
-    /* ১. টেবিল স্ট্রাকচার ফিক্স */
-    table {
-        width: 100% !important;
-        border-collapse: collapse !important;
-        table-layout: auto !important; /* লেখা অনুযায়ী কলাম জায়গা নিবে */
-        margin-top: 20px;
+    #reportTable {
+      border: 2px solid #1e3a8a;
+      font-size: 18px;
     }
 
-    /* ২. হেডার টেক্সট কন্ট্রোল (No Wrap) */
-    table th {
-        background-color: #f2f2f2 !important; 
-        color: black !important;
-        border: 2px solid black !important; /* আরো স্পষ্ট বর্ডার */
-        padding: 10px 5px !important;
-        font-weight: 900 !important;
-        font-size: 13px !important;
-        white-space: nowrap !important; /* লেখা এক লাইনে থাকবে, ভাঙবে না */
-        vertical-align: middle !important;
-        -webkit-print-color-adjust: exact;
+    #reportTable td {
+      border: 1px solid #94a3b8;
+      padding: 12px 6px;
+      color: #000; 
+      font-weight: 600;
     }
 
-    /* ৩. ডেটা সেল কন্ট্রোল */
-    table td {
-        border: 1px solid black !important;
-        padding: 8px 4px !important;
-        color: black !important;
-        font-size: 12px !important;
-        white-space: nowrap !important; /* ডেটাও এক লাইনে রাখার জন্য */
+    #reportTable thead th {
+      font-size: 17px;
+      padding: 15px 5px;
     }
 
-    /* বিবরণ (Details) কলামটি যদি বড় হয় তবে সেটি এলাউ করার জন্য */
-    .col-details {
-        white-space: normal !important; /* শুধু ডেসক্রিপশন কলাম ভাঙতে পারবে */
-        text-align: left !important;
-        min-width: 150px;
+    .col-date {
+      background-color: #f1f5f9;
+      font-family: 'Courier New', Courier, monospace;
     }
 
-    /* ৪. কাস্টমার কার্ড ও অন্যান্য স্টাইল */
-    #customerInfoCard {
-        display: grid !important;
-        grid-template-columns: 1.2fr 1fr !important;
-        border: 2px solid black !important;
-        padding: 15px !important;
-        border-radius: 8px !important;
+    @media print {
+        table { width: 100% !important; border-collapse: collapse !important; table-layout: auto !important; margin-top: 20px; }
+        table th { background-color: #f2f2f2 !important; color: black !important; border: 2px solid black !important; padding: 10px 5px !important; font-weight: 900 !important; font-size: 13px !important; white-space: nowrap !important; }
+        table td { border: 1px solid black !important; padding: 8px 4px !important; color: black !important; font-size: 12px !important; white-space: nowrap !important; }
+        .col-details { white-space: normal !important; text-align: left !important; min-width: 150px; }
+        #customerInfoCard { display: grid !important; grid-template-columns: 1.2fr 1fr !important; border: 2px solid black !important; padding: 15px !important; border-radius: 8px !important; }
+        .bg-blue-50 { background: transparent !important; border: 2px dashed black !important; padding: 8px !important; }
+        #open { font-size: 20px !important; font-weight: 900 !important; }
+        .no-print, .search-container, button, #topHeader > div.bg-slate-50 { display: none !important; }
+        .mt-28 { margin-top: 40px !important; display: flex !important; justify-content: space-between !important; }
+        .mt-28 > div { border-top: 1.5px solid black !important; width: 25% !important; font-weight: bold !important; font-size: 12px !important; }
+        @page { size: A4; margin: 1cm; }
     }
-
-    .bg-blue-50 {
-        background: transparent !important;
-        border: 2px dashed black !important;
-        padding: 8px !important;
-    }
-
-    #open {
-        font-size: 20px !important;
-        font-weight: 900 !important;
-    }
-
-    .no-print, .search-container, button, #topHeader > div.bg-slate-50 {
-        display: none !important;
-    }
-/* ৫. সিগনেচার এরিয়া */
-    .mt-28 {
-        margin-top: 40px !important;
-        display: flex !important;
-        justify-content: space-between !important;
-    }
-
-    .mt-28 > div {
-        border-top: 1.5px solid black !important;
-        width: 25% !important;
-        font-weight: bold !important;
-        font-size: 12px !important;
-    }
-    @page {
-        size: A4;
-        margin: 1cm;
-    }
-}
   </style>
 </head>
 <body>
@@ -203,14 +137,12 @@
 
       <div class="bg-slate-50 p-4 no-print border-t border-b flex flex-col items-center gap-3 search-container">
         <div class="flex flex-wrap justify-center items-end gap-3">
-          <!-- Customer Select -->
           <div class="flex flex-col gap-1">
-            <label class="text-[11px] font-bold text-slate-500 uppercase ml-1">Search Customer</label>
-            <input type="text" id="custID" list="custList" class="w-64 px-4 py-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 outline-none text-sm transition-all" placeholder="ID বা নাম লিখুন...">
+            <label class="text-[11px] font-bold text-slate-500 uppercase ml-1">Search ID or Invoice</label>
+            <input type="text" id="custID" list="custList" class="w-64 px-4 py-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 outline-none text-sm transition-all" placeholder="ID বা Invoice লিখুন...">
             <datalist id="custList"></datalist>
           </div>
 
-          <!-- Date Filters -->
           <div class="flex flex-col gap-1">
             <label class="text-[11px] font-bold text-slate-500 uppercase ml-1">From</label>
             <input type="date" id="fromDate" class="px-3 py-2 rounded-lg border border-slate-300 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
@@ -228,7 +160,7 @@
           <button onclick="window.print()" class="bg-slate-800 text-white px-4 py-2 rounded-lg font-bold text-sm hover:bg-slate-900 active:scale-95 transition-all shadow-sm h-[38px]">Print</button>
         </div>
         <div id="errorBox" class="bg-red-50 border border-red-200 text-red-600 px-4 py-1.5 rounded-lg text-xs font-bold hidden">
-          <span>⚠️ কাস্টমার পাওয়া যায়নি! সঠিক আইডি চেক করুন।</span>
+          <span>⚠️ কাস্টমার বা ইনভয়েস পাওয়া যায়নি! সঠিক আইডি চেক করুন।</span>
         </div>
       </div>
     </div>
@@ -271,15 +203,13 @@
         <div class="mt-28 flex justify-between px-12 pb-24">
           <div class="border-t border-slate-400 pt-2 w-48 text-center font-bold text-sm text-slate-700">Prepared by</div>
           <div class="border-t border-slate-400 pt-2 w-48 text-center font-bold text-sm text-slate-700">Authority Signature</div>
-		  <div class="border-t border-slate-400 pt-2 w-48 text-center font-bold text-sm text-slate-700">Customer Signature</div>
+          <div class="border-t border-slate-400 pt-2 w-48 text-center font-bold text-sm text-slate-700">Customer Signature</div>
         </div>
       </div>
     </div>
 
-    
-
   <script>
-    const API_URL = "https://script.google.com/macros/s/AKfycbxwBXVROsZF5WcdlDpPUHCTDhoZYHrZka0Y-RKM6ggphitVLxFaj2W-ZxXIVTc9-7oh/exec";
+    const API_URL = "https://script.google.com/macros/s/AKfycbzTeOGvSd2EaxCZMouhcjZHaHuaUxJTBySk-5d2okEY3_YGyfBohszmkGHaq0pGo4B9ng/exec";
 
     function adjustStickyHeader() {
       const topHeader = document.getElementById('topHeader');
@@ -295,12 +225,6 @@
     }
 
     window.addEventListener('resize', () => setTimeout(adjustStickyHeader, 100));
-    
-    window.onbeforeprint = () => {
-      const now = new Date();
-      const options = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true };
-      document.getElementById('printTime').innerText = now.toLocaleString('bn-BD', options);
-    };
 
     window.onload = () => {
       fetch(`${API_URL}?action=getAllCustomers`)
@@ -320,7 +244,9 @@
 
     async function fetchLedger() {
       const idInput = document.getElementById('custID');
-      const id = idInput.value.trim().split(' - ')[0]; 
+      // স্মার্ট ফিল্টারিং: ইনপুট ভ্যালুতে ড্যাশ ' - ' থাকলে শুধু প্রথম অংশ নিবে, নয়তো পুরোটা নিবে
+      const id = idInput.value.includes(' - ') ? idInput.value.split(' - ')[0] : idInput.value.trim();
+      
       const fromDate = document.getElementById('fromDate').value;
       const toDate = document.getElementById('toDate').value;
       
@@ -340,7 +266,7 @@
 
         const r = await fetch(url);
         const d = await r.json();
-        
+        console.log("Returned Info:", d.info);
         document.getElementById('loader').style.display = 'none';
         document.getElementById('searchBtn').disabled = false;
 
@@ -357,10 +283,9 @@
 
           let h = "";
           d.data.forEach(x => {
+            const dateStr = x.date ? new Date(x.date).toLocaleDateString('en-GB').replace(/\//g, '.') : '-';
             h += `<tr class="hover:bg-slate-50 transition-colors">
-              <td class="py-3 px-2 text-slate-900 font-bold">
-  ${new Date(x.date).toLocaleDateString('en-GB').replace(/\//g, '.')}
-</td>
+              <td class="py-3 px-2 text-slate-900 font-bold">${dateStr}</td>
               <td class="py-3 px-3 text-left font-semibold text-slate-700">${x.description}</td>
               <td class="py-3 px-2 text-slate-600 font-mono">${x.voucher || '-'}</td>
               <td class="py-3 px-2 text-right text-emerald-600 font-bold">${x.paid > 0 ? x.paid.toLocaleString() : '-'}</td>
