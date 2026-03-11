@@ -732,64 +732,72 @@
         saveData();
       }
 
-      async function saveData() {
-        const btn = document.getElementById("saveBtn");
-        const overlay = document.getElementById("loadingOverlay");
+     async function saveData() {
+    const btn = document.getElementById("saveBtn");
+    const overlay = document.getElementById("loadingOverlay");
 
-        overlay.style.display = "flex";
-        btn.disabled = true;
+    // ১. লোকাল স্টোরেজ থেকে ডাটা সরাসরি ভেরিয়েবলে নেওয়া
+    const currentId = localStorage.getItem('userId');
+    const currentName = localStorage.getItem('userName');
 
-        const rows = Array.from(
-          document.querySelectorAll("#statementBody tr"),
-        ).map((tr) => {
-          return {
+    // কনসোলে চেক করার জন্য (ঐচ্ছিক)
+    console.log("Sending ID:", currentId);
+    console.log("Sending Name:", currentName);
+
+    overlay.style.display = "flex";
+    btn.disabled = true;
+
+    // ... rows ডাটা সংগ্রহের অংশ আগের মতোই থাকবে ...
+    const rows = Array.from(document.querySelectorAll("#statementBody tr")).map((tr) => {
+        return {
             date: tr.querySelector(".date-input")?.value || "",
             description: tr.querySelector(".particular-input")?.value || "",
             voucher: tr.querySelector(".voucher-input")?.value || "",
             deposit: parseFloat(tr.querySelector(".deposit-input")?.value) || 0,
             expense: parseFloat(tr.querySelector(".expense-input")?.value) || 0,
-            balance:
-              tr.querySelector(".row-balance")?.innerText.replace(/,/g, "") ||
-              "0.00",
-          };
-        });
-
-        const payload = {
-          action: "saveLedger",
-          cod: document.getElementById("cod").value,
-          name: document.getElementById("custName").value,
-          mobile: document.getElementById("mobile").value,
-          area: document.getElementById("area").value,
-          address: document.getElementById("address").value,
-          custType: document.getElementById("custType").value,
-          payType: document.getElementById("payType").value,
-          openingBalance: document.getElementById("openingBalance").value || 0,
-          finalBalance: document.getElementById("finalBalance").innerText,
-          rows: rows,
+            balance: tr.querySelector(".row-balance")?.innerText.replace(/,/g, "") || "0.00",
         };
+    });
 
-        try {
-          const response = await fetch(SCRIPT_URL, {
+    const payload = {
+        action: "saveLedger",
+        cod: document.getElementById("cod").value,
+        name: document.getElementById("custName").value,
+        mobile: document.getElementById("mobile").value,
+        area: document.getElementById("area").value,
+        address: document.getElementById("address").value,
+        custType: document.getElementById("custType").value,
+        payType: document.getElementById("payType").value,
+        openingBalance: document.getElementById("openingBalance").value || 0,
+        finalBalance: document.getElementById("finalBalance").innerText,
+        rows: rows,
+        // এখানে নামগুলো হুবহু ব্যাকএন্ডের requestData.operatorId এর সাথে মিল রাখা হয়েছে
+        operatorId: currentId ? currentId : "Not Found",
+        operatorName: currentName ? currentName : "Not Found"
+    };
+
+    try {
+        const response = await fetch(SCRIPT_URL, {
             method: "POST",
-            body: JSON.stringify(payload),
-          });
-          const result = await response.json();
+            body: JSON.stringify(payload), // JSON হিসেবে পাঠানো হচ্ছে
+        });
+        const result = await response.json();
 
-          overlay.style.display = "none";
-          btn.disabled = false;
+        overlay.style.display = "none";
+        btn.disabled = false;
 
-          if (result.status === "success") {
+        if (result.status === "success") {
             document.getElementById("successOverlay").style.display = "flex";
-          } else {
+        } else {
             alert("Error: " + result.message);
-          }
-        } catch (e) {
-          console.error(e);
-          overlay.style.display = "none";
-          btn.disabled = false;
-          alert("সংরক্ষণে সমস্যা হয়েছে। ইন্টারনেট সংযোগ চেক করুন।");
         }
-      }
+    } catch (e) {
+        console.error(e);
+        overlay.style.display = "none";
+        btn.disabled = false;
+        alert("সংরক্ষণে সমস্যা হয়েছে।");
+    }
+}
 
       function closeSuccess() {
         document.getElementById("successOverlay").style.display = "none";
