@@ -301,14 +301,13 @@
                 <span class="text-blue-600">In Words:</span> <span id="inwordText" class="italic">Zero Taka Only</span>
             </div>
             <div class="flex gap-2">
-				<button onclick="prepareAndPrint()" class="bg-slate-800 text-white px-8 py-2 rounded-lg font-black hover:bg-slate-900 shadow-md flex items-center gap-2">
+				<button onclick="handlePrint()" class="bg-slate-800 text-white px-8 py-2 rounded-lg font-black hover:bg-slate-900 shadow-md flex items-center gap-2">
     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
         <path d="M2.5 8a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5z"/>
         <path d="M5 1a2 2 0 0 0-2 2v2H2a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h1v1a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-1h1a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-1V3a2 2 0 0 0-2-2H5zM4 3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2H4V3zm1 5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-1a.5.5 0 0 1-.5-.5zm-7 2h8v1a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-1z"/>
     </svg>
     PRINT
-</button>
-                <button onclick="addRow(true)" class="bg-blue-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-blue-700 shadow-md">ADD ROW</button>
+</button>    <button onclick="addRow(true)" class="bg-blue-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-blue-700 shadow-md">ADD ROW</button>
                 <button id="saveBtn" onclick="saveData()" class="bg-green-600 text-white px-8 py-2 rounded-lg font-black hover:bg-green-700 shadow-md transition-all uppercase tracking-wider">SAVE</button>         </div>        </div>
     </div>
 
@@ -369,25 +368,82 @@ let activeDateCell = null;
 };
 
 
-function prepareAndPrint() {
-    // ১. ডাটা ইনপুটগুলো প্রিন্ট ফ্রেন্ডলি করা
-    const inputs = document.querySelectorAll('input');
-    inputs.forEach(input => {
-        input.setAttribute('value', input.value);
-    });
+/**
+ * এই ফাইলটি আপনার Dataentry.html এবং Dataentryauto.html এর স্ক্রিপ্ট সেকশনে আপডেট করুন।
+ * এখানে handlePrint() ফাংশনটি ইনভয়েস টেমপ্লেটের সাথে কানেক্ট করা হয়েছে।
+ */
 
-    // ২. overflow সমস্যা সমাধান করা
-    const originalOverflow = document.body.style.overflow;
-    document.body.style.overflow = "visible";
+// আপনার আগের prepareAndPrint ফাংশনটি বদলে এই handlePrint ব্যবহার করুন
+function handlePrint() {
+    try {
+        // ১. ডাটা সংগ্রহের জন্য হেল্পার ফাংশন
+        const getVal = (id) => {
+            const el = document.getElementById(id);
+            if (!el) return "";
+            const val = el.value !== undefined ? el.value : el.innerText;
+            return val ? val.trim() : "";
+        };
 
-    // ৩. প্রিন্ট করা
-    window.print();
+        // ২. টেবিলের ডাটা সংগ্রহের আগে ইনপুট ফিল্ডের মানগুলোকে টেক্সট হিসেবে রূপান্তর (ক্লোন তৈরি)
+        const tableBody = document.getElementById('statementBody');
+        if (!tableBody) {
+            alert("টেবিল ডাটা পাওয়া যায়নি!");
+            return;
+        }
 
-    // ৪. আগের অবস্থায় ফেরত আনা
-    setTimeout(() => {
-        document.body.style.overflow = originalOverflow;
-    }, 500);
+        const tableBodyClone = tableBody.cloneNode(true);
+        const inputs = tableBodyClone.querySelectorAll('input, select');
+        
+        inputs.forEach(input => {
+            const span = document.createElement('span');
+            // ইনপুট বক্সের বর্তমান ভ্যালু স্প্যান ট্যাগে বসানো হচ্ছে
+            span.textContent = input.value || ""; 
+            input.parentNode.replaceChild(span, input);
+        });
+
+        // ৩. ফরমের সব ডাটা নিয়ে অবজেক্ট তৈরি
+        const customerData = {
+            cod: getVal('cod') || 'N/A',
+            custName: getVal('custName') || 'Unknown Customer',
+            address: getVal('address') || '',
+            area: getVal('area') || '',
+            mobile: getVal('mobile') || '',
+            
+            // ইনভয়েস ইনফো (অটো জেনারেটেড আইডি)
+            invoiceNo: "INV-" + Date.now().toString().slice(-6),
+            payType: getVal('payType') || 'Cash',
+            custType: getVal('custType') || 'Regular',
+            openingBalance: getVal('openingBalance') || '0.00',
+            
+            // টেবিলের রো (কনভার্ট করা ক্লোন থেকে HTML)
+            tableBody: tableBodyClone.innerHTML,
+            
+            // টোটাল ক্যালকুলেশন
+            totalDeposit: document.getElementById('totalDeposit')?.innerText || '0.00',
+            totalExpense: document.getElementById('totalExpense')?.innerText || '0.00',
+            finalBalance: document.getElementById('finalBalance')?.innerText || '0.00',
+            finalInWord: document.getElementById('inwordText')?.innerText || ''
+        };
+
+        // ৪. লোকাল স্টোরেজে ডাটা সেভ করা (ইনভয়েস টেমপ্লেট এখান থেকে ডাটা পড়বে)
+        localStorage.setItem('printData', JSON.stringify(customerData));
+
+        // ৫. নতুন ট্যাবে ইনভয়েস টেমপ্লেট ওপেন করা
+        const previewWindow = window.open('invoicetamplete.html', '_blank');
+        
+        if (!previewWindow) {
+            alert("পপ-আপ উইন্ডো ব্লক করা হয়েছে! দয়া করে ব্রাউজারের ইউআরএল বারের ডানপাশ থেকে পপ-আপ এলাউ করুন।");
+        }
+        
+    } catch (error) {
+        console.error("প্রিন্ট ত্রুটি:", error);
+        alert("দুঃখিত, প্রিন্ট প্রিভিউ তৈরি করা সম্ভব হয়নি।");
+    }
 }
+
+// --- আপনার আগের ফাংশনগুলো এখানে থাকবে ---
+// যেমন: loadInitialData, calculateStatement, saveData ইত্যাদি।
+// শুধু মনে রাখবেন আপনার প্রিন্ট বাটনে onclick="handlePrint()" থাকতে হবে।
 
 async function refreshData() {
     const icon = document.getElementById("refreshIcon");
