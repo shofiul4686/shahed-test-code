@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Invoice Template - M/S Noor Enterprise</title>
+    <title>Invoice Preview</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url("https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;700;900&display=swap");
@@ -16,28 +16,33 @@
             padding: 0;
         }
 
-        /* প্রিন্ট সেটিংস - এটি অত্যন্ত গুরুত্বপূর্ণ */
+        /* প্রিন্ট সেটআপ */
         @media print {
             @page {
                 size: A4;
-                margin: 5mm 10mm 5mm 10mm; /* মার্জিন একটু কমানো হয়েছে ডাটা বেশি ধরার জন্য */
+                margin: 5mm 10mm 5mm 10mm;
             }
             body { 
+                background-color: white !important;
                 -webkit-print-color-adjust: exact; 
                 print-color-adjust: exact;
             }
             .no-print { display: none !important; }
             
-            /* টেবিল কন্টেনার */
-            table { width: 100%; border-collapse: collapse; }
+            /* সাদা-কালো প্রিন্টের জন্য কালার ওভাররাইড */
+            .text-blue-900, .text-blue-800, .text-red-600, .bg-blue-50 {
+                color: black !important;
+                background-color: transparent !important;
+            }
+            .border-blue-900 {
+                border-color: black !important;
+            }
             
             /* হেডার এবং ফুটার রিপিট সেটআপ */
             thead { display: table-header-group; }
             tfoot { display: table-footer-group; }
-            
-            /* রো যেন মাঝখান থেকে না কাটে */
-            tr { page-break-inside: avoid; page-break-after: auto; }
-            
+            tr { page-break-inside: avoid; }
+
             .signature-wrapper {
                 position: fixed;
                 bottom: 0;
@@ -47,45 +52,44 @@
             }
         }
 
-        .info-row {
-            display: flex;
-            margin-bottom: 2px;
-            align-items: flex-start;
-            font-size: 13px;
-        }
-        .info-label {
-            min-width: 110px;
-            font-weight: bold;
-        }
-        .info-separator {
-            padding: 0 5px;
-            font-weight: bold;
-        }
-        .info-value {
-            flex: 1;
-        }
+        .info-row { display: flex; margin-bottom: 2px; font-size: 13px; }
+        .info-label { min-width: 110px; font-weight: bold; }
+        .info-value { flex: 1; border-bottom: 1px dotted #000; }
 
+        /* টেবিল স্টাইল */
+        table { border-collapse: collapse; width: 100%; table-layout: fixed; }
+        
         .table-header th {
-            background-color: #f8fafc !important;
             border: 1px solid black !important;
             padding: 8px 4px;
-            font-weight: 900;
+            font-weight: bold;
             font-size: 13px;
+            background-color: #f2f2f2 !important; /* হালকা ধূসর হেডার */
+            color: black;
         }
 
         .table-body td {
             border: 1px solid black !important;
             padding: 6px 8px;
             font-size: 13px;
-            vertical-align: top;
+            color: black;
+            overflow: hidden;
+            word-wrap: break-word;
         }
 
-        .particulars-col {
-            white-space: nowrap !important;
-            min-width: 250px;
+        /* তারিখের ঘর ফিক্সড রাখার জন্য */
+        .col-date {
+            width: 90px !important;
+            min-width: 90px !important;
+            max-width: 90px !important;
+            text-align: center;
+            white-space: nowrap;
         }
+        .col-particulars { width: auto; }
+        .col-voucher { width: 70px; text-align: center; }
+        .col-amount { width: 90px; text-align: right; }
+        .col-balance { width: 110px; text-align: right; }
 
-        /* সিগনেচার সেকশন */
         .signature-section {
             display: flex;
             justify-content: space-between;
@@ -101,85 +105,75 @@
             padding-top: 5px;
         }
         
-        /* ফুটারের জন্য টেবিলের নিচে খালি জায়গা */
-        .footer-spacer {
-            height: 120px;
-        }
+        .footer-spacer { height: 120px; }
     </style>
 </head>
-<body class="bg-gray-50">
+<body class="bg-white">
 
-    <table class="w-full bg-white mx-auto print:shadow-none shadow-lg max-w-[210mm]">
-        <!-- হেডার যা প্রতি পৃষ্ঠায় আসবে -->
+    <table class="w-full bg-white mx-auto max-w-[210mm]">
         <thead>
             <tr>
                 <td class="p-0">
-                    <div class="p-6 text-center border-b-4 border-blue-900 mb-4">
-                        <p class="text-sm font-bold italic">বিসমিল্লাহির রাহমানির রাহিম</p>
-                        <h1 class="text-4xl font-black text-blue-900 uppercase">মেসার্স নূর এন্টারপ্রাইজ</h1>
-                        <p class="text-lg font-bold">বি,সি,আই,সি অনুমোদিত ডিলার, রাসায়নিক সার, কীটনাশক ও সিমেন্ট বিক্রেতা</p>
-                        <p class="text-sm">আমবাড়ী বাজার, পার্বতীপুর, দিনাজপুর।</p>
-                        <p class="text-sm font-bold">মোবাঃ ০১৭৭২-৯৫৭৫১৫, ০১৭২০-৩৩৭৮১২</p>
+                    <div class="p-4 text-center border-b-2 border-black mb-4">
+                        <p class="text-sm font-bold italic mb-1">বিসমিল্লাহির রাহমানির রাহিম</p>
+                        <h1 class="text-3xl font-black uppercase">মেসার্স নূর এন্টারপ্রাইজ</h1>
+                        <p class="text-base font-bold">বি,সি,আই,সি অনুমোদিত ডিলার, রাসায়নিক সার, কীটনাশক ও সিমেন্ট বিক্রেতা</p>
+                        <p class="text-xs">আমবাড়ী বাজার, পার্বতীপুর, দিনাজপুর। মোবাঃ ০১৭৭২-৯৫৭৫১৫, ০১৭২০-৩৩৭৮১২</p>
                     </div>
 
-                    <div class="flex justify-between px-6 mb-4 text-sm text-left">
-                        <div class="w-[58%] space-y-0.5">
-                            <div class="info-row"><span class="info-label">Customer Code</span><span class="info-separator">:</span><span id="view-cod" class="info-value font-bold"></span></div>
-                            <div class="info-row"><span class="info-label">Customer Name</span><span class="info-separator">:</span><span id="view-name" class="info-value font-bold text-base"></span></div>
-                            <div class="info-row"><span class="info-label">Address</span><span class="info-separator">:</span><span id="view-address" class="info-value text-xs"></span></div>
-                            <div class="info-row"><span class="info-label">Mobile</span><span class="info-separator">:</span><span id="view-mobile" class="info-value"></span></div>
+                    <div class="flex justify-between px-6 mb-4 text-sm">
+                        <div class="w-[58%]">
+                            <div class="info-row"><span class="info-label">Customer Code</span><span>: </span><span id="view-cod" class="info-value font-bold"></span></div>
+                            <div class="info-row"><span class="info-label">Customer Name</span><span>: </span><span id="view-name" class="info-value font-bold text-base uppercase"></span></div>
+                            <div class="info-row"><span class="info-label">Address</span><span>: </span><span id="view-address" class="info-value text-xs"></span></div>
+                            <div class="info-row"><span class="info-label">Mobile</span><span>: </span><span id="view-mobile" class="info-value"></span></div>
                         </div>
-                        <div class="w-[38%] space-y-0.5">
-                            <div class="info-row"><span class="info-label">Invoice No:</span><span class="info-separator">:</span><span id="invoice-no" class="info-value font-bold text-gray-700 text-xs"></span></div>
-                            <div class="info-row"><span class="info-label">Payment Type</span><span class="info-separator">:</span><span id="view-payment" class="info-value"></span></div>
-                            <div class="info-row"><span class="info-label">Customer Type</span><span class="info-separator">:</span><span id="view-customer-type" class="info-value"></span></div>
-                            <div class="info-row"><span class="info-label font-bold text-blue-800">Opening Balance</span><span class="info-separator">:</span><span id="view-opening" class="info-value font-bold text-blue-800"></span></div>
+                        <div class="w-[38%]">
+                            <div class="info-row"><span class="info-label">Invoice No</span><span>: </span><span id="invoice-no" class="info-value font-bold"></span></div>
+                            <div class="info-row"><span class="info-label">Payment Type</span><span>: </span><span id="view-payment" class="info-value"></span></div>
+                            <div class="info-row"><span class="info-label">Customer Type</span><span>: </span><span id="view-customer-type" class="info-value"></span></div>
+                            <div class="info-row font-bold"><span class="info-label">Opening Bal.</span><span>: </span><span id="view-opening" class="info-value"></span></div>
                         </div>
                     </div>
                 </td>
             </tr>
         </thead>
 
-        <!-- মেইন বডি -->
         <tbody>
             <tr>
                 <td class="px-6">
-                    <table class="w-full border-collapse">
+                    <table>
                         <thead>
                             <tr class="table-header">
-                                <th class="w-20 text-center">তারিখ</th>
-                                <th class="text-left">বিবরণ (Particulars)</th>
-                                <th class="w-20 text-center">ভাউচার</th>
-                                <th class="w-24 text-right">জমা</th>
-                                <th class="w-24 text-right">খরচ</th>
-                                <th class="w-28 text-right">ব্যালেন্স</th>
+                                <th class="col-date">তারিখ</th>
+                                <th class="col-particulars text-left">বিবরণ (Particulars)</th>
+                                <th class="col-voucher">ভাউচার</th>
+                                <th class="col-amount">জমা</th>
+                                <th class="col-amount">খরচ</th>
+                                <th class="col-balance">ব্যালেন্স</th>
                             </tr>
                         </thead>
                         <tbody id="view-table-body" class="table-body">
-                            <!-- JS এর মাধ্যমে রো আসবে -->
+                            <!-- Data injected here -->
                         </tbody>
                         <tfoot>
                             <tr class="font-bold border border-black bg-gray-50 text-sm">
                                 <td colspan="3" class="p-2 text-right">TOTAL (মোট):</td>
                                 <td id="view-total-deposit" class="p-2 text-right"></td>
                                 <td id="view-total-expense" class="p-2 text-right"></td>
-                                <td id="view-final-balance" class="p-2 text-right bg-blue-50 text-blue-900"></td>
+                                <td id="view-final-balance" class="p-2 text-right"></td>
                             </tr>
                         </tfoot>
                     </table>
 
-                    <div class="mt-4 p-2 bg-slate-50 border border-dotted border-gray-400 text-xs">
-                        <p class="italic uppercase"><strong>In Word:</strong> <span id="view-in-word" class="font-bold"></span></p>
-                        <p class="text-[10px] mt-1 text-gray-500">Print Time: <span id="current-date-time"></span></p>
+                    <div class="mt-4 p-2 border border-black text-xs italic">
+                        <strong>In Word:</strong> <span id="view-in-word" class="font-bold uppercase"></span>
                     </div>
-                    
-                    <!-- ফুটারের জন্য নিচের দিকে সেফটি মার্জিন -->
                     <div class="footer-spacer"></div>
                 </td>
             </tr>
         </tbody>
 
-        <!-- ফুটার রিপিট সেটিংস -->
         <tfoot class="signature-wrapper">
             <tr>
                 <td class="p-0">
@@ -192,10 +186,15 @@
         </tfoot>
     </table>
 
-    <!-- প্রিন্ট বাটনসমূহ -->
-    <div class="fixed bottom-5 right-5 no-print flex gap-2">
-        <button onclick="window.print()" class="bg-blue-600 text-white px-8 py-3 rounded-full font-bold shadow-2xl hover:bg-blue-700 transition transform hover:scale-105">প্রিন্ট করুন</button>
-        <button onclick="window.close()" class="bg-red-500 text-white px-8 py-3 rounded-full font-bold shadow-2xl">বন্ধ</button>
+    <div class="fixed bottom-8 right-8 no-print flex gap-2">
+        <button onclick="window.print()" class="bg-black text-white px-8 py-3 rounded-md shadow-lg font-bold flex items-center gap-2 hover:bg-gray-800 transition-all">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M5 1a2 2 0 0 0-2 2v1h10V3a2 2 0 0 0-2-2H5zm6 8H5a1 1 0 0 0-1 1v3a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1v-3a1 1 0 0 0-1-1z"/>
+                <path d="M0 7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2h-1v-2a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v2H2a2 2 0 0 1-2-2V7zm2.5 1a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1z"/>
+            </svg>
+            PRINT INVOICE
+        </button>
+        <button onclick="window.close()" class="bg-gray-200 text-black px-6 py-3 rounded-md shadow-lg font-bold hover:bg-gray-300">বন্ধ করুন</button>
     </div>
 
     <script>
@@ -203,12 +202,13 @@
             const storedData = localStorage.getItem('printData');
             if (!storedData) {
                 alert("ডাটা পাওয়া যায়নি!");
+                window.close();
                 return;
             }
-
+            
             const data = JSON.parse(storedData);
             
-            // ডাটা ফিলিং
+            // Populate Fields
             document.getElementById('view-cod').innerText = data.cod || '';
             document.getElementById('view-name').innerText = data.custName || '';
             document.getElementById('view-address').innerText = (data.area ? data.area + ', ' : '') + (data.address || '');
@@ -216,33 +216,42 @@
             document.getElementById('view-opening').innerText = data.openingBalance || '0.00';
             document.getElementById('view-payment').innerText = data.payType || '';
             document.getElementById('view-customer-type').innerText = data.custType || '';
-            document.getElementById('invoice-no').innerText = data.invoiceNo || 'N/A';
+            document.getElementById('invoice-no').innerText = data.invoiceNo || '';
             
-            const now = new Date();
-            document.getElementById('current-date-time').innerText = now.toLocaleDateString('bn-BD') + ' ' + now.toLocaleTimeString('bn-BD');
+            // Clean Table Data (Convert inputs to text and remove action column)
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = data.tableBody || '';
             
-            // টেবিল রো রেন্ডারিং
-            const tableBody = document.getElementById('view-table-body');
-            tableBody.innerHTML = data.tableBody || '';
-            
+            // ১. সকল ইনপুট ফিল্ড মুছে শুধু ভ্যালু রাখা
+            const allInputs = tempDiv.querySelectorAll('input');
+            allInputs.forEach(input => {
+                const span = document.createElement('span');
+                span.innerText = input.value || "";
+                input.parentNode.replaceChild(span, input);
+            });
+
+            // ২. অতিরিক্ত কলাম (Action/Delete) রিমুভ করা
+            const rows = tempDiv.querySelectorAll('tr');
+            rows.forEach(row => {
+                // তারিখ কলাম ফিক্স করা
+                if(row.cells[0]) row.cells[0].classList.add('col-date');
+                if(row.cells[1]) row.cells[1].classList.add('col-particulars');
+                if(row.cells[2]) row.cells[2].classList.add('col-voucher');
+                if(row.cells[3]) row.cells[3].classList.add('col-amount');
+                if(row.cells[4]) row.cells[4].classList.add('col-amount');
+                if(row.cells[5]) row.cells[5].classList.add('col-balance');
+
+                // যদি ৬টির বেশি কলাম থাকে তবে ডিলিট কলামটি ফেলে দেওয়া
+                while (row.cells.length > 6) {
+                    row.deleteCell(-1);
+                }
+            });
+
+            document.getElementById('view-table-body').innerHTML = tempDiv.innerHTML;
             document.getElementById('view-total-deposit').innerText = data.totalDeposit || '0.00';
             document.getElementById('view-total-expense').innerText = data.totalExpense || '0.00';
             document.getElementById('view-final-balance').innerText = data.finalBalance || '0.00';
             document.getElementById('view-in-word').innerText = data.finalInWord || '';
-
-            // রো এবং সেল ফরম্যাটিং নিশ্চিত করা
-            const rows = tableBody.querySelectorAll('tr');
-            rows.forEach((row, rowIndex) => {
-                row.style.pageBreakInside = 'avoid';
-                const cells = row.querySelectorAll('td');
-                if(cells.length >= 6) {
-                    cells[1].style.minWidth = '250px'; 
-                    cells[1].style.whiteSpace = 'nowrap';
-                    cells[3].style.textAlign = 'right';
-                    cells[4].style.textAlign = 'right';
-                    cells[5].style.textAlign = 'right';
-                }
-            });
         };
     </script>
 </body>
