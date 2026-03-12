@@ -1,1 +1,249 @@
-এখানে ইনভয়েজ এর জন্য কোড লেখা হবে 
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invoice Template - M/S Noor Enterprise</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url("https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;700;900&display=swap");
+        
+        body {
+            font-family: "Noto Sans Bengali", sans-serif;
+            background-color: #fff;
+            color: #000;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* প্রিন্ট সেটিংস - এটি অত্যন্ত গুরুত্বপূর্ণ */
+        @media print {
+            @page {
+                size: A4;
+                margin: 5mm 10mm 5mm 10mm; /* মার্জিন একটু কমানো হয়েছে ডাটা বেশি ধরার জন্য */
+            }
+            body { 
+                -webkit-print-color-adjust: exact; 
+                print-color-adjust: exact;
+            }
+            .no-print { display: none !important; }
+            
+            /* টেবিল কন্টেনার */
+            table { width: 100%; border-collapse: collapse; }
+            
+            /* হেডার এবং ফুটার রিপিট সেটআপ */
+            thead { display: table-header-group; }
+            tfoot { display: table-footer-group; }
+            
+            /* রো যেন মাঝখান থেকে না কাটে */
+            tr { page-break-inside: avoid; page-break-after: auto; }
+            
+            .signature-wrapper {
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                background: white;
+            }
+        }
+
+        .info-row {
+            display: flex;
+            margin-bottom: 2px;
+            align-items: flex-start;
+            font-size: 13px;
+        }
+        .info-label {
+            min-width: 110px;
+            font-weight: bold;
+        }
+        .info-separator {
+            padding: 0 5px;
+            font-weight: bold;
+        }
+        .info-value {
+            flex: 1;
+        }
+
+        .table-header th {
+            background-color: #f8fafc !important;
+            border: 1px solid black !important;
+            padding: 8px 4px;
+            font-weight: 900;
+            font-size: 13px;
+        }
+
+        .table-body td {
+            border: 1px solid black !important;
+            padding: 6px 8px;
+            font-size: 13px;
+            vertical-align: top;
+        }
+
+        .particulars-col {
+            white-space: nowrap !important;
+            min-width: 250px;
+        }
+
+        /* সিগনেচার সেকশন */
+        .signature-section {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            padding: 20px 50px 40px 50px;
+        }
+        .sig-box {
+            text-align: center;
+            width: 180px;
+            border-top: 1px solid black;
+            font-weight: bold;
+            font-size: 14px;
+            padding-top: 5px;
+        }
+        
+        /* ফুটারের জন্য টেবিলের নিচে খালি জায়গা */
+        .footer-spacer {
+            height: 120px;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+
+    <table class="w-full bg-white mx-auto print:shadow-none shadow-lg max-w-[210mm]">
+        <!-- হেডার যা প্রতি পৃষ্ঠায় আসবে -->
+        <thead>
+            <tr>
+                <td class="p-0">
+                    <div class="p-6 text-center border-b-4 border-blue-900 mb-4">
+                        <p class="text-sm font-bold italic">বিসমিল্লাহির রাহমানির রাহিম</p>
+                        <h1 class="text-4xl font-black text-blue-900 uppercase">মেসার্স নূর এন্টারপ্রাইজ</h1>
+                        <p class="text-lg font-bold">বি,সি,আই,সি অনুমোদিত ডিলার, রাসায়নিক সার, কীটনাশক ও সিমেন্ট বিক্রেতা</p>
+                        <p class="text-sm">আমবাড়ী বাজার, পার্বতীপুর, দিনাজপুর।</p>
+                        <p class="text-sm font-bold">মোবাঃ ০১৭৭২-৯৫৭৫১৫, ০১৭২০-৩৩৭৮১২</p>
+                    </div>
+
+                    <div class="flex justify-between px-6 mb-4 text-sm text-left">
+                        <div class="w-[58%] space-y-0.5">
+                            <div class="info-row"><span class="info-label">Customer Code</span><span class="info-separator">:</span><span id="view-cod" class="info-value font-bold"></span></div>
+                            <div class="info-row"><span class="info-label">Customer Name</span><span class="info-separator">:</span><span id="view-name" class="info-value font-bold text-base"></span></div>
+                            <div class="info-row"><span class="info-label">Address</span><span class="info-separator">:</span><span id="view-address" class="info-value text-xs"></span></div>
+                            <div class="info-row"><span class="info-label">Mobile</span><span class="info-separator">:</span><span id="view-mobile" class="info-value"></span></div>
+                        </div>
+                        <div class="w-[38%] space-y-0.5">
+                            <div class="info-row"><span class="info-label">Invoice No:</span><span class="info-separator">:</span><span id="invoice-no" class="info-value font-bold text-gray-700 text-xs"></span></div>
+                            <div class="info-row"><span class="info-label">Payment Type</span><span class="info-separator">:</span><span id="view-payment" class="info-value"></span></div>
+                            <div class="info-row"><span class="info-label">Customer Type</span><span class="info-separator">:</span><span id="view-customer-type" class="info-value"></span></div>
+                            <div class="info-row"><span class="info-label font-bold text-blue-800">Opening Balance</span><span class="info-separator">:</span><span id="view-opening" class="info-value font-bold text-blue-800"></span></div>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+        </thead>
+
+        <!-- মেইন বডি -->
+        <tbody>
+            <tr>
+                <td class="px-6">
+                    <table class="w-full border-collapse">
+                        <thead>
+                            <tr class="table-header">
+                                <th class="w-20 text-center">তারিখ</th>
+                                <th class="text-left">বিবরণ (Particulars)</th>
+                                <th class="w-20 text-center">ভাউচার</th>
+                                <th class="w-24 text-right">জমা</th>
+                                <th class="w-24 text-right">খরচ</th>
+                                <th class="w-28 text-right">ব্যালেন্স</th>
+                            </tr>
+                        </thead>
+                        <tbody id="view-table-body" class="table-body">
+                            <!-- JS এর মাধ্যমে রো আসবে -->
+                        </tbody>
+                        <tfoot>
+                            <tr class="font-bold border border-black bg-gray-50 text-sm">
+                                <td colspan="3" class="p-2 text-right">TOTAL (মোট):</td>
+                                <td id="view-total-deposit" class="p-2 text-right"></td>
+                                <td id="view-total-expense" class="p-2 text-right"></td>
+                                <td id="view-final-balance" class="p-2 text-right bg-blue-50 text-blue-900"></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+
+                    <div class="mt-4 p-2 bg-slate-50 border border-dotted border-gray-400 text-xs">
+                        <p class="italic uppercase"><strong>In Word:</strong> <span id="view-in-word" class="font-bold"></span></p>
+                        <p class="text-[10px] mt-1 text-gray-500">Print Time: <span id="current-date-time"></span></p>
+                    </div>
+                    
+                    <!-- ফুটারের জন্য নিচের দিকে সেফটি মার্জিন -->
+                    <div class="footer-spacer"></div>
+                </td>
+            </tr>
+        </tbody>
+
+        <!-- ফুটার রিপিট সেটিংস -->
+        <tfoot class="signature-wrapper">
+            <tr>
+                <td class="p-0">
+                    <div class="signature-section">
+                        <div class="sig-box">কাস্টমার স্বাক্ষর</div>
+                        <div class="sig-box">কর্তৃপক্ষের স্বাক্ষর</div>
+                    </div>
+                </td>
+            </tr>
+        </tfoot>
+    </table>
+
+    <!-- প্রিন্ট বাটনসমূহ -->
+    <div class="fixed bottom-5 right-5 no-print flex gap-2">
+        <button onclick="window.print()" class="bg-blue-600 text-white px-8 py-3 rounded-full font-bold shadow-2xl hover:bg-blue-700 transition transform hover:scale-105">প্রিন্ট করুন</button>
+        <button onclick="window.close()" class="bg-red-500 text-white px-8 py-3 rounded-full font-bold shadow-2xl">বন্ধ</button>
+    </div>
+
+    <script>
+        window.onload = function() {
+            const storedData = localStorage.getItem('printData');
+            if (!storedData) {
+                alert("ডাটা পাওয়া যায়নি!");
+                return;
+            }
+
+            const data = JSON.parse(storedData);
+            
+            // ডাটা ফিলিং
+            document.getElementById('view-cod').innerText = data.cod || '';
+            document.getElementById('view-name').innerText = data.custName || '';
+            document.getElementById('view-address').innerText = (data.area ? data.area + ', ' : '') + (data.address || '');
+            document.getElementById('view-mobile').innerText = data.mobile || '';
+            document.getElementById('view-opening').innerText = data.openingBalance || '0.00';
+            document.getElementById('view-payment').innerText = data.payType || '';
+            document.getElementById('view-customer-type').innerText = data.custType || '';
+            document.getElementById('invoice-no').innerText = data.invoiceNo || 'N/A';
+            
+            const now = new Date();
+            document.getElementById('current-date-time').innerText = now.toLocaleDateString('bn-BD') + ' ' + now.toLocaleTimeString('bn-BD');
+            
+            // টেবিল রো রেন্ডারিং
+            const tableBody = document.getElementById('view-table-body');
+            tableBody.innerHTML = data.tableBody || '';
+            
+            document.getElementById('view-total-deposit').innerText = data.totalDeposit || '0.00';
+            document.getElementById('view-total-expense').innerText = data.totalExpense || '0.00';
+            document.getElementById('view-final-balance').innerText = data.finalBalance || '0.00';
+            document.getElementById('view-in-word').innerText = data.finalInWord || '';
+
+            // রো এবং সেল ফরম্যাটিং নিশ্চিত করা
+            const rows = tableBody.querySelectorAll('tr');
+            rows.forEach((row, rowIndex) => {
+                row.style.pageBreakInside = 'avoid';
+                const cells = row.querySelectorAll('td');
+                if(cells.length >= 6) {
+                    cells[1].style.minWidth = '250px'; 
+                    cells[1].style.whiteSpace = 'nowrap';
+                    cells[3].style.textAlign = 'right';
+                    cells[4].style.textAlign = 'right';
+                    cells[5].style.textAlign = 'right';
+                }
+            });
+        };
+    </script>
+</body>
+</html>
