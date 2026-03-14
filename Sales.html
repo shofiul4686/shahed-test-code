@@ -739,16 +739,28 @@ window.onload = function() {
         document.getElementById('detStock').innerText = "Stock: " + stock;
         setTimeout(() => document.getElementById('pQty').focus(), 50);
     }
+    
     function save() {
-        const custCode = document.getElementById('fCCode').value;
-        const currentInvNo = document.getElementById('invNo').value;
-        const total = cart.reduce((s,i)=>s+i.subtotal, 0);
-        const paid = parseFloat(document.getElementById('paidAmount').value) || 0;
-        if(!cart.length || !custCode) { alert("Please ensure customer and products are in cart"); return; }
-        toggleLoader(true, "Saving Invoice..."); 
-        toggleInputs(true);
-        let status = (paid >= total) ? "Paid" : (paid > 0 ? "Partial" : "Unpaid");
-       let master = { 
+    const custCode = document.getElementById('fCCode').value;
+    const currentInvNo = document.getElementById('invNo').value;
+    const total = cart.reduce((s,i)=>s+i.subtotal, 0);
+    const paid = parseFloat(document.getElementById('paidAmount').value) || 0;
+    
+    if(!cart.length || !custCode) { 
+        alert("Please ensure customer and products are in cart"); 
+        return; 
+    }
+    
+    toggleLoader(true, "Saving Invoice..."); 
+    toggleInputs(true);
+    
+    let status = (paid >= total) ? "Paid" : (paid > 0 ? "Partial" : "Unpaid");
+
+    // --- এখান থেকে ইউজার ডাটা নেওয়া হচ্ছে ---
+    const currentUserName = localStorage.getItem('userName') || "Unknown User";
+    const currentUserId = localStorage.getItem('userId') || "000";
+
+    let master = { 
         action: "saveInvoice", 
         invNo: currentInvNo, 
         date: document.getElementById('invDate').value, 
@@ -763,22 +775,27 @@ window.onload = function() {
         paid: paid, 
         status: status, 
         cart: cart,
-       // --- এখান থেকে ইউজার ডাটা নেওয়া হচ্ছে ---
-    const currentUserName = localStorage.getItem('userName') || "Unknown User";
-    const currentUserId = localStorage.getItem('userId') || "000";
+        // --- এই দুটি লাইন নতুন যোগ করা হয়েছে যাতে ব্যাকএন্ডে ডাটা যায় ---
+        entryBy: currentUserName,
+        entryById: currentUserId
     };
 
-        fetch(WEB_APP_URL, {
-            method: "POST",
-            mode: "no-cors",
-            body: JSON.stringify(master)
-        })
-        .then(() => { handleSaveSuccess(currentInvNo, master); })
-        .catch(err => {
-            alert("Error: " + err);
-            toggleLoader(false); toggleInputs(false);
-        });
-    }
+    fetch(WEB_APP_URL, {
+        method: "POST",
+        mode: "no-cors",
+        body: JSON.stringify(master)
+    })
+    .then(() => { 
+        handleSaveSuccess(currentInvNo, master); 
+    })
+    .catch(err => {
+        alert("Error: " + err);
+        toggleLoader(false); 
+        toggleInputs(false);
+    });
+}
+
+    
     function updateFocus(items) {
         items.forEach((item, idx) => {
             if (idx === focusedIdx) {
